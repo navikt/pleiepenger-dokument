@@ -10,12 +10,15 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.http.HttpHeaders
+import io.ktor.jackson.jackson
 import io.ktor.request.header
 import io.ktor.response.header
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
+import no.nav.helse.dokument.api.Context
+import no.nav.helse.dokument.api.dokumentApis
 import no.nav.helse.dokument.api.metadataStatusPages
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
@@ -69,19 +72,33 @@ fun Application.pleiepengerDokument() {
         }
     }
 
+    install(ContentNegotiation) {
+        jackson {
+            ObjectMapper.server(this)
+        }
+    }
+
     install(StatusPages) {
         defaultStatusPages()
         valideringStatusPages()
         metadataStatusPages()
     }
 
+    val context = Context(
+        serviceAccountIssuer = configuration.getServiceAccountIssuer(),
+        sluttbrukerIssuer = configuration.getEndUserIssuer()
+    )
 
     install(Routing) {
         authenticate(END_USER_AUTHENTICATION_PROVIDER, SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER) {
-            monitoring(
-                collectorRegistry = collectorRegistry
+            dokumentApis(
+                context = context
             )
         }
+
+        monitoring(
+            collectorRegistry = collectorRegistry
+        )
     }
 
     install(CallId) {
@@ -100,8 +117,10 @@ fun Application.pleiepengerDokument() {
 
 private fun ApplicationCall.tokenIsSetAndIssuerIs(issuer: String): Boolean {
     val token = request.header(HttpHeaders.Authorization)?.removePrefix(TOKEN_AUTH_SCHEME_PREFIX) ?: return false
-    return try {issuer == JWT.decode(token).issuer} catch (cause: Throwable) { false }
+    return try { issuer == JWT.decode(token).issuer } catch (cause: Throwable) { false }
 }
+
+
 
 private fun JwkProviderBuilder.buildConfigured() : JwkProvider {
     cached(10, 24, TimeUnit.HOURS)

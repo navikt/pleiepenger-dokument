@@ -11,6 +11,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.validering.Valideringsfeil
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -58,7 +59,6 @@ class PleiepengerDokumentTest {
     }
 
     @Test
-    @Ignore
     fun `test isready, isalive og metrics`() {
         with(engine) {
             handleRequest(HttpMethod.Get, "/isready") {}.apply {
@@ -76,8 +76,22 @@ class PleiepengerDokumentTest {
     @Test
     fun `request med service account Access Token fungerer`() {
         with(engine) {
-            handleRequest(HttpMethod.Get, "/isready") {
+            handleRequest(HttpMethod.Get, "/v1/dokument") {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader("Nav-Personidenter", "29099012345")
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
+    }
+
+    @Test(expected = Valideringsfeil::class)
+    fun `request med service account Access Token og uten fodselsnummer som header feiler`() {
+        with(engine) {
+            handleRequest(HttpMethod.Get, "/v1/dokument") {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
             }
@@ -89,8 +103,9 @@ class PleiepengerDokumentTest {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
         with(engine) {
-            handleRequest(HttpMethod.Get, "/isready") {
+            handleRequest(HttpMethod.Get, "/v1/dokument") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
+                addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
             }
@@ -102,8 +117,9 @@ class PleiepengerDokumentTest {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken("http://localhost:8080/en-anne-issuer", fnr)
         with(engine) {
-            handleRequest(HttpMethod.Get, "/isready") {
+            handleRequest(HttpMethod.Get, "/v1/dokument") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
+                addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
@@ -113,7 +129,9 @@ class PleiepengerDokumentTest {
     @Test
     fun `request uten token feiler`() {
         with(engine) {
-            handleRequest(HttpMethod.Get, "/isready") {}.apply {
+            handleRequest(HttpMethod.Get, "/v1/dokument") {
+                addHeader(HttpHeaders.XCorrelationId, "123")
+            }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
         }

@@ -25,6 +25,7 @@ dependencies {
     // Ktor Server
     compile("io.ktor:ktor-server-netty:$ktorVersion")
     compile("io.ktor:ktor-auth-jwt:$ktorVersion")
+    compile ("io.ktor:ktor-jackson:$ktorVersion")
 
     // Logging
     compile ("ch.qos.logback:logback-classic:$logbackVersion")
