@@ -76,7 +76,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `request med service account Access Token fungerer`() {
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/1234") {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
                 addHeader("Nav-Personidenter", "29099012345")
@@ -89,7 +89,7 @@ class PleiepengerDokumentTest {
     @Test(expected = Valideringsfeil::class)
     fun `request med service account Access Token og uten fodselsnummer som header feiler`() {
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/12345") {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
@@ -103,7 +103,7 @@ class PleiepengerDokumentTest {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/123456") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
@@ -117,7 +117,7 @@ class PleiepengerDokumentTest {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken("http://localhost:8080/en-anne-issuer", fnr)
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/1234567") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
@@ -129,7 +129,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `request uten token feiler`() {
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/123456789") {
                 addHeader(HttpHeaders.XCorrelationId, "123")
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())

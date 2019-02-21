@@ -17,6 +17,7 @@ import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
+import no.nav.helse.dokument.InMemoryDokumentStorage
 import no.nav.helse.dokument.api.Context
 import no.nav.helse.dokument.api.dokumentApis
 import no.nav.helse.dokument.api.metadataStatusPages
@@ -92,7 +93,8 @@ fun Application.pleiepengerDokument() {
     install(Routing) {
         authenticate(END_USER_AUTHENTICATION_PROVIDER, SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER) {
             dokumentApis(
-                context = context
+                context = context,
+                dokumentStorage = InMemoryDokumentStorage()
             )
         }
 
@@ -119,8 +121,6 @@ private fun ApplicationCall.tokenIsSetAndIssuerIs(issuer: String): Boolean {
     val token = request.header(HttpHeaders.Authorization)?.removePrefix(TOKEN_AUTH_SCHEME_PREFIX) ?: return false
     return try { issuer == JWT.decode(token).issuer } catch (cause: Throwable) { false }
 }
-
-
 
 private fun JwkProviderBuilder.buildConfigured() : JwkProvider {
     cached(10, 24, TimeUnit.HOURS)
