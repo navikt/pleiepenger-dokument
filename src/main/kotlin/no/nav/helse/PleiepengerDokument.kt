@@ -28,7 +28,7 @@ private const val GENERATED_REQUEST_ID_PREFIX = "generated-"
 private const val REALM = "pleiepenger-dokument"
 private const val SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER = "service-account-authentication-provider"
 private const val END_USER_AUTHENTICATION_PROVIDER = "end-user-authentication-provider"
-
+private const val TOKEN_AUTH_SCHEME_PREFIX = "Bearer "
 
 fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
 
@@ -46,9 +46,9 @@ fun Application.pleiepengerDokument() {
 
     install(Authentication) {
         jwt (name = SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER) {
-            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getEndUserIssuer())}
+            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getEndUserIssuer())} // Verifiserer ikke Service Account Access-Token hvis issuer av token tilhører sluttbruker token-issuer.
             verifier(serviceAccountJwkProvider, configuration.getServiceAccountIssuer())
-            realm = REALM + "2"
+            realm = REALM
             validate { credentials ->
                 logger.info("Authorization attempt for Service Account ${credentials.payload.subject}")
                 if (credentials.payload.subject in authorizedSystems) {
@@ -60,7 +60,7 @@ fun Application.pleiepengerDokument() {
             }
         }
         jwt (name = END_USER_AUTHENTICATION_PROVIDER) {
-            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getServiceAccountIssuer())}
+            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getServiceAccountIssuer())} // Verifiserer ikke sluttbruker ID-Token hvis issuer av token tilhører Service Account token-issuer.
             verifier(endUserJwkProvider, configuration.getEndUserIssuer())
             realm = REALM
             validate { credentials ->
@@ -99,8 +99,8 @@ fun Application.pleiepengerDokument() {
 }
 
 private fun ApplicationCall.tokenIsSetAndIssuerIs(issuer: String): Boolean {
-    val token = request.header(HttpHeaders.Authorization)?.removePrefix("Bearer ") ?: return false
-    return issuer == JWT.decode(token).issuer
+    val token = request.header(HttpHeaders.Authorization)?.removePrefix(TOKEN_AUTH_SCHEME_PREFIX) ?: return false
+    return try {issuer == JWT.decode(token).issuer} catch (cause: Throwable) { false }
 }
 
 private fun JwkProviderBuilder.buildConfigured() : JwkProvider {
