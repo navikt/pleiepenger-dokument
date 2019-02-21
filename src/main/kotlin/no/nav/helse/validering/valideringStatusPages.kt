@@ -2,7 +2,6 @@ package no.nav.helse.validering
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import io.ktor.application.call
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
@@ -24,31 +23,6 @@ fun StatusPages.Configuration.valideringStatusPages() {
             invalidParameters = cause.brudd
         )
         call.respond(HttpStatusCode.UnprocessableEntity, error)
-        throw cause
-    }
-
-    /**
-     * Missing not nullable fields in kotlin data classes
-     */
-    exception<MissingKotlinParameterException> { cause ->
-        val errors: MutableList<Brudd> = mutableListOf()
-        cause.path.forEach {
-            if (it.fieldName != null) {
-                errors.add(
-                    Brudd(
-                        parameter = it.fieldName,
-                        error = "kan ikke være null"
-                    ))
-            }
-        }
-        call.respond(
-            HttpStatusCode.UnprocessableEntity, ValideringsError(
-                status = HttpStatusCode.UnprocessableEntity.value,
-                type = invalidParametersType,
-                title =  invalidParametersTitle,
-                invalidParameters = errors
-            )
-        )
         throw cause
     }
 

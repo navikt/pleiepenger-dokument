@@ -37,35 +37,20 @@ data class Configuration(private val config : ApplicationConfig) {
         )
     }
 
-    fun getTokenUrl() : URL {
-        return URL(getString("nav.authorization.token_url"))
+    fun getServiceAccountJwksUrl() : URL {
+        return URL(getString("nav.authorization.service_account.jwks_url"))
     }
 
-    fun getJwksUrl() : URL {
-        return URL(getString("nav.authorization.jwks_url"))
+    fun getServiceAccountIssuer() : String {
+        return getString("nav.authorization.service_account.issuer")
     }
 
-    fun getSakBaseUrl() : URL {
-        return URL(getString("nav.sak.base_url"))
+    fun getEndUserJwksUrl() : URL {
+        return URL(getString("nav.authorization.end_user.jwks_url"))
     }
 
-    fun getIssuer() : String {
-        return getString("nav.authorization.issuer")
-    }
-
-    fun getServiceAccountClientId(): String {
-        return getString("nav.authorization.service_account.client_id")
-    }
-
-    fun getServiceAccountClientSecret(): String {
-        return getString(key = "nav.authorization.service_account.client_secret", secret = true)
-    }
-
-    fun getServiceAccountScopes(): List<String> {
-        return getListFromCsv(
-            key = "nav.authorization.service_account.scopes",
-            builder = { value -> value}
-        )
+    fun getEndUserIssuer() : String {
+        return getString("nav.authorization.end_user.issuer")
     }
 
     fun logIndirectlyUsedConfiguration() {

@@ -7,6 +7,8 @@
     </appender>
 
     <logger name="nav" level="TRACE"/>
+    <logger name="io.ktor.auth.jwt" level="TRACE"/>
+
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

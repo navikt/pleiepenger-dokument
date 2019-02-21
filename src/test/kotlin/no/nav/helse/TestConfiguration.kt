@@ -7,19 +7,19 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         port : Int = 8080,
-        jwkSetUrl : String? = wireMockServer?.getJwksUrl(),
-        tokenUrl : String? = wireMockServer?.getTokenUrl(),
-        issuer : String? = wireMockServer?.baseUrl(),
-        authorizedSystems : String? = wireMockServer?.getSubject(),
-        sakBaseUrl : String? = wireMockServer?.getSakbaseUrl()
-    ) : Map<String, String>{
+        serviceAccountJwkSetUrl : String? = wireMockServer?.getServiceAccountJwksUrl(),
+        serviceAccountIssuer : String? = wireMockServer?.getServiceAccountIssuer(),
+        endUserJwkSetUrl : String? = wireMockServer?.getEndUserJwksUrl(),
+        endUserIssuer : String? = wireMockServer?.getEndUserIssuer(),
+        authorizedSystems : String? = wireMockServer?.getSubject()
+    ) : Map<String, String> {
         return mapOf(
             Pair("ktor.deployment.port","$port"),
-            Pair("nav.authorization.token_url","$tokenUrl"),
-            Pair("nav.authorization.jwks_url","$jwkSetUrl"),
-            Pair("nav.authorization.issuer","$issuer"),
-            Pair("nav.rest_api.authorized_systems","$authorizedSystems"),
-            Pair("nav.sak.base_url","$sakBaseUrl")
+            Pair("nav.authorization.service_account.jwks_url","$serviceAccountJwkSetUrl"),
+            Pair("nav.authorization.service_account.issuer","$serviceAccountIssuer"),
+            Pair("nav.authorization.end_user.jwks_url","$endUserJwkSetUrl"),
+            Pair("nav.authorization.end_user.issuer","$endUserIssuer"),
+            Pair("nav.rest_api.authorized_systems","$authorizedSystems")
         )
     }
 

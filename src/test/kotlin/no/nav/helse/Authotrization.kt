@@ -16,4 +16,18 @@ object Authorization {
 
         return JwtTokenGenerator.createSignedJWT(claimSet).serialize()
     }
+
+    fun getIdToken(
+        issuer: String,
+        subject: String
+    ) : String {
+        val claimSet = JwtTokenGenerator.buildClaimSet(
+            subject,
+            issuer,
+            "localhost",
+            JwtTokenGenerator.EXPIRY
+        )
+
+        return JwtTokenGenerator.createSignedJWT(claimSet).serialize()
+    }
 }

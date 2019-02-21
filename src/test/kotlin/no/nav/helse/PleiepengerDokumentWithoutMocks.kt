@@ -7,7 +7,7 @@ import io.ktor.server.testing.withApplication
  *  - Setter proxy settings
  *  - Starter på annen port
  */
-class PleiepengerSakWithoutMocks {
+class PleiepengerDokumentWithoutMocks {
     companion object {
 
         @JvmStatic
@@ -19,15 +19,15 @@ class PleiepengerSakWithoutMocks {
             System.setProperty("https.proxyHost", "127.0.0.1")
             System.setProperty("https.proxyPort", "5001")
 
-            // nav.authorization.service_account.password Må fortsatt settes som parameter ved oppstart utenom koden
+            // TODO: nav.authorization.service_account.client_secret Må fortsatt settes som parameter ved oppstart utenom koden
 
             val q1Args = TestConfiguration.asArray(TestConfiguration.asMap(
-                port = 8103,
-                tokenUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
-                jwkSetUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/jwks",
-                issuer = "https://security-token-service.nais.preprod.local",
-                authorizedSystems = "srvpleiepenger-sak,srvpps-prosessering",
-                sakBaseUrl = "https://sak.nais.preprod.local"
+                port = 8123,
+                serviceAccountJwkSetUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/jwks",
+                serviceAccountIssuer = "https://security-token-service.nais.preprod.local",
+                endUserJwkSetUrl = "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten_ver1",
+                endUserIssuer = "https://login.microsoftonline.com/d38f25aa-eab8-4c50-9f28-ebf92c1256f2/v2.0/",
+                authorizedSystems = "srvpps-prosessering"
             ))
 
 
