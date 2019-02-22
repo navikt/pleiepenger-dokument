@@ -31,13 +31,9 @@ DELETE @ /v1/dokument/{dokumentId}
 ### Lagre dokument
 POST @ /v1/dokument
 - 201 response med "Location" Header satt som peker på URL'en til dokumentet.
-```json
-    {
-        "content" : "ey123...", // Base64 encoded
-        "content_type" : "application/pdf",
-        "size" : 50002134
-    }
-```
+- Multipart Request
+- En file part med navn "content" som inneholder filen. Samme part må ha "Content-Type header" til content-type av dokumentet.
+- En form part med navn "title" som inneholder tittelen på dokumentet
 
 ## Correlation ID vs Request ID
 Correlation ID blir propagert videre, og har ikke nødvendigvis sitt opphav hos konsumenten.
