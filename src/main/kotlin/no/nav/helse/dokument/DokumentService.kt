@@ -13,35 +13,6 @@ data class DokumentService(
     private val storage: Storage,
     private val objectMapper: ObjectMapper
 ) {
-
-    init {
-        val plainText = objectMapper.writeValueAsString(
-            Dokument(
-                content = "logback.xml".fromResources(),
-                contentType = "application/xml"
-            )
-        )
-
-        val fodselsnummer = Fodselsnummer("29099012345")
-
-        storage.lagre(
-            generateStorageKey(
-                dokumentId = DokumentId(id = "1234"),
-                fodselsnummer = fodselsnummer
-            ),
-            StorageValue(
-                value = cryptography.encrypt(
-                    plainText = plainText,
-                    fodselsnummer = fodselsnummer
-                )
-            )
-        )
-    }
-
-    private fun String.fromResources() : ByteArray {
-        return Thread.currentThread().contextClassLoader.getResource(this).readBytes()
-    }
-
     fun hentDokument(
         dokumentId: DokumentId,
         fodselsnummer: Fodselsnummer
@@ -134,6 +105,7 @@ data class DokumentService(
 data class DokumentId(val id: String)
 
 data class Dokument(
+    val tittel: String,
     val content: ByteArray,
     val contentType: String
 ) {
@@ -143,6 +115,7 @@ data class Dokument(
 
         other as Dokument
 
+        if (tittel != other.tittel) return false
         if (!content.contentEquals(other.content)) return false
         if (contentType != other.contentType) return false
 
@@ -150,7 +123,8 @@ data class Dokument(
     }
 
     override fun hashCode(): Int {
-        var result = content.contentHashCode()
+        var result = tittel.hashCode()
+        result = 31 * result + content.contentHashCode()
         result = 31 * result + contentType.hashCode()
         return result
     }

@@ -27,12 +27,14 @@ class Context(
     }
 
     fun hentFodselsnummer(call : ApplicationCall) : Fodselsnummer {
-        return if (erSluttbruker(call)) {
-            Fodselsnummer(hentJwtPrincipal(call).payload.subject)
-        } else if (erServiceAccount(call)) {
-            val fodselsnummer = call.request.header(FODSELSNUMMER_HEADER) ?: throw Valideringsfeil(manglerHeaderBrudd)
-            Fodselsnummer(fodselsnummer)
-        } else throw IllegalStateException("Er hverken sluttbruker eller service account.")
+        return when {
+            erSluttbruker(call) -> Fodselsnummer(hentJwtPrincipal(call).payload.subject)
+            erServiceAccount(call) -> {
+                val fodselsnummer = call.request.header(FODSELSNUMMER_HEADER) ?: throw Valideringsfeil(manglerHeaderBrudd)
+                Fodselsnummer(fodselsnummer)
+            }
+            else -> throw IllegalStateException("Er hverken sluttbruker eller service account.")
+        }
     }
 
 
