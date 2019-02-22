@@ -77,13 +77,23 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `request med service account Access Token fungerer`() {
+        val fnr = "29099012345"
+
+        val url = engine.lasteOppDokument(
+            token = authorizedAccessToken,
+            fnr = fnr
+        )
+        val path = Url(url).fullPath
+
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/1234") {
+
+            handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
-                addHeader("Nav-Personidenter", "29099012345")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
+                addHeader("Nav-Personidenter", fnr)
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("image/jpeg", response.contentType().toString())
             }
         }
     }
@@ -101,16 +111,25 @@ class PleiepengerDokumentTest {
     }
 
     @Test
-    fun `request med sluttbruker  ID-Token fungerer`() {
+    fun `request med sluttbruker ID-Token fungerer`() {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
+
+        val url = engine.lasteOppDokument(
+            token = idToken,
+            fileName = "test.pdf",
+            tittel = "PDF"
+        )
+
+        val path = Url(url).fullPath
+
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/1234") {
+            handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
-                addHeader(HttpHeaders.Accept, "application/json")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-sluttbruker")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("application/pdf", response.contentType().toString())
             }
         }
     }

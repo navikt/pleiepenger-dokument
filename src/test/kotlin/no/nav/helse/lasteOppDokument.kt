@@ -11,11 +11,11 @@ import kotlin.test.assertNotNull
 
 fun TestApplicationEngine.lasteOppDokument(
     token: String,
-    fileName: String,
-    fileContent: ByteArray,
+    fileName: String = "iPhone_6.jpg",
+    fileContent: ByteArray = fileName.fromResources(),
     fnr: String? = null,
-    tittel: String,
-    contentType: String
+    tittel: String = "En eller annen tittel",
+    contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg"
 ) : String {
 
     val boundary = "***dokument***"
