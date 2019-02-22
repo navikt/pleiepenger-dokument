@@ -37,7 +37,6 @@ class PleiepengerDokumentTest {
             return HoconApplicationConfig(mergedConfig)
         }
 
-
         val engine = TestApplicationEngine(createTestEnvironment {
             config = getConfig()
         })
@@ -103,9 +102,10 @@ class PleiepengerDokumentTest {
         val fnr = "29099012345"
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
         with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/123456") {
+            handleRequest(HttpMethod.Get, "/v1/dokument/1234") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader(HttpHeaders.Accept, "application/json")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
             }
@@ -136,4 +136,8 @@ class PleiepengerDokumentTest {
             }
         }
     }
+
+    // Test: Hente dokument som ikke finnes = 404
+    // Test: Slette dokument som ikke finnes = 404
+    // Test: Slette dokment som finnes = 204
 }

@@ -4,6 +4,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.principal
 import io.ktor.request.header
+import no.nav.helse.dokument.Fodselsnummer
 import no.nav.helse.validering.Brudd
 import no.nav.helse.validering.Valideringsfeil
 

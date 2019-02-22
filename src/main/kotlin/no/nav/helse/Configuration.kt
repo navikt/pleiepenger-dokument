@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import java.net.URL
 
 private val logger: Logger = LoggerFactory.getLogger("nav.Configuration")
+private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
 
 @KtorExperimentalAPI
 data class Configuration(private val config : ApplicationConfig) {
@@ -14,6 +15,14 @@ data class Configuration(private val config : ApplicationConfig) {
                           secret: Boolean = false) : String  {
         val stringValue = config.property(key).getString()
         logger.info("{}={}", key, if (secret) "***" else stringValue)
+        return stringValue
+    }
+
+    private fun getOptionalString(key: String,
+                          secret: Boolean = false) : String? {
+        val configValue = config.propertyOrNull(key)
+        val stringValue = configValue?.getString()
+        logger.info("{}={}", key, if (secret && stringValue != null) "***" else stringValue)
         return stringValue
     }
 
@@ -36,6 +45,31 @@ data class Configuration(private val config : ApplicationConfig) {
             builder = { value -> value}
         )
     }
+
+    fun getEncryptionPassphrase() : Pair<Int, String> {
+        val identifier = getString("nav.crypto.passphrase.encryption_identifier").toInt()
+        val passphrase = getCryptoPasshrase("$CRYPTO_PASSPHRASE_PREFIX$identifier")
+        return Pair(identifier, passphrase)
+    }
+
+    fun getDecryptionPassphrases() : Map<Int, String> {
+        val identifiers = getListFromCsv(
+            key = "nav.crypto.passphrase.decryption_identifiers",
+            builder = { value -> value.toInt()}
+        )
+        val decryptionPassphrases = mutableMapOf<Int, String>()
+        identifiers.forEach { decryptionPassphrases[it] = getCryptoPasshrase("$CRYPTO_PASSPHRASE_PREFIX$it") }
+        val encryptionPassphrase = getEncryptionPassphrase()
+        decryptionPassphrases[encryptionPassphrase.first] = encryptionPassphrase.second // Forsikre oss om at nåværende krypterings-ID alltid er en av decrypterings-ID'ene
+        return decryptionPassphrases.toMap()
+    }
+
+    private fun getCryptoPasshrase(key: String) : String {
+        val configValue = getOptionalString(key = key, secret = true)
+        if (configValue != null) return configValue
+        return System.getenv(key) ?: throw IllegalStateException("Mangler $key")
+    }
+
 
     fun getServiceAccountJwksUrl() : URL {
         return URL(getString("nav.authorization.service_account.jwks_url"))

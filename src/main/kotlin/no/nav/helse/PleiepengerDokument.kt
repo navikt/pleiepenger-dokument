@@ -17,9 +17,11 @@ import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
-import no.nav.helse.dokument.InMemoryDokumentStorage
+import no.nav.helse.dokument.Cryptography
+import no.nav.helse.dokument.DokumentService
+import no.nav.helse.dokument.InMemoryStorage
 import no.nav.helse.dokument.api.Context
-import no.nav.helse.dokument.api.dokumentApis
+import no.nav.helse.dokument.api.dokumentV1Apis
 import no.nav.helse.dokument.api.metadataStatusPages
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
@@ -45,13 +47,17 @@ fun Application.pleiepengerDokument() {
     configuration.logIndirectlyUsedConfiguration()
 
     val authorizedSystems = configuration.getAuthorizedSystemsForRestApi()
+
+    val serviceAccountIssuer = configuration.getServiceAccountIssuer()
     val serviceAccountJwkProvider = JwkProviderBuilder(configuration.getServiceAccountJwksUrl()).buildConfigured()
     val endUserJwkProvider = JwkProviderBuilder(configuration.getEndUserJwksUrl()).buildConfigured()
+    val endUserIssuer = configuration.getEndUserIssuer()
+
 
     install(Authentication) {
         jwt (name = SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER) {
-            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getEndUserIssuer())} // Verifiserer ikke Service Account Access-Token hvis issuer av token tilhører sluttbruker token-issuer.
-            verifier(serviceAccountJwkProvider, configuration.getServiceAccountIssuer())
+            skipWhen {it.tokenIsSetAndIssuerIs(endUserIssuer)} // Verifiserer ikke Service Account Access-Token hvis issuer av token tilhører sluttbruker token-issuer.
+            verifier(serviceAccountJwkProvider, serviceAccountIssuer)
             realm = REALM
             validate { credentials ->
                 logger.info("Authorization attempt for Service Account ${credentials.payload.subject}")
@@ -64,8 +70,8 @@ fun Application.pleiepengerDokument() {
             }
         }
         jwt (name = END_USER_AUTHENTICATION_PROVIDER) {
-            skipWhen {it.tokenIsSetAndIssuerIs(configuration.getServiceAccountIssuer())} // Verifiserer ikke sluttbruker ID-Token hvis issuer av token tilhører Service Account token-issuer.
-            verifier(endUserJwkProvider, configuration.getEndUserIssuer())
+            skipWhen {it.tokenIsSetAndIssuerIs(serviceAccountIssuer)} // Verifiserer ikke sluttbruker ID-Token hvis issuer av token tilhører Service Account token-issuer.
+            verifier(endUserJwkProvider, endUserIssuer)
             realm = REALM
             validate { credentials ->
                 return@validate JWTPrincipal(credentials.payload)
@@ -92,9 +98,16 @@ fun Application.pleiepengerDokument() {
 
     install(Routing) {
         authenticate(END_USER_AUTHENTICATION_PROVIDER, SERVICE_ACCCOUNT_AUTHENTICATION_PROVIDER) {
-            dokumentApis(
+            dokumentV1Apis(
                 context = context,
-                dokumentStorage = InMemoryDokumentStorage()
+                dokumentService = DokumentService(
+                    cryptography = Cryptography(
+                        encryptionPassphrase = configuration.getEncryptionPassphrase(),
+                        decryptionPassphrases = configuration.getDecryptionPassphrases()
+                    ),
+                    storage = InMemoryStorage(),
+                    objectMapper = ObjectMapper.server()
+                )
             )
         }
 
