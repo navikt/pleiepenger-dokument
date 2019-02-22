@@ -48,7 +48,7 @@ data class DokumentService(
                 fodselsnummer = fodselsnummer
             )
         )
-        logger.warn("Fant ikke noe dokument å slette.")
+        if (!result) logger.warn("Fant ikke noe dokument å slette.")
         return result
     }
 
