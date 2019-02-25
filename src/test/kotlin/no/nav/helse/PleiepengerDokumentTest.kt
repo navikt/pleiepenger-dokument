@@ -160,7 +160,7 @@ class PleiepengerDokumentTest {
             }
         }
     }
-    
+
     @Test
     fun `request med token utstedt av en annen issuer feiler`() {
         val fnr = "29099012345"

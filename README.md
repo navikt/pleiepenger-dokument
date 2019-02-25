@@ -1,6 +1,6 @@
 # pleiepenger-dokument
 
-Mellomlagrer dokumenter før jounralføring.
+Mellomlagrer dokumenter før journalføring.
 
 ## API
 ### Tilgang
@@ -17,16 +17,16 @@ GET @ /v1/dokument/{dokumentId}
 - Om "Accept" Header er satt til "application/json" returners vedlegget på format
 ```json
     {
-        "content" : "ey123...", // Base64 encoded
-        "content_type" : "application/pdf",
-        "size" : 50002134
+        "content" : "ey123...",
+        "content_type" : "application/pdf"
     }
 ```
 - Om en annen/ingen "Accept"-header er satt vil vedlegget returneres som oppgitt Content-Type ved lagring.
 
 ### Slette dokument
 DELETE @ /v1/dokument/{dokumentId}
-- Alltid 204 response uavhengig om noe ble slettet eller ikke
+- 204 Response om dokumentet ble slettet
+- 404 Resposne om det ikke fantes noe dokument å slette
 
 ### Lagre dokument
 POST @ /v1/dokument
