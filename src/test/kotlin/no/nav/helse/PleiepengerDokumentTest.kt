@@ -134,8 +134,33 @@ class PleiepengerDokumentTest {
         }
     }
 
-    // TODO: Test at man ikke får hentet annens persons dokument = 404
+    @Test
+    fun `request med sluttbruker ID-Token for annen bruker fungerer ikke`() {
+        val fnrLagre = "29099012345"
+        val fnrHente = "29099067891"
 
+        val idTokenLagre = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrLagre)
+        val idTokenHente = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrHente)
+
+
+        val url = engine.lasteOppDokument(
+            token = idTokenLagre,
+            fileName = "test.pdf",
+            tittel = "PDF"
+        )
+
+        val path = Url(url).fullPath
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $idTokenHente")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-feil-sluttbruker")
+            }.apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+            }
+        }
+    }
+    
     @Test
     fun `request med token utstedt av en annen issuer feiler`() {
         val fnr = "29099012345"
