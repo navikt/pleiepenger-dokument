@@ -134,14 +134,14 @@ fun ApplicationRequest.getCorrelationId() : CorrelationId = CorrelationId(header
 private suspend fun MultiPartData.getDokument() : Dokument {
     var content : ByteArray? = null
     var contentType : String? = null
-    var tittel : String? = null
+    var title : String? = null
 
     for (partData in readAllParts()) {
         if (partData is PartData.FileItem && CONTENT_PART_NAME == partData.name) {
             content = partData.streamProvider().readBytes()
             contentType = partData.contentType.toString()
         } else if (partData is PartData.FormItem && TITLE_PART_NAME == partData.name) {
-            tittel = partData.value
+            title = partData.value
         }
         partData.dispose()
     }
@@ -150,8 +150,8 @@ private suspend fun MultiPartData.getDokument() : Dokument {
     if (content == null) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Fant ingen 'part' som er en fil."))
     if (content != null && content.size > MAX_DOKUMENT_SIZE) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Dokumentet er større en maks tillat 8MB."))
     if (contentType == null) brudd.add(Brudd(parameter = HttpHeaders.ContentType, error = "Ingen Content-Type satt på fil."))
-    if (tittel == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
-    return if (brudd.isEmpty()) Dokument(tittel = tittel!!, contentType = contentType!!, content = content!!) else throw Valideringsfeil(brudd)
+    if (title == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
+    return if (brudd.isEmpty()) Dokument(title = title!!, contentType = contentType!!, content = content!!) else throw Valideringsfeil(brudd)
 }
 
 private fun ApplicationRequest.isFormMultipart(): Boolean {

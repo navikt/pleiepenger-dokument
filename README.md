@@ -17,6 +17,7 @@ GET @ /v1/dokument/{dokumentId}
 - Om "Accept" Header er satt til "application/json" returners vedlegget på format
 ```json
     {
+        "title" : "Tittel som ble satt ved lagring",
         "content" : "ey123...",
         "content_type" : "application/pdf"
     }

@@ -24,17 +24,17 @@ class DokumentServiceTest {
         val aktoerId3 = AktoerId("11121314")
 
         val dokument1 = Dokument(
-            tittel = "Tittel1",
+            title = "Tittel1",
             content = byteArrayOf(1,2,3,4),
             contentType = "application/pdf"
         )
         val dokument2 = Dokument(
-            tittel = "Tittel2",
+            title = "Tittel2",
             content = byteArrayOf(5,6,7,8),
             contentType = "image/png"
         )
         val dokument3 = Dokument(
-            tittel = "Tittel3",
+            title = "Tittel3",
             content = byteArrayOf(9,10,11,12),
             contentType = "image/jpeg"
         )

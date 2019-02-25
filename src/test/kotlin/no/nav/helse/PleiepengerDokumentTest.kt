@@ -232,7 +232,7 @@ class PleiepengerDokumentTest {
                     val expected = Dokument(
                         content = jpeg,
                         contentType = "image/jpeg",
-                        tittel = "Bilde av en iphone"
+                        title = "Bilde av en iphone"
                     )
                     val actual = objectMapper.readValue<Dokument>(response.content!!)
                     assertEquals(expected, actual)

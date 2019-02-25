@@ -107,7 +107,7 @@ data class DokumentService(
 data class DokumentId(val id: String)
 
 data class Dokument(
-    val tittel: String,
+    val title: String,
     val content: ByteArray,
     val contentType: String
 ) {
@@ -117,7 +117,7 @@ data class Dokument(
 
         other as Dokument
 
-        if (tittel != other.tittel) return false
+        if (title != other.title) return false
         if (!content.contentEquals(other.content)) return false
         if (contentType != other.contentType) return false
 
@@ -125,7 +125,7 @@ data class Dokument(
     }
 
     override fun hashCode(): Int {
-        var result = tittel.hashCode()
+        var result = title.hashCode()
         result = 31 * result + content.contentHashCode()
         result = 31 * result + contentType.hashCode()
         return result
