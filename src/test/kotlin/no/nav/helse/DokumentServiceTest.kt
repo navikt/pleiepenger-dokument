@@ -14,7 +14,7 @@ private val logger: Logger = LoggerFactory.getLogger("nav.DokumentServiceTest")
 class DokumentServiceTest {
 
     @Test
-    fun `Rullering av passord for kyptering i fart fungerer`() {
+    fun `Rullering av passord for kryptering fungerer slik at dokumenter kryptert foer endringen fortsatt kan dekrypteres og hentes ut`() {
         // Setup
         val storage = InMemoryStorage()
         val objectMapper = ObjectMapper.server()
@@ -39,12 +39,18 @@ class DokumentServiceTest {
             contentType = "image/jpeg"
         )
 
+
+        val passord1 = Pair(1, "passord")
+        val passord2 = Pair(2, "passord2")
+        val passord3 = Pair(3, "passord3")
+
+
         val dokumentService1 = DokumentService(
             storage = storage,
             objectMapper = objectMapper,
             cryptography = Cryptography(
-                encryptionPassphrase = Pair(1, "passord"),
-                decryptionPassphrases = mapOf(Pair(1, "passord1"))
+                encryptionPassphrase = passord1,
+                decryptionPassphrases = mapOf(passord1)
             )
         )
 
@@ -52,8 +58,8 @@ class DokumentServiceTest {
             storage = storage,
             objectMapper = objectMapper,
             cryptography = Cryptography(
-                encryptionPassphrase = Pair(2, "passord2"),
-                decryptionPassphrases = mapOf(Pair(1, "passord1"), Pair(2, "passord2"))
+                encryptionPassphrase = passord2,
+                decryptionPassphrases = mapOf(passord1, passord2)
             )
         )
 
@@ -61,8 +67,8 @@ class DokumentServiceTest {
             storage = storage,
             objectMapper = objectMapper,
             cryptography = Cryptography(
-                encryptionPassphrase = Pair(3, "passord3"),
-                decryptionPassphrases = mapOf(Pair(1, "passord1"), Pair(2, "passord2"), Pair(3, "passord3"))
+                encryptionPassphrase = passord3,
+                decryptionPassphrases = mapOf(passord1, passord2, passord3)
             )
         )
 
@@ -81,25 +87,25 @@ class DokumentServiceTest {
             aktoerId = aktoerId3
         )
 
-        // dokumentId3 bør kun kunne bli dekryptert av dokumentService3
-        dekrypterOgAssert(dokumentService = dokumentService1, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
-        dekrypterOgAssert(dokumentService = dokumentService2, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
-        dekrypterOgAssert(dokumentService = dokumentService3, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = true)
+        // dokumentId3 bør kun kunne bli hentet av dokumentService3
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = true)
 
 
-        // dokumentId2 bør kunne dekrypteres både med dokumentService2 og dokumentService3
-        dekrypterOgAssert(dokumentService = dokumentService1, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = false)
-        dekrypterOgAssert(dokumentService = dokumentService2, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
-        dekrypterOgAssert(dokumentService = dokumentService3, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
+        // dokumentId2 bør kunne hentes både med dokumentService2 og dokumentService3
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
 
-        // dokumentId1 bør kunne decrypteres med alle servicene
-        dekrypterOgAssert(dokumentService = dokumentService1, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
-        dekrypterOgAssert(dokumentService = dokumentService2, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
-        dekrypterOgAssert(dokumentService = dokumentService3, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
+        // dokumentId1 bør kunne hentes med alle servicene
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
     }
 
 
-    private fun dekrypterOgAssert(
+    private fun hentOgAssertDokument(
         dokumentService: DokumentService,
         dokumentId: DokumentId,
         aktoerId: AktoerId,
@@ -115,7 +121,7 @@ class DokumentServiceTest {
             assertTrue(expectOk)
         } catch (cause: Throwable) {
             if (expectOk) {
-                logger.error("Feil ved dekryptering", cause)
+                logger.error("Feil ved henting", cause)
             }
             assertFalse(expectOk) // Om det oppstår en exception må expectOk == false
         }
