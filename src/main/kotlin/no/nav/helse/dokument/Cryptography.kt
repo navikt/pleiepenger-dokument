@@ -1,8 +1,11 @@
 package no.nav.helse.dokument
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.IllegalStateException
+import java.util.*
+import kotlin.IllegalStateException
 
 private val logger: Logger = LoggerFactory.getLogger("nav.Cryptography")
 
@@ -12,50 +15,60 @@ class Cryptography(
 ) {
 
     init {
-        logger.info("Krypterer med nøkkel med ID = ${encryptionPassphrase.first}")
+        logger.info("Genererer ID'er med Nøkkel ID = ${encryptionPassphrase.first}")
         logger.info("Decrypterer med ${decryptionPassphrases.size} mulige Nøkkel ID'er:")
         decryptionPassphrases.forEach{ logger.info("${it.key}")}
     }
 
-    fun encrypt(plainText : String,
+    fun encrypt(id: String,
+                plainText : String,
                 fodselsnummer: Fodselsnummer
     ) : String {
-        val encrypted = Crypto(
-            passphrase = encryptionPassphrase.second,
-            iv = fodselsnummer.value
-        ).encrypt(plainText)
-
-        return EncryptedResult(
-            passphraseIdentifier = encryptionPassphrase.first,
-            encrypted = encrypted
-        ).combined()
-    }
-
-    fun decrypt(encrypted: String,
-                fodselsnummer: Fodselsnummer
-    ) : String {
-        val encryptedResult = EncryptedResult(combined = encrypted)
-        if (!decryptionPassphrases.containsKey(encryptedResult.passphraseIdentifier)) {
-            throw IllegalStateException("Ikke konfigurert til å dekryptere innhold med Nøkkel ID ${encryptedResult.passphraseIdentifier}")
-        }
+        logger.trace("Krypterer ID $id")
+        val keyId = extractKeyId(id)
+        logger.trace("Krypterer med Nøkkel ID $keyId")
 
         return Crypto(
-            passphrase = decryptionPassphrases[encryptedResult.passphraseIdentifier]!!,
+            passphrase = getPasshrase(keyId),
             iv = fodselsnummer.value
-        ).decrypt(encryptedResult.encrypted)
+        ).encrypt(plainText)
     }
-}
 
-private data class EncryptedResult(
-    val passphraseIdentifier: Int,
-    val encrypted: String
-) {
-    constructor(combined: String) : this(
-        passphraseIdentifier = combined.split("-")[0].toInt(),
-        encrypted = combined.removePrefix("${combined.split("-")[0]}-")
-    )
+    fun decrypt(id: String,
+                encrypted: String,
+                fodselsnummer: Fodselsnummer
+    ) : String {
+        logger.trace("Decrypterer ID $id")
+        val keyId = extractKeyId(id)
+        logger.trace("Dekrypterer med Nøkkel ID $keyId")
 
-    fun combined() : String {
-        return "$passphraseIdentifier-$encrypted"
+        return Crypto(
+            passphrase = getPasshrase(keyId),
+            iv = fodselsnummer.value
+        ).decrypt(encrypted)
+    }
+
+    fun id() : String {
+        val jwt = JWT.create()
+            .withKeyId(encryptionPassphrase.first.toString())
+            .withJWTId(UUID.randomUUID().toString())
+            .sign(Algorithm.none())
+            .removeSuffix(".")
+        logger.trace("Genrerert ID er $jwt")
+        if (logger.isTraceEnabled) {
+            logger.trace("Decoded ID er ${decodeId(jwt)}")
+        }
+        return jwt
+    }
+
+    private fun decodeId(id: String) = JWT.decode(if(id.endsWith(".")) id else "$id.")
+
+    private fun extractKeyId(id: String) = decodeId(id).keyId.toInt()
+
+    private fun getPasshrase(keyId: Int) : String {
+        if (!decryptionPassphrases.containsKey(keyId)) {
+            throw IllegalStateException("Har inget passord tilgjengelig for Nøkkel ID $keyId. Får ikke gjort encrypt/decrypt.")
+        }
+        return decryptionPassphrases[keyId]!!
     }
 }

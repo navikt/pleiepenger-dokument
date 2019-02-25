@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger("nav.DokumentService")
 
@@ -28,6 +27,7 @@ data class DokumentService(
         logger.trace("Fant dokument, dekrypterer.")
 
         val decrypted = cryptography.decrypt(
+            id = dokumentId.id,
             encrypted = value.value,
             fodselsnummer = fodselsnummer
         )
@@ -56,17 +56,17 @@ data class DokumentService(
         dokument: Dokument,
         fodselsnummer: Fodselsnummer
     ) : DokumentId {
-        logger.trace("Lagrer dokument, krypterer.")
+        logger.trace("Generer DokumentID")
+        val dokumentId = generateDokumentId()
+        logger.trace("DokumentID=$dokumentId. Krypterer.")
+
         val encrypted = cryptography.encrypt(
+            id = dokumentId.id,
             plainText = objectMapper.writeValueAsString(dokument),
             fodselsnummer = fodselsnummer
         )
 
-        logger.trace("Kryptert. Genrerer DokumentId")
-
-        val dokumentId = generateDokumentId()
-
-        logger.trace("DokumentID=$dokumentId. Lagrer dokument.")
+        logger.trace("Larer dokument.")
 
         storage.lagre(
             key = generateStorageKey(
@@ -78,7 +78,7 @@ data class DokumentService(
             )
         )
 
-        logger.trace("Lagring OK")
+        logger.trace("Lagring OK.")
 
         return dokumentId
     }
@@ -87,19 +87,20 @@ data class DokumentService(
         dokumentId: DokumentId,
         fodselsnummer: Fodselsnummer
     ) : StorageKey {
-        logger.trace("Genrerer Storage Key for DokumentID=$dokumentId. Krypterer.")
+        logger.trace("Genrerer Storage Key for $dokumentId. Krypterer.")
         val plainText = "${fodselsnummer.value}-${dokumentId.id}"
         val encrypted = cryptography.encrypt(
+            id = dokumentId.id,
             plainText = plainText,
             fodselsnummer = fodselsnummer
         )
-        logger.trace("Kryptert.")
+        logger.trace("Storage Key kryptert.")
         return StorageKey(
             value = encrypted
         )
     }
 
-    private fun generateDokumentId() : DokumentId = DokumentId(id = UUID.randomUUID().toString())
+    private fun generateDokumentId() : DokumentId = DokumentId(id = cryptography.id())
 }
 
 data class DokumentId(val id: String)
