@@ -1,3 +1,3 @@
-package no.nav.helse.dokument
+package no.nav.helse.aktoer
 
 data class Fodselsnummer(val value: String)

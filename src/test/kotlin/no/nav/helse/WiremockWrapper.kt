@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.extension.Extension
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import no.nav.security.oidc.test.support.JwkGenerator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,6 +13,8 @@ private val logger: Logger = LoggerFactory.getLogger("nav.WiremockWrapper")
 private const val jwkSetPath = "/auth-mock/jwk-set"
 private const val tokenPath = "/auth-mock/token"
 private const val getAccessTokenPath = "/auth-mock/get-test-access-token"
+private const val aktoerRegisterBasePath = "/aktoer-register-mock"
+
 private const val subject = "srvpps-prosessering"
 
 
@@ -83,6 +86,38 @@ object WiremockWrapper {
                 )
         )
     }
+
+    fun stubGetAktoerId(fnr : String, aktoerId: String) {
+        WireMock.stubFor(
+            WireMock.get(WireMock.urlPathMatching(".*$aktoerRegisterBasePath.*"))
+                .withHeader("Nav-Personidenter", ContainsPattern(fnr))
+                .willReturn(
+                    WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)
+                        .withBody(getAktoerRegisterResponse(fnr = fnr, aktoerId = aktoerId))
+                )
+        )
+    }
+}
+
+private fun getAktoerRegisterResponse(fnr: String, aktoerId: String) = """
+{
+  "$fnr": {
+    "identer": [
+      {
+        "ident": "$aktoerId",
+        "identgruppe": "AktoerId",
+        "gjeldende": true
+      }
+    ],
+    "feilmelding": null
+  }
+}
+""".trimIndent()
+
+fun WireMockServer.getAkterRegisterBaseUrl() : String {
+    return baseUrl() + aktoerRegisterBasePath
 }
 
 fun WireMockServer.getServiceAccountJwksUrl() : String {
@@ -99,6 +134,10 @@ fun WireMockServer.getEndUserJwksUrl() : String {
 
 fun WireMockServer.getEndUserIssuer() : String {
     return baseUrl() + "/end-user"
+}
+
+fun WireMockServer.getTokenUrl() : String {
+    return baseUrl() + tokenPath
 }
 
 fun WireMockServer.getSubject() : String {

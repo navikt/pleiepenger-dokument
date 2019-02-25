@@ -19,6 +19,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.delete
 import io.ktor.routing.get
 import io.ktor.routing.post
+import no.nav.helse.CorrelationId
 import no.nav.helse.DefaultError
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
@@ -63,7 +64,7 @@ fun Route.dokumentV1Apis(
         logger.trace("Dokument hetent fra reqeuste, forsøker å lagre")
         val dokumentId = dokumentService.lagreDokument(
             dokument = dokument,
-            fodselsnummer = context.hentFodselsnummer(call)
+            aktoerId = context.hentAktoerId(call)
         )
         logger.trace("Dokument lagret.")
 
@@ -81,7 +82,7 @@ fun Route.dokumentV1Apis(
 
         val dokument = dokumentService.hentDokument(
             dokumentId = call.dokumentId(),
-            fodselsnummer = context.hentFodselsnummer(call)
+            aktoerId = context.hentAktoerId(call)
         )
 
         logger.trace("FantDokment=${dokument != null}")
@@ -106,7 +107,7 @@ fun Route.dokumentV1Apis(
 
         val result = dokumentService.slettDokument(
             dokumentId = dokumentId,
-            fodselsnummer = context.hentFodselsnummer(call)
+            aktoerId = context.hentAktoerId(call)
         )
 
         when {
@@ -127,6 +128,8 @@ private fun ApplicationRequest.etterspurtJson() : Boolean {
 private fun ApplicationRequest.ensureCorrelationId() {
     header(HttpHeaders.XCorrelationId) ?: throw ManglerCorrelationId()
 }
+
+fun ApplicationRequest.getCorrelationId() : CorrelationId = CorrelationId(header(HttpHeaders.XCorrelationId)!!)
 
 private suspend fun MultiPartData.getDokument() : Dokument {
     var content : ByteArray? = null

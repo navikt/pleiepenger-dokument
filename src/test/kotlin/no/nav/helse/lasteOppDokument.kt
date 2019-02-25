@@ -13,17 +13,18 @@ fun TestApplicationEngine.lasteOppDokument(
     token: String,
     fileName: String = "iPhone_6.jpg",
     fileContent: ByteArray = fileName.fromResources(),
-    fnr: String? = null,
+    aktoerId: String? = null,
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg"
 ) : String {
 
     val boundary = "***dokument***"
 
-    handleRequest(HttpMethod.Post, "/v1/dokument") {
+    val path = if (aktoerId != null) "/v1/dokument?aktoer_id=$aktoerId" else "/v1/dokument"
+
+    handleRequest(HttpMethod.Post, path) {
         addHeader(HttpHeaders.Authorization, "Bearer $token")
         addHeader(HttpHeaders.XCorrelationId, "laster-opp-doument-ok")
-        if (fnr != null) addHeader("Nav-Personidenter", fnr)
         addHeader(
             HttpHeaders.ContentType,
             ContentType.MultiPart.FormData.withParameter("boundary", boundary).toString()

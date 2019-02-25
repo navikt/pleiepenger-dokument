@@ -8,6 +8,10 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.*
 import io.ktor.http.HttpHeaders
 import io.ktor.jackson.jackson
@@ -17,15 +21,21 @@ import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
+import no.nav.helse.aktoer.AktoerGateway
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.InMemoryStorage
 import no.nav.helse.dokument.api.Context
 import no.nav.helse.dokument.api.dokumentV1Apis
 import no.nav.helse.dokument.api.metadataStatusPages
+import no.nav.helse.systembruker.SystembrukerGateway
+import no.nav.helse.systembruker.SystembrukerService
 import no.nav.helse.validering.valideringStatusPages
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.ProxySelector
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -52,6 +62,17 @@ fun Application.pleiepengerDokument() {
     val serviceAccountJwkProvider = JwkProviderBuilder(configuration.getServiceAccountJwksUrl()).buildConfigured()
     val endUserJwkProvider = JwkProviderBuilder(configuration.getEndUserJwksUrl()).buildConfigured()
     val endUserIssuer = configuration.getEndUserIssuer()
+
+    val httpClient = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = JacksonSerializer{
+                ObjectMapper.server(this)
+            }
+        }
+        engine {
+            customizeClient { setProxyRoutePlanner() }
+        }
+    }
 
 
     install(Authentication) {
@@ -91,9 +112,24 @@ fun Application.pleiepengerDokument() {
         metadataStatusPages()
     }
 
+    val systembrukerService = SystembrukerService(
+        systembrukerGateway = SystembrukerGateway(
+            httpClient = httpClient,
+            clientId = configuration.getServiceAccountClientId(),
+            clientSecret = configuration.getServiceAccountClientSecret(),
+            scopes = configuration.getServiceAccountScopes(),
+            tokenUrl = configuration.getTokenUrl()
+        )
+    )
+
     val context = Context(
         serviceAccountIssuer = configuration.getServiceAccountIssuer(),
-        sluttbrukerIssuer = configuration.getEndUserIssuer()
+        sluttbrukerIssuer = configuration.getEndUserIssuer(),
+        aktoerGateway = AktoerGateway(
+            httpClient = httpClient,
+            baseUrl = configuration.getAktoerRegisterBaseUrl(),
+            systembrukerService = systembrukerService
+        )
     )
 
     install(Routing) {
@@ -128,6 +164,10 @@ fun Application.pleiepengerDokument() {
             requestId
         }
     }
+}
+
+private fun HttpAsyncClientBuilder.setProxyRoutePlanner() {
+    setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
 }
 
 private fun ApplicationCall.tokenIsSetAndIssuerIs(issuer: String): Boolean {

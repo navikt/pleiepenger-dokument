@@ -77,20 +77,19 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `request med service account Access Token fungerer`() {
-        val fnr = "29099012345"
+        val aktoerId = "12345"
 
         val url = engine.lasteOppDokument(
             token = authorizedAccessToken,
-            fnr = fnr
+            aktoerId = aktoerId
         )
         val path = Url(url).fullPath
 
         with(engine) {
 
-            handleRequest(HttpMethod.Get, path) {
+            handleRequest(HttpMethod.Get, "$path?aktoer_id=$aktoerId") {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
-                addHeader("Nav-Personidenter", fnr)
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("image/jpeg", response.contentType().toString())
@@ -99,20 +98,22 @@ class PleiepengerDokumentTest {
     }
 
     @Test(expected = Valideringsfeil::class)
-    fun `request med service account Access Token og uten fodselsnummer som header feiler`() {
+    fun `request med service account Access Token og uten aktoer ID parameter feiler`() {
         with(engine) {
             handleRequest(HttpMethod.Get, "/v1/dokument/12345") {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "123")
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
+            }.apply {}
         }
     }
 
     @Test
     fun `request med sluttbruker ID-Token fungerer`() {
-        val fnr = "29099012345"
+        val fnr = "29099912345"
+        val aktoerId = "1337123"
+
+        WiremockWrapper.stubGetAktoerId(fnr = fnr, aktoerId = aktoerId)
+
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
 
         val url = engine.lasteOppDokument(
@@ -137,11 +138,15 @@ class PleiepengerDokumentTest {
     @Test
     fun `request med sluttbruker ID-Token for annen bruker fungerer ikke`() {
         val fnrLagre = "29099012345"
+        val aktoerIdLagre = "999888"
         val fnrHente = "29099067891"
+        val aktoerIdHente= "888999"
+
+        WiremockWrapper.stubGetAktoerId(fnr = fnrLagre, aktoerId = aktoerIdLagre)
+        WiremockWrapper.stubGetAktoerId(fnr = fnrHente, aktoerId = aktoerIdHente)
 
         val idTokenLagre = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrLagre)
         val idTokenHente = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrHente)
-
 
         val url = engine.lasteOppDokument(
             token = idTokenLagre,
@@ -189,25 +194,24 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `opplasting, henting og sletting av dokument som sytembruker`() {
-        val fnr = "29099012345"
+        val aktoerId = "134679"
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources()
 
             // LASTER OPP Dokument
             val url = lasteOppDokument(
                 token = authorizedAccessToken,
-                fnr = fnr,
+                aktoerId = aktoerId,
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
                 contentType = "image/jpeg"
 
             )
-            val path = Url(url).fullPath
+            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                addHeader("Nav-Personidenter", fnr)
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok")
 
             }.apply {
@@ -218,7 +222,6 @@ class PleiepengerDokumentTest {
                 // HENTER OPPLASTET DOKUMENT SOM JSON
                 handleRequest(HttpMethod.Get, path) {
                     addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                    addHeader("Nav-Personidenter", fnr)
                     addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-json-ok")
                     addHeader(HttpHeaders.Accept, "application/json")
                 }.apply {
@@ -236,7 +239,6 @@ class PleiepengerDokumentTest {
                     // SLETTER OPPLASTET DOKUMENT
                     handleRequest(HttpMethod.Delete, path) {
                         addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                        addHeader("Nav-Personidenter", fnr)
                         addHeader(HttpHeaders.XCorrelationId, "sletter-dokument-ok")
 
                     }.apply {
@@ -245,7 +247,6 @@ class PleiepengerDokumentTest {
                         // VERIFISERER AT DOKMENT ER SLETTET
                         handleRequest(HttpMethod.Get, path) {
                             addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                            addHeader("Nav-Personidenter", fnr)
                             addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ikke-funnet")
 
                         }.apply {

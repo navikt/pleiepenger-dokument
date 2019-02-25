@@ -7,6 +7,8 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         port : Int = 8080,
+        aktoerRegisterBaseUrl : String? = wireMockServer?.getAkterRegisterBaseUrl(),
+        tokenUrl : String? = wireMockServer?.getTokenUrl(),
         serviceAccountJwkSetUrl : String? = wireMockServer?.getServiceAccountJwksUrl(),
         serviceAccountIssuer : String? = wireMockServer?.getServiceAccountIssuer(),
         endUserJwkSetUrl : String? = wireMockServer?.getEndUserJwksUrl(),
@@ -18,6 +20,7 @@ object TestConfiguration {
     ) : Map<String, String> {
         return mapOf(
             Pair("ktor.deployment.port","$port"),
+            Pair("nav.authorization.service_account.token_url","$tokenUrl"),
             Pair("nav.authorization.service_account.jwks_url","$serviceAccountJwkSetUrl"),
             Pair("nav.authorization.service_account.issuer","$serviceAccountIssuer"),
             Pair("nav.authorization.end_user.jwks_url","$endUserJwkSetUrl"),
@@ -25,7 +28,8 @@ object TestConfiguration {
             Pair("CRYPTO_PASSPHRASE_1",passphrase1),
             Pair("CRYPTO_PASSPHRASE_2",passphrase2),
             Pair("CRYPTO_PASSPHRASE_3",passphrase3),
-            Pair("nav.rest_api.authorized_systems","$authorizedSystems")
+            Pair("nav.rest_api.authorized_systems","$authorizedSystems"),
+            Pair("nav.aktoer_register_base_url", "$aktoerRegisterBaseUrl")
         )
     }
 

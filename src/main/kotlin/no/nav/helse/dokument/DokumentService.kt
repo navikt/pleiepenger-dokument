@@ -2,6 +2,7 @@ package no.nav.helse.dokument
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.aktoer.AktoerId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -14,13 +15,13 @@ data class DokumentService(
 ) {
     fun hentDokument(
         dokumentId: DokumentId,
-        fodselsnummer: Fodselsnummer
+        aktoerId: AktoerId
     ) : Dokument? {
         logger.trace("Henter dokument $dokumentId.")
         val value = storage.hent(
             generateStorageKey(
                 dokumentId = dokumentId,
-                fodselsnummer = fodselsnummer
+                aktoerId = aktoerId
             )
         )?: return null
 
@@ -29,7 +30,7 @@ data class DokumentService(
         val decrypted = cryptography.decrypt(
             id = dokumentId.id,
             encrypted = value.value,
-            fodselsnummer = fodselsnummer
+            aktoerId = aktoerId
         )
 
         logger.trace("Dekryptert, mapper til dokument.")
@@ -39,13 +40,13 @@ data class DokumentService(
 
     fun slettDokument(
         dokumentId: DokumentId,
-        fodselsnummer: Fodselsnummer
+        aktoerId: AktoerId
     ) : Boolean {
         logger.trace("Sletter dokument $dokumentId")
         val result = storage.slett(
             generateStorageKey(
                 dokumentId = dokumentId,
-                fodselsnummer = fodselsnummer
+                aktoerId = aktoerId
             )
         )
         if (!result) logger.warn("Fant ikke noe dokument å slette.")
@@ -54,7 +55,7 @@ data class DokumentService(
 
     fun lagreDokument(
         dokument: Dokument,
-        fodselsnummer: Fodselsnummer
+        aktoerId: AktoerId
     ) : DokumentId {
         logger.trace("Generer DokumentID")
         val dokumentId = generateDokumentId()
@@ -63,7 +64,7 @@ data class DokumentService(
         val encrypted = cryptography.encrypt(
             id = dokumentId.id,
             plainText = objectMapper.writeValueAsString(dokument),
-            fodselsnummer = fodselsnummer
+            aktoerId = aktoerId
         )
 
         logger.trace("Larer dokument.")
@@ -71,7 +72,7 @@ data class DokumentService(
         storage.lagre(
             key = generateStorageKey(
                 dokumentId = dokumentId,
-                fodselsnummer = fodselsnummer
+                aktoerId = aktoerId
             ),
             value = StorageValue(
                 value = encrypted
@@ -85,14 +86,14 @@ data class DokumentService(
 
     private fun generateStorageKey(
         dokumentId: DokumentId,
-        fodselsnummer: Fodselsnummer
+        aktoerId: AktoerId
     ) : StorageKey {
         logger.trace("Genrerer Storage Key for $dokumentId. Krypterer.")
-        val plainText = "${fodselsnummer.value}-${dokumentId.id}"
+        val plainText = "${aktoerId.id}-${dokumentId.id}"
         val encrypted = cryptography.encrypt(
             id = dokumentId.id,
             plainText = plainText,
-            fodselsnummer = fodselsnummer
+            aktoerId = aktoerId
         )
         logger.trace("Storage Key kryptert.")
         return StorageKey(

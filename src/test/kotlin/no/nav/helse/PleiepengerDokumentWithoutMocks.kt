@@ -25,7 +25,9 @@ class PleiepengerDokumentWithoutMocks {
                 serviceAccountIssuer = "https://security-token-service.nais.preprod.local",
                 endUserJwkSetUrl = "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten_ver1",
                 endUserIssuer = "https://login.microsoftonline.com/d38f25aa-eab8-4c50-9f28-ebf92c1256f2/v2.0/",
-                authorizedSystems = "srvpps-prosessering,srvpleiepenger-joark"
+                authorizedSystems = "srvpps-prosessering,srvpleiepenger-joark",
+                aktoerRegisterBaseUrl = "https://app-q1.adeo.no/aktoerregister",
+                tokenUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/token"
             ))
 
             withApplication { no.nav.helse.main(q1Args) }

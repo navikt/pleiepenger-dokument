@@ -35,6 +35,13 @@ dependencies {
     compile("io.prometheus:simpleclient_common:$prometheusVersion")
     compile("io.prometheus:simpleclient_hotspot:$prometheusVersion")
 
+    // Ktor Client
+    compile ("io.ktor:ktor-client-core:$ktorVersion")
+    compile ("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    compile ("io.ktor:ktor-client-json-jvm:$ktorVersion")
+    compile ("io.ktor:ktor-client-jackson:$ktorVersion")
+    compile ("io.ktor:ktor-client-apache:$ktorVersion")
+
     // Test
     testCompile ("com.github.tomakehurst:wiremock:$wiremockVersion")
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
