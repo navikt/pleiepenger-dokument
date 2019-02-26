@@ -79,7 +79,7 @@ class PleiepengerDokumentTest {
     fun `request med service account Access Token fungerer`() {
         val aktoerId = "12345"
 
-        val url = engine.lasteOppDokument(
+        val url = engine.lasteOppDokumentMultipart(
             token = authorizedAccessToken,
             aktoerId = aktoerId
         )
@@ -116,7 +116,7 @@ class PleiepengerDokumentTest {
 
         val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
 
-        val url = engine.lasteOppDokument(
+        val url = engine.lasteOppDokumentMultipart(
             token = idToken,
             fileName = "test.pdf",
             tittel = "PDF"
@@ -148,7 +148,7 @@ class PleiepengerDokumentTest {
         val idTokenLagre = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrLagre)
         val idTokenHente = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrHente)
 
-        val url = engine.lasteOppDokument(
+        val url = engine.lasteOppDokumentMultipart(
             token = idTokenLagre,
             fileName = "test.pdf",
             tittel = "PDF"
@@ -191,7 +191,6 @@ class PleiepengerDokumentTest {
         }
     }
 
-
     @Test
     fun `opplasting, henting og sletting av dokument som sytembruker`() {
         val aktoerId = "134679"
@@ -199,7 +198,7 @@ class PleiepengerDokumentTest {
             val jpeg = "iPhone_6.jpg".fromResources()
 
             // LASTER OPP Dokument
-            val url = lasteOppDokument(
+            val url = lasteOppDokumentMultipart(
                 token = authorizedAccessToken,
                 aktoerId = aktoerId,
                 fileContent = jpeg,
@@ -254,6 +253,37 @@ class PleiepengerDokumentTest {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `lagring og dokumenter som json istedenfor multipart fungerer`() {
+        val aktoerId = "182489"
+        with(engine) {
+            val jpeg = "iPhone_6.jpg".fromResources()
+
+            // LASTER OPP DOKUMENT
+            val url = lasteOppDokumentJson(
+                token = authorizedAccessToken,
+                aktoerId = aktoerId,
+                fileContent = jpeg,
+                fileName = "iPhone_6.jpg",
+                tittel = "Bilde av en iphone",
+                contentType = "image/jpeg"
+
+            )
+            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
+
+            // HENTER OPPLASTET DOKUMENT
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok-etter-opplasting-json")
+
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals(ContentType.Image.JPEG, response.contentType())
+                assertTrue(Arrays.equals(jpeg, response.byteContent))
             }
         }
     }

@@ -53,15 +53,10 @@ fun Route.dokumentV1Apis(
         logger.trace("ErServiceAccount=${context.erServiceAccount(call)}")
         logger.trace("ErSluttBruker=${context.erSluttbruker(call)}")
 
-        if (!call.request.isFormMultipart()) {
-            logger.warn("Ikke multipart request")
-            call.respondHasToBeMultiPart()
-        }
-
         logger.trace("Henter dokument fra requesten")
-        val dokument = call.receiveMultipart().getDokument()
+        val dokument = call.hentDokumentFraRequest()
 
-        logger.trace("Dokument hetent fra reqeuste, forsøker å lagre")
+        logger.trace("Dokument hetent fra reqeusten, forsøker å lagre")
         val dokumentId = dokumentService.lagreDokument(
             dokument = dokument,
             aktoerId = context.hentAktoerId(call)
@@ -117,6 +112,22 @@ fun Route.dokumentV1Apis(
     }
 }
 
+private suspend fun ApplicationCall.hentDokumentFraRequest(): Dokument {
+    val dokumentDto = if (request.isMultipart()) {
+        logger.trace("Behandler multipart request")
+        receiveMultipart().getDokumentDto()
+    } else  {
+        logger.trace("Behandler json request")
+        receive()
+    }
+
+    logger.trace("Validerer dokumentet")
+    val brudd = dokumentDto.valider()
+    logger.trace("${brudd.size} valideringsfeil")
+    if (!brudd.isEmpty()) throw Valideringsfeil(brudd)
+    return dokumentDto.tilDokument()
+}
+
 private fun ApplicationCall.dokumentId() : DokumentId {
     return DokumentId(parameters["dokumentId"]!!)
 }
@@ -131,7 +142,7 @@ private fun ApplicationRequest.ensureCorrelationId() {
 
 fun ApplicationRequest.getCorrelationId() : CorrelationId = CorrelationId(header(HttpHeaders.XCorrelationId)!!)
 
-private suspend fun MultiPartData.getDokument() : Dokument {
+private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
     var content : ByteArray? = null
     var contentType : String? = null
     var title : String? = null
@@ -146,26 +157,7 @@ private suspend fun MultiPartData.getDokument() : Dokument {
         partData.dispose()
     }
 
-    val brudd = mutableListOf<Brudd>()
-    if (content == null) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Fant ingen 'part' som er en fil."))
-    if (content != null && content.size > MAX_DOKUMENT_SIZE) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Dokumentet er større en maks tillat 8MB."))
-    if (contentType == null) brudd.add(Brudd(parameter = HttpHeaders.ContentType, error = "Ingen Content-Type satt på fil."))
-    if (title == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
-    return if (brudd.isEmpty()) Dokument(title = title!!, contentType = contentType!!, content = content!!) else throw Valideringsfeil(brudd)
-}
-
-private fun ApplicationRequest.isFormMultipart(): Boolean {
-    return contentType().withoutParameters().match(ContentType.MultiPart.FormData)
-}
-
-private suspend fun ApplicationCall.respondHasToBeMultiPart() {
-    respond(
-        HttpStatusCode.BadRequest, DefaultError(
-            status = HttpStatusCode.BadRequest.value,
-            type = hasToBeMultipartType,
-            title = hasToBeMultipartTitle
-        )
-    )
+    return DokumentDto(content, contentType, title)
 }
 
 private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : DokumentId) {
@@ -191,4 +183,22 @@ private fun ApplicationCall.getBaseUrlFromRequest() : String {
     val scheme = if (isLocalhost) "http" else "https"
     val port = if (isLocalhost) ":${request.origin.port}" else ""
     return "$scheme://$host$port"
+}
+
+private data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
+    fun valider() : List<Brudd> {
+        val brudd = mutableListOf<Brudd>()
+        if (content == null) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Fant ingen 'part' som er en fil."))
+        if (content != null && content.size > MAX_DOKUMENT_SIZE) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Dokumentet er større en maks tillat 8MB."))
+        if (contentType == null) brudd.add(Brudd(parameter = HttpHeaders.ContentType, error = "Ingen Content-Type satt på fil."))
+        if (title == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
+        return brudd.toList()
+    }
+    fun tilDokument() : Dokument {
+        return Dokument(
+            content = content!!,
+            contentType = contentType!!,
+            title = title!!
+        )
+    }
 }
