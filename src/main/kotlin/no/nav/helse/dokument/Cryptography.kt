@@ -57,7 +57,11 @@ class Cryptography(
             .removeSuffix(".")
         logger.trace("Genrerert ID er $jwt")
         if (logger.isTraceEnabled) {
-            logger.trace("Decoded ID er ${decodeId(jwt)}")
+            val decoded = decodeId(jwt)
+            val headers = String(Base64.getDecoder().decode(decoded.header))
+            val payload = String(Base64.getDecoder().decode(decoded.payload))
+            logger.trace("Headers=$headers")
+            logger.trace("Payload=$payload")
         }
         return jwt
     }
