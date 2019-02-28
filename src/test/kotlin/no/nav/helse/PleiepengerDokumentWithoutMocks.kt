@@ -19,6 +19,10 @@ class PleiepengerDokumentWithoutMocks {
             System.setProperty("https.proxyHost", "127.0.0.1")
             System.setProperty("https.proxyPort", "5001")
 
+
+            // Må settes ved oppstart:
+            // -Dnav.authorization.service_account.client_secret=
+
             val q1Args = TestConfiguration.asArray(TestConfiguration.asMap(
                 port = 8133,
                 serviceAccountJwkSetUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/jwks",
