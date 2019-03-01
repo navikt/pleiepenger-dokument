@@ -21,9 +21,7 @@ data class Configuration(private val config : ApplicationConfig) {
     private fun getOptionalString(key: String,
                           secret: Boolean = false) : String? {
         val configValue = config.propertyOrNull(key)
-        val stringValue = configValue?.getString()
-        logger.info("{}={}", key, if (secret && stringValue != null) "***" else stringValue)
-        return stringValue
+        return if (configValue != null) getString(key, secret) else null
     }
 
     private fun <T>getListFromCsv(key: String,
