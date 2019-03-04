@@ -6,10 +6,8 @@ Mellomlagrer dokumenter før journalføring.
 ### Tilgang
 - Enten sluttbruker ID-Token i "Authorization" header (Bearer schema)
 - Eller Service Account Access Token i "Authorization" header (Bearer schema)
-- Må være en whitelisted Service Account for å kunne bruke tjenesten
 - Sluttbrukere kan bare operere på sine egne dokumenter
-- Service Account kan operere på alle dokumenter
-- Service Account requester må også inneholde en header "Nav-Personidenter" med den gjeldende brukers Fødselsnummer.
+- Service Account kan operere på sine egne dokumenter
 
 ### Hente dokument
 GET @ /v1/dokument/{dokumentId}
