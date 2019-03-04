@@ -43,19 +43,20 @@ private const val CONTENT_PART_NAME = "content"
 private const val TITLE_PART_NAME = "title"
 
 fun Route.dokumentV1Apis(
-    dokumentService: DokumentService
+    dokumentService: DokumentService,
+    eierResolver: EierResolver
 ) {
 
     post(BASE_PATH) {
         call.request.ensureCorrelationId()
-
+        logger.info("Lagrer dokument")
         logger.trace("Henter dokument fra requesten")
         val dokument = call.hentDokumentFraRequest()
 
         logger.trace("Dokument hetent fra reqeusten, forsøker å lagre")
         val dokumentId = dokumentService.lagreDokument(
             dokument = dokument,
-            eier = hentEier(call)
+            eier = eierResolver.hentEier(call)
         )
         logger.trace("Dokument lagret.")
 
@@ -66,13 +67,14 @@ fun Route.dokumentV1Apis(
         call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
         val etterspurtJson = call.request.etterspurtJson()
+        logger.info("Henter dokument")
         logger.info("DokumentId=$dokumentId")
 
         logger.trace("EtterspurtJson=$etterspurtJson")
 
         val dokument = dokumentService.hentDokument(
             dokumentId = call.dokumentId(),
-            eier = hentEier(call)
+            eier = eierResolver.hentEier(call)
         )
 
         logger.trace("FantDokment=${dokument != null}")
@@ -91,11 +93,12 @@ fun Route.dokumentV1Apis(
     delete("$BASE_PATH/{dokumentId}") {
         call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
+        logger.info("Sletter dokument")
         logger.info("DokumentId=$dokumentId")
 
         val result = dokumentService.slettDokument(
             dokumentId = dokumentId,
-            eier = hentEier(call)
+            eier = eierResolver.hentEier(call)
         )
 
         when {
@@ -103,11 +106,6 @@ fun Route.dokumentV1Apis(
             else -> call.respond(HttpStatusCode.NotFound)
         }
     }
-}
-
-private fun hentEier(call: ApplicationCall) : Eier {
-    val jwtPrincipal : JWTPrincipal = call.principal() ?: throw IllegalStateException("Principal ikke satt.")
-    return Eier(jwtPrincipal.payload.subject)
 }
 
 private suspend fun ApplicationCall.hentDokumentFraRequest(): Dokument {

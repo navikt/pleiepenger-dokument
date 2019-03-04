@@ -19,6 +19,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.InMemoryStorage
+import no.nav.helse.dokument.api.EierResolver
 import no.nav.helse.dokument.api.dokumentV1Apis
 import no.nav.helse.dokument.api.metadataStatusPages
 import no.nav.helse.validering.valideringStatusPages
@@ -41,10 +42,11 @@ fun Application.pleiepengerDokument() {
     val configuration = Configuration(environment.config)
     configuration.logIndirectlyUsedConfiguration()
 
+    val authorizedSubjects = configuration.getAuthorizedSubjects()
+
     install(Authentication) {
         val issuer = configuration.getIssuer()
         val jwksProvider = JwkProviderBuilder(configuration.getJwksUrl()).buildConfigured()
-        val authorizedSubjects = configuration.getAuthorizedSubjects()
 
         jwt {
             verifier(jwksProvider, issuer)
@@ -90,6 +92,9 @@ fun Application.pleiepengerDokument() {
                     ),
                     storage = InMemoryStorage(),
                     objectMapper = ObjectMapper.server()
+                ),
+                eierResolver = EierResolver(
+                    authorizedSubjects = authorizedSubjects
                 )
             )
         }

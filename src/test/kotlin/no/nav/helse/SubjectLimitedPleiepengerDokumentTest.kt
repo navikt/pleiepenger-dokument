@@ -107,4 +107,22 @@ class SubjectLimitedPleiepengerDokumentTest {
             expectedHttpStatusCode = HttpStatusCode.Unauthorized
         )
     }
+
+    @Test
+    fun `Lagring uten eier query og henting med eier query satt til noe annet en subject i token skal feile`() {
+        val url = engine.lasteOppDokumentMultipart(
+            token = authorizedServiceAccountAccessToken
+        )
+
+        val path = "${Url(url).fullPath}?eier=12345"
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-med-eier-query-lagret-uten")
+            }.apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+            }
+        }
+    }
 }
