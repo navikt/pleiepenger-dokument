@@ -19,22 +19,20 @@ class PleiepengerDokumentWithoutMocks {
             System.setProperty("https.proxyHost", "127.0.0.1")
             System.setProperty("https.proxyPort", "5001")
 
-
-            // Må settes ved oppstart:
-            // -Dnav.authorization.service_account.client_secret=
-
-            val q1Args = TestConfiguration.asArray(TestConfiguration.asMap(
+            val q1ServiceAccountArgs = TestConfiguration.asArray(TestConfiguration.asMap(
                 port = 8133,
-                serviceAccountJwkSetUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/jwks",
-                serviceAccountIssuer = "https://security-token-service.nais.preprod.local",
-                endUserJwkSetUrl = "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten_ver1",
-                endUserIssuer = "https://login.microsoftonline.com/d38f25aa-eab8-4c50-9f28-ebf92c1256f2/v2.0/",
-                authorizedSystems = "srvpps-prosessering,srvpleiepenger-joark",
-                aktoerRegisterBaseUrl = "https://app-q1.adeo.no/aktoerregister",
-                tokenUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/token"
+                jwksUrl = "https://security-token-service.nais.preprod.local/rest/v1/sts/jwks",
+                issuer = "https://security-token-service.nais.preprod.local",
+                authorizedSubjects = "srvpps-prosessering,srvpleiepenger-joark"
             ))
 
-            withApplication { no.nav.helse.main(q1Args) }
+            val q1EndUserArgs = TestConfiguration.asArray(TestConfiguration.asMap(
+                port = 8133,
+                jwksUrl = "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten_ver1",
+                issuer = "https://login.microsoftonline.com/d38f25aa-eab8-4c50-9f28-ebf92c1256f2/v2.0/"
+            ))
+
+            withApplication { no.nav.helse.main(q1ServiceAccountArgs) }
         }
     }
 }

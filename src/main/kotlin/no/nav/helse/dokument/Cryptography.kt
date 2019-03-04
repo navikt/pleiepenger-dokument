@@ -2,7 +2,7 @@ package no.nav.helse.dokument
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import no.nav.helse.aktoer.AktoerId
+import no.nav.helse.Eier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -23,7 +23,7 @@ class Cryptography(
 
     fun encrypt(id: String,
                 plainText : String,
-                aktoerId: AktoerId
+                eier: Eier
     ) : String {
         logger.trace("Krypterer ID $id")
         val keyId = extractKeyId(id)
@@ -31,13 +31,13 @@ class Cryptography(
 
         return Crypto(
             passphrase = getPasshrase(keyId),
-            iv = aktoerId.id
+            iv = eier.id
         ).encrypt(plainText)
     }
 
     fun decrypt(id: String,
                 encrypted: String,
-                aktoerId: AktoerId
+                eier: Eier
     ) : String {
         logger.trace("Decrypterer ID $id")
         val keyId = extractKeyId(id)
@@ -45,7 +45,7 @@ class Cryptography(
 
         return Crypto(
             passphrase = getPasshrase(keyId),
-            iv = aktoerId.id
+            iv = eier.id
         ).decrypt(encrypted)
     }
 

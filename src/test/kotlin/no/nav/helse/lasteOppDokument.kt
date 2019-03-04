@@ -14,16 +14,14 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
     token: String,
     fileName: String = "iPhone_6.jpg",
     fileContent: ByteArray = fileName.fromResources(),
-    aktoerId: String? = null,
     tittel: String = "En eller annen tittel",
-    contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg"
+    contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
+    expectedHttpStatusCode : HttpStatusCode = HttpStatusCode.Created
 ) : String {
 
     val boundary = "***dokument***"
 
-    val path = if (aktoerId != null) "/v1/dokument?aktoer_id=$aktoerId" else "/v1/dokument"
-
-    handleRequest(HttpMethod.Post, path) {
+    handleRequest(HttpMethod.Post, "/v1/dokument") {
         addHeader(HttpHeaders.Authorization, "Bearer $token")
         addHeader(HttpHeaders.XCorrelationId, "laster-opp-doument-ok-multipart")
         addHeader(
@@ -65,10 +63,14 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
             )
         )
     }.apply {
-        assertEquals(HttpStatusCode.Created, response.status())
-        val locationHeader= response.headers[HttpHeaders.Location]
-        assertNotNull(locationHeader)
-        return locationHeader
+        assertEquals(expectedHttpStatusCode, response.status())
+        return if (HttpStatusCode.Created == expectedHttpStatusCode) {
+            val locationHeader= response.headers[HttpHeaders.Location]
+            assertNotNull(locationHeader)
+            locationHeader
+        } else {
+            ""
+        }
     }
 }
 
@@ -77,14 +79,12 @@ fun TestApplicationEngine.lasteOppDokumentJson(
     token: String,
     fileName: String = "iPhone_6.jpg",
     fileContent: ByteArray = fileName.fromResources(),
-    aktoerId: String? = null,
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg"
 ) : String {
-    val path = if (aktoerId != null) "/v1/dokument?aktoer_id=$aktoerId" else "/v1/dokument"
     val base64encodedContent = Base64.getEncoder().encodeToString(fileContent)
 
-    handleRequest(HttpMethod.Post, path) {
+    handleRequest(HttpMethod.Post, "/v1/dokument") {
         addHeader(HttpHeaders.Authorization, "Bearer $token")
         addHeader(HttpHeaders.ContentType, "application/json")
         addHeader(HttpHeaders.XCorrelationId, "laster-opp-doument-ok-json")

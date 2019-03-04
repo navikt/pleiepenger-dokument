@@ -30,18 +30,11 @@ data class Configuration(private val config : ApplicationConfig) {
         val csv = getString(key, false)
         val list = csv.replace(" ", "").split(",")
         val builtList = mutableListOf<T>()
-        list.forEach { entry ->
+        list.filter{ !it.isBlank() }.forEach { entry ->
             logger.info("$key entry = ${if (secret) "***" else entry}")
             builtList.add(builder(entry))
         }
         return builtList.toList()
-    }
-
-    fun getAuthorizedSystemsForRestApi(): List<String> {
-        return getListFromCsv(
-            key = "nav.rest_api.authorized_systems",
-            builder = { value -> value}
-        )
     }
 
     fun getEncryptionPassphrase() : Pair<Int, String> {
@@ -68,43 +61,19 @@ data class Configuration(private val config : ApplicationConfig) {
         return System.getenv(key) ?: throw IllegalStateException("Mangler $key")
     }
 
-
-    fun getServiceAccountJwksUrl() : URL {
-        return URL(getString("nav.authorization.service_account.jwks_url"))
-    }
-
-    fun getServiceAccountIssuer() : String {
-        return getString("nav.authorization.service_account.issuer")
-    }
-
-    fun getEndUserJwksUrl() : URL {
-        return URL(getString("nav.authorization.end_user.jwks_url"))
-    }
-
-    fun getEndUserIssuer() : String {
-        return getString("nav.authorization.end_user.issuer")
-    }
-
-    fun getServiceAccountClientId(): String {
-        return getString("nav.authorization.service_account.client_id")
-    }
-
-    fun getServiceAccountClientSecret(): String {
-        return getString(key = "nav.authorization.service_account.client_secret", secret = true)
-    }
-
-    fun getServiceAccountScopes(): List<String> {
+    fun getAuthorizedSubjects(): List<String> {
         return getListFromCsv(
-            key = "nav.authorization.service_account.scopes",
+            key = "nav.authorization.authorized_subjects",
             builder = { value -> value}
         )
     }
-    fun getTokenUrl() : URL {
-        return URL(getString("nav.authorization.service_account.token_url"))
+
+    fun getJwksUrl() : URL {
+        return URL(getString("nav.authorization.jwks_url"))
     }
 
-    fun getAktoerRegisterBaseUrl() : URL {
-        return URL(getString("nav.aktoer_register_base_url"))
+    fun getIssuer() : String {
+        return getString("nav.authorization.issuer")
     }
 
     fun logIndirectlyUsedConfiguration() {

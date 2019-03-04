@@ -12,7 +12,6 @@ import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dokument.Dokument
-import no.nav.helse.validering.Valideringsfeil
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -29,13 +28,15 @@ class PleiepengerDokumentTest {
     private companion object {
 
         private val wireMockServer: WireMockServer = WiremockWrapper.bootstrap()
-        private val authorizedAccessToken = Authorization.getAccessToken(wireMockServer.getServiceAccountIssuer(), wireMockServer.getSubject())
+        private val authorizedServiceAccountAccessToken = Authorization.getAccessToken(wireMockServer.getIssuer(), "srvpleiepenger-joark")
         private val objectMapper = ObjectMapper.server()
 
 
         fun getConfig() : ApplicationConfig {
             val fileConfig = ConfigFactory.load()
-            val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(wireMockServer = wireMockServer))
+            val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
+                wireMockServer = wireMockServer
+            ))
             val mergedConfig = testConfig.withFallback(fileConfig)
             return HoconApplicationConfig(mergedConfig)
         }
@@ -80,15 +81,14 @@ class PleiepengerDokumentTest {
         val aktoerId = "12345"
 
         val url = engine.lasteOppDokumentMultipart(
-            token = authorizedAccessToken,
-            aktoerId = aktoerId
+            token = authorizedServiceAccountAccessToken
         )
         val path = Url(url).fullPath
 
         with(engine) {
 
             handleRequest(HttpMethod.Get, "$path?aktoer_id=$aktoerId") {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
@@ -97,24 +97,12 @@ class PleiepengerDokumentTest {
         }
     }
 
-    @Test(expected = Valideringsfeil::class)
-    fun `request med service account Access Token og uten aktoer ID parameter feiler`() {
-        with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/12345") {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
-            }.apply {}
-        }
-    }
 
     @Test
     fun `request med sluttbruker ID-Token fungerer`() {
         val fnr = "29099912345"
-        val aktoerId = "1337123"
 
-        WiremockWrapper.stubGetAktoerId(fnr = fnr, aktoerId = aktoerId)
-
-        val idToken = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnr)
+        val idToken = Authorization.getIdToken(wireMockServer.getIssuer(), fnr)
 
         val url = engine.lasteOppDokumentMultipart(
             token = idToken,
@@ -138,15 +126,10 @@ class PleiepengerDokumentTest {
     @Test
     fun `request med sluttbruker ID-Token for annen bruker fungerer ikke`() {
         val fnrLagre = "29099012345"
-        val aktoerIdLagre = "999888"
         val fnrHente = "29099067891"
-        val aktoerIdHente= "888999"
 
-        WiremockWrapper.stubGetAktoerId(fnr = fnrLagre, aktoerId = aktoerIdLagre)
-        WiremockWrapper.stubGetAktoerId(fnr = fnrHente, aktoerId = aktoerIdHente)
-
-        val idTokenLagre = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrLagre)
-        val idTokenHente = Authorization.getIdToken(wireMockServer.getEndUserIssuer(), fnrHente)
+        val idTokenLagre = Authorization.getIdToken(wireMockServer.getIssuer(), fnrLagre)
+        val idTokenHente = Authorization.getIdToken(wireMockServer.getIssuer(), fnrHente)
 
         val url = engine.lasteOppDokumentMultipart(
             token = idTokenLagre,
@@ -199,8 +182,7 @@ class PleiepengerDokumentTest {
 
             // LASTER OPP Dokument
             val url = lasteOppDokumentMultipart(
-                token = authorizedAccessToken,
-                aktoerId = aktoerId,
+                token = authorizedServiceAccountAccessToken,
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
@@ -210,7 +192,7 @@ class PleiepengerDokumentTest {
             val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok")
 
             }.apply {
@@ -220,7 +202,7 @@ class PleiepengerDokumentTest {
 
                 // HENTER OPPLASTET DOKUMENT SOM JSON
                 handleRequest(HttpMethod.Get, path) {
-                    addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                    addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                     addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-json-ok")
                     addHeader(HttpHeaders.Accept, "application/json")
                 }.apply {
@@ -237,7 +219,7 @@ class PleiepengerDokumentTest {
                     assertEquals(expected, actual)
                     // SLETTER OPPLASTET DOKUMENT
                     handleRequest(HttpMethod.Delete, path) {
-                        addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                        addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                         addHeader(HttpHeaders.XCorrelationId, "sletter-dokument-ok")
 
                     }.apply {
@@ -245,7 +227,7 @@ class PleiepengerDokumentTest {
 
                         // VERIFISERER AT DOKMENT ER SLETTET
                         handleRequest(HttpMethod.Get, path) {
-                            addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                            addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                             addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ikke-funnet")
 
                         }.apply {
@@ -265,8 +247,7 @@ class PleiepengerDokumentTest {
 
             // LASTER OPP DOKUMENT
             val url = lasteOppDokumentJson(
-                token = authorizedAccessToken,
-                aktoerId = aktoerId,
+                token = authorizedServiceAccountAccessToken,
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
@@ -277,7 +258,7 @@ class PleiepengerDokumentTest {
 
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok-etter-opplasting-json")
 
             }.apply {

@@ -1,6 +1,5 @@
 package no.nav.helse
 
-import no.nav.helse.aktoer.AktoerId
 import no.nav.helse.dokument.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,9 +18,9 @@ class DokumentServiceTest {
         val storage = InMemoryStorage()
         val objectMapper = ObjectMapper.server()
 
-        val aktoerId1 = AktoerId("12345")
-        val aktoerId2 = AktoerId("678910")
-        val aktoerId3 = AktoerId("11121314")
+        val eier1 = Eier("12345")
+        val eier2 = Eier("678910")
+        val eier3 = Eier("11121314")
 
         val dokument1 = Dokument(
             title = "Tittel1",
@@ -76,46 +75,46 @@ class DokumentServiceTest {
         // Lagrer de tre dokumentene so bruker hver sitt passord
         val dokumentId1 = dokumentService1.lagreDokument(
             dokument = dokument1,
-            aktoerId = aktoerId1
+            eier = eier1
         )
         val dokumentId2 = dokumentService2.lagreDokument(
             dokument = dokument2,
-            aktoerId = aktoerId2
+            eier = eier2
         )
         val dokumentId3 = dokumentService3.lagreDokument(
             dokument = dokument3,
-            aktoerId = aktoerId3
+            eier = eier3
         )
 
         // dokumentId3 bør kun kunne bli hentet av dokumentService3
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId3, aktoerId = aktoerId3, expectedDokument = dokument3, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = true)
 
 
         // dokumentId2 bør kunne hentes både med dokumentService2 og dokumentService3
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId2, aktoerId = aktoerId2, expectedDokument = dokument2, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = false)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
 
         // dokumentId1 bør kunne hentes med alle servicene
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId1, aktoerId = aktoerId1, expectedDokument = dokument1, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
     }
 
 
     private fun hentOgAssertDokument(
         dokumentService: DokumentService,
         dokumentId: DokumentId,
-        aktoerId: AktoerId,
+        eier: Eier,
         expectedDokument: Dokument,
         expectOk: Boolean
     ) {
         try {
             val dokument = dokumentService.hentDokument(
                 dokumentId = dokumentId,
-                aktoerId = aktoerId
+                eier = eier
             )
             assertEquals(expectedDokument, dokument)
             assertTrue(expectOk)

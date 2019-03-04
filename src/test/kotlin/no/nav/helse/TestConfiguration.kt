@@ -7,29 +7,22 @@ object TestConfiguration {
     fun asMap(
         wireMockServer: WireMockServer? = null,
         port : Int = 8080,
-        aktoerRegisterBaseUrl : String? = wireMockServer?.getAkterRegisterBaseUrl(),
-        tokenUrl : String? = wireMockServer?.getTokenUrl(),
-        serviceAccountJwkSetUrl : String? = wireMockServer?.getServiceAccountJwksUrl(),
-        serviceAccountIssuer : String? = wireMockServer?.getServiceAccountIssuer(),
-        endUserJwkSetUrl : String? = wireMockServer?.getEndUserJwksUrl(),
-        endUserIssuer : String? = wireMockServer?.getEndUserIssuer(),
-        authorizedSystems : String? = wireMockServer?.getSubject(),
+        jwksUrl : String? = wireMockServer?.getJwksUrl(),
+        issuer : String? = wireMockServer?.getIssuer(),
+        authorizedSubjects : String = "",
         passphrase1 : String = "password",
         passphrase2 : String = "oldpassword",
         passphrase3: String = "reallyoldpassword"
     ) : Map<String, String> {
         return mapOf(
             Pair("ktor.deployment.port","$port"),
-            Pair("nav.authorization.service_account.token_url","$tokenUrl"),
-            Pair("nav.authorization.service_account.jwks_url","$serviceAccountJwkSetUrl"),
-            Pair("nav.authorization.service_account.issuer","$serviceAccountIssuer"),
-            Pair("nav.authorization.end_user.jwks_url","$endUserJwkSetUrl"),
-            Pair("nav.authorization.end_user.issuer","$endUserIssuer"),
+            Pair("nav.authorization.jwks_url","$jwksUrl"),
+            Pair("nav.authorization.issuer","$issuer"),
+            Pair("nav.authorization.authorized_subjects", authorizedSubjects),
+            Pair("nav.crypto.passphrase.decryption_identifiers", "2,3"),
             Pair("CRYPTO_PASSPHRASE_1",passphrase1),
             Pair("CRYPTO_PASSPHRASE_2",passphrase2),
-            Pair("CRYPTO_PASSPHRASE_3",passphrase3),
-            Pair("nav.rest_api.authorized_systems","$authorizedSystems"),
-            Pair("nav.aktoer_register_base_url", "$aktoerRegisterBaseUrl")
+            Pair("CRYPTO_PASSPHRASE_3",passphrase3)
         )
     }
 

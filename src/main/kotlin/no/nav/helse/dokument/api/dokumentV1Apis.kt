@@ -2,6 +2,8 @@ package no.nav.helse.dokument.api
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
+import io.ktor.auth.jwt.JWTPrincipal
+import io.ktor.auth.principal
 import io.ktor.features.origin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -19,8 +21,8 @@ import io.ktor.routing.Route
 import io.ktor.routing.delete
 import io.ktor.routing.get
 import io.ktor.routing.post
-import no.nav.helse.CorrelationId
 import no.nav.helse.DefaultError
+import no.nav.helse.Eier
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
 import no.nav.helse.dokument.DokumentService
@@ -34,9 +36,6 @@ private val logger: Logger = LoggerFactory.getLogger("nav.dokumentApis")
 private const val BASE_PATH = "v1/dokument"
 private const val MAX_DOKUMENT_SIZE = 8 * 1024 * 1024
 
-private val hasToBeMultipartType = URI.create("/errors/multipart-form-required")
-private const val hasToBeMultipartTitle = "Requesten må være en 'multipart/form-data' request hvor en 'part' er en fil, har 'name=vedlegg' og har Content-Type header satt."
-
 private val dokumentNotFoundType = URI.create("/errors/document-not-found")
 private const val dokumentNotFoundTitle = "Inget dokument funnet med etterspurt ID."
 
@@ -44,14 +43,11 @@ private const val CONTENT_PART_NAME = "content"
 private const val TITLE_PART_NAME = "title"
 
 fun Route.dokumentV1Apis(
-    context: Context,
     dokumentService: DokumentService
 ) {
 
     post(BASE_PATH) {
         call.request.ensureCorrelationId()
-        logger.trace("ErServiceAccount=${context.erServiceAccount(call)}")
-        logger.trace("ErSluttBruker=${context.erSluttbruker(call)}")
 
         logger.trace("Henter dokument fra requesten")
         val dokument = call.hentDokumentFraRequest()
@@ -59,7 +55,7 @@ fun Route.dokumentV1Apis(
         logger.trace("Dokument hetent fra reqeusten, forsøker å lagre")
         val dokumentId = dokumentService.lagreDokument(
             dokument = dokument,
-            aktoerId = context.hentAktoerId(call)
+            eier = hentEier(call)
         )
         logger.trace("Dokument lagret.")
 
@@ -71,13 +67,12 @@ fun Route.dokumentV1Apis(
         val dokumentId = call.dokumentId()
         val etterspurtJson = call.request.etterspurtJson()
         logger.info("DokumentId=$dokumentId")
-        logger.trace("ErServiceAccount=${context.erServiceAccount(call)}")
-        logger.trace("ErSluttBruker=${context.erSluttbruker(call)}")
+
         logger.trace("EtterspurtJson=$etterspurtJson")
 
         val dokument = dokumentService.hentDokument(
             dokumentId = call.dokumentId(),
-            aktoerId = context.hentAktoerId(call)
+            eier = hentEier(call)
         )
 
         logger.trace("FantDokment=${dokument != null}")
@@ -97,12 +92,10 @@ fun Route.dokumentV1Apis(
         call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
         logger.info("DokumentId=$dokumentId")
-        logger.trace("ErServiceAccount=${context.erServiceAccount(call)}")
-        logger.trace("ErSluttBruker=${context.erSluttbruker(call)}")
 
         val result = dokumentService.slettDokument(
             dokumentId = dokumentId,
-            aktoerId = context.hentAktoerId(call)
+            eier = hentEier(call)
         )
 
         when {
@@ -110,6 +103,11 @@ fun Route.dokumentV1Apis(
             else -> call.respond(HttpStatusCode.NotFound)
         }
     }
+}
+
+private fun hentEier(call: ApplicationCall) : Eier {
+    val jwtPrincipal : JWTPrincipal = call.principal() ?: throw IllegalStateException("Principal ikke satt.")
+    return Eier(jwtPrincipal.payload.subject)
 }
 
 private suspend fun ApplicationCall.hentDokumentFraRequest(): Dokument {
@@ -139,8 +137,6 @@ private fun ApplicationRequest.etterspurtJson() : Boolean {
 private fun ApplicationRequest.ensureCorrelationId() {
     header(HttpHeaders.XCorrelationId) ?: throw ManglerCorrelationId()
 }
-
-fun ApplicationRequest.getCorrelationId() : CorrelationId = CorrelationId(header(HttpHeaders.XCorrelationId)!!)
 
 private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
     var content : ByteArray? = null
