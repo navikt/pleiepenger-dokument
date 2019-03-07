@@ -31,13 +31,13 @@ class SubjectLimitedPleiepengerDokumentTest {
         private val unauthorizedServiceAccountAccessToken =
             Authorization.getAccessToken(wireMockServer.getIssuer(), "srvpleiepenger-notfound")
 
-        private val objectMapper = ObjectMapper.server()
-
+        private val s3 = S3()
 
         fun getConfig(): ApplicationConfig {
             val fileConfig = ConfigFactory.load()
             val testConfig = ConfigFactory.parseMap(
                 TestConfiguration.asMap(
+                    s3 = s3,
                     wireMockServer = wireMockServer,
                     authorizedSubjects = "srvpleiepenger-joark"
                 )
@@ -62,6 +62,7 @@ class SubjectLimitedPleiepengerDokumentTest {
         fun tearDown() {
             logger.info("Tearing down")
             wireMockServer.stop()
+            s3.stop()
             logger.info("Tear down complete")
         }
     }
