@@ -1,5 +1,10 @@
 package no.nav.helse
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import org.slf4j.Logger
@@ -62,10 +67,19 @@ data class Configuration(private val config : ApplicationConfig) {
 
     fun getJwksUrl() : URL = URL(getRequiredString("nav.authorization.jwks_url"))
     fun getIssuer() : String = getRequiredString("nav.authorization.issuer")
-    fun getS3AccessKey() : String = getRequiredString("nav.storage.s3.access_key", secret = true)
-    fun getS3SecretKey() : String = getRequiredString("nav.storage.s3.secret_key", secret = true)
-    fun getS3SigningRegion() : String = getRequiredString("nav.storage.s3.signing_region", secret = false)
-    fun getS3ServiceEndpoint() : String = getRequiredString("nav.storage.s3.service_endpoint", secret = false)
+
+    private fun getS3AccessKey() : String = getRequiredString("nav.storage.s3.access_key", secret = true)
+    private fun getS3SecretKey() : String = getRequiredString("nav.storage.s3.secret_key", secret = true)
+    private fun getS3SigningRegion() : String = getRequiredString("nav.storage.s3.signing_region", secret = false)
+    private fun getS3ServiceEndpoint() : String = getRequiredString("nav.storage.s3.service_endpoint", secret = false)
+    fun getS3Configured() : AmazonS3 {
+        return AmazonS3ClientBuilder.standard()
+            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(getS3ServiceEndpoint(), getS3SigningRegion()))
+            .enablePathStyleAccess()
+            .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(getS3AccessKey(), getS3SecretKey())))
+            .build()
+    }
+    fun getS3ExpirationInDays() : Int = getRequiredString("nav.storage.s3.expiration_in_days", secret = false).toInt()
 
 
     fun logIndirectlyUsedConfiguration() {

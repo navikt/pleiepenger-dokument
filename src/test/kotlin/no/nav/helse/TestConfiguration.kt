@@ -28,7 +28,8 @@ object TestConfiguration {
             Pair("nav.storage.s3.service_endpoint", "${s3?.getServiceEndpoint()}"),
             Pair("nav.storage.s3.signing_region", "${s3?.getSigningRegion()}"),
             Pair("nav.storage.s3.access_key", "${s3?.getAccessKey()}"),
-            Pair("nav.storage.s3.secret_key", "${s3?.getSecretKey()}")
+            Pair("nav.storage.s3.secret_key", "${s3?.getSecretKey()}"),
+            Pair("nav.storage.s3.expiration_in_days", "1")
         )
     }
 

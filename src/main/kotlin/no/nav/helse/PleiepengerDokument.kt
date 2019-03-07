@@ -18,8 +18,8 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
-import no.nav.helse.dokument.InMemoryStorage
 import no.nav.helse.dokument.api.EierResolver
+import no.nav.helse.dokument.api.S3Storage
 import no.nav.helse.dokument.api.dokumentV1Apis
 import no.nav.helse.dokument.api.metadataStatusPages
 import no.nav.helse.validering.valideringStatusPages
@@ -70,11 +70,6 @@ fun Application.pleiepengerDokument() {
         }
     }
 
-    configuration.getS3AccessKey()
-    configuration.getS3SecretKey()
-    configuration.getS3ServiceEndpoint()
-    configuration.getS3SigningRegion()
-
     install(ContentNegotiation) {
         jackson {
             ObjectMapper.server(this)
@@ -87,6 +82,11 @@ fun Application.pleiepengerDokument() {
         metadataStatusPages()
     }
 
+    val s3Storage = S3Storage(
+        s3 = configuration.getS3Configured(),
+        expirationInDays = configuration.getS3ExpirationInDays()
+    )
+
     install(Routing) {
         authenticate {
             dokumentV1Apis(
@@ -95,7 +95,7 @@ fun Application.pleiepengerDokument() {
                         encryptionPassphrase = configuration.getEncryptionPassphrase(),
                         decryptionPassphrases = configuration.getDecryptionPassphrases()
                     ),
-                    storage = InMemoryStorage(),
+                    storage = s3Storage,
                     objectMapper = ObjectMapper.server()
                 ),
                 eierResolver = EierResolver(
