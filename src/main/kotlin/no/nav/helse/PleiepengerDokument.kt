@@ -18,6 +18,7 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
+import no.nav.helse.dokument.InMemoryStorage
 import no.nav.helse.dokument.api.EierResolver
 import no.nav.helse.dokument.api.S3Storage
 import no.nav.helse.dokument.api.dokumentV1Apis
@@ -82,10 +83,10 @@ fun Application.pleiepengerDokument() {
         metadataStatusPages()
     }
 
-    val s3Storage = S3Storage(
-        s3 = configuration.getS3Configured(),
-        expirationInDays = configuration.getS3ExpirationInDays()
-    )
+//    val s3Storage = S3Storage(
+//        s3 = configuration.getS3Configured(),
+//        expirationInDays = configuration.getS3ExpirationInDays()
+//    )
 
     install(Routing) {
         authenticate {
@@ -95,7 +96,7 @@ fun Application.pleiepengerDokument() {
                         encryptionPassphrase = configuration.getEncryptionPassphrase(),
                         decryptionPassphrases = configuration.getDecryptionPassphrases()
                     ),
-                    storage = s3Storage,
+                    storage = InMemoryStorage(),
                     objectMapper = ObjectMapper.server()
                 ),
                 eierResolver = EierResolver(
