@@ -30,12 +30,14 @@ class PleiepengerDokumentTest {
         private val wireMockServer: WireMockServer = WiremockWrapper.bootstrap()
         private val authorizedServiceAccountAccessToken = Authorization.getAccessToken(wireMockServer.getIssuer(), "srvpleiepenger-joark")
         private val objectMapper = ObjectMapper.server()
+        private val s3 = S3()
 
 
         fun getConfig() : ApplicationConfig {
             val fileConfig = ConfigFactory.load()
             val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
-                wireMockServer = wireMockServer
+                wireMockServer = wireMockServer,
+                s3 = s3
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
             return HoconApplicationConfig(mergedConfig)
@@ -57,6 +59,7 @@ class PleiepengerDokumentTest {
         fun tearDown() {
             logger.info("Tearing down")
             wireMockServer.stop()
+            s3.stop()
             logger.info("Tear down complete")
         }
     }
@@ -269,3 +272,4 @@ class PleiepengerDokumentTest {
         }
     }
 }
+

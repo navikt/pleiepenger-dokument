@@ -35,12 +35,16 @@ dependencies {
     compile("io.prometheus:simpleclient_common:$prometheusVersion")
     compile("io.prometheus:simpleclient_hotspot:$prometheusVersion")
 
+    // Lagring
+    compile("com.amazonaws:aws-java-sdk-s3:1.11.513")
+
     // Test
     testCompile ("com.github.tomakehurst:wiremock:$wiremockVersion")
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
     testCompile ("com.nimbusds:oauth2-oidc-sdk:5.56")
+    testCompile("org.testcontainers:localstack:1.10.6")
 }
 
 repositories {

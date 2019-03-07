@@ -70,6 +70,11 @@ fun Application.pleiepengerDokument() {
         }
     }
 
+    configuration.getS3AccessKey()
+    configuration.getS3SecretKey()
+    configuration.getS3ServiceEndpoint()
+    configuration.getS3SigningRegion()
+
     install(ContentNegotiation) {
         jackson {
             ObjectMapper.server(this)

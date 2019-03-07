@@ -12,40 +12,31 @@ private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
 @KtorExperimentalAPI
 data class Configuration(private val config : ApplicationConfig) {
     private fun getString(key: String,
-                          secret: Boolean = false) : String  {
-        val stringValue = config.property(key).getString()
+                          secret: Boolean,
+                          optional: Boolean) : String? {
+        val configValue = config.propertyOrNull(key) ?: return if (optional) null else throw IllegalArgumentException("$key må settes.")
+        val stringValue = configValue.getString()
+        if (stringValue.isBlank()) {
+            return if (optional) null else throw IllegalArgumentException("$key må settes.")
+        }
         logger.info("{}={}", key, if (secret) "***" else stringValue)
         return stringValue
     }
-
-    private fun getOptionalString(key: String,
-                          secret: Boolean = false) : String? {
-        val configValue = config.propertyOrNull(key)
-        return if (configValue != null) getString(key, secret) else null
-    }
-
-    private fun <T>getListFromCsv(key: String,
-                                  secret: Boolean = false,
-                                  builder: (value: String) -> T) : List<T> {
-        val csv = getString(key, false)
-        val list = csv.replace(" ", "").split(",")
-        val builtList = mutableListOf<T>()
-        list.filter{ !it.isBlank() }.forEach { entry ->
-            logger.info("$key entry = ${if (secret) "***" else entry}")
-            builtList.add(builder(entry))
-        }
-        return builtList.toList()
-    }
+    private fun getRequiredString(key: String, secret: Boolean = false) : String = getString(key, secret, false)!!
+    private fun getOptionalString(key: String, secret: Boolean = false) : String? = getString(key, secret, true)
+    private fun <T>getListFromCsv(csv: String, builder: (value: String) -> T) : List<T> = csv.replace(" ", "").split(",").map(builder)
 
     fun getEncryptionPassphrase() : Pair<Int, String> {
-        val identifier = getString("nav.crypto.passphrase.encryption_identifier").toInt()
+        val identifier = getRequiredString("nav.crypto.passphrase.encryption_identifier").toInt()
         val passphrase = getCryptoPasshrase("$CRYPTO_PASSPHRASE_PREFIX$identifier")
         return Pair(identifier, passphrase)
     }
 
     fun getDecryptionPassphrases() : Map<Int, String> {
-        val identifiers = getListFromCsv(
-            key = "nav.crypto.passphrase.decryption_identifiers",
+        val csv = getOptionalString("nav.crypto.passphrase.decryption_identifiers") // Kan være kun den vi krypterer med
+
+        val identifiers = if (csv == null) emptyList() else getListFromCsv(
+            csv = csv,
             builder = { value -> value.toInt()}
         )
         val decryptionPassphrases = mutableMapOf<Int, String>()
@@ -58,23 +49,24 @@ data class Configuration(private val config : ApplicationConfig) {
     private fun getCryptoPasshrase(key: String) : String {
         val configValue = getOptionalString(key = key, secret = true)
         if (configValue != null) return configValue
-        return System.getenv(key) ?: throw IllegalStateException("Mangler $key")
+        return System.getenv(key) ?: throw IllegalStateException("Environment Variable $key må være satt")
     }
 
     fun getAuthorizedSubjects(): List<String> {
+        val csv = getOptionalString("nav.authorization.authorized_subjects") ?: return emptyList()
         return getListFromCsv(
-            key = "nav.authorization.authorized_subjects",
+            csv = csv,
             builder = { value -> value}
         )
     }
 
-    fun getJwksUrl() : URL {
-        return URL(getString("nav.authorization.jwks_url"))
-    }
+    fun getJwksUrl() : URL = URL(getRequiredString("nav.authorization.jwks_url"))
+    fun getIssuer() : String = getRequiredString("nav.authorization.issuer")
+    fun getS3AccessKey() : String = getRequiredString("nav.storage.s3.access_key", secret = true)
+    fun getS3SecretKey() : String = getRequiredString("nav.storage.s3.secret_key", secret = true)
+    fun getS3SigningRegion() : String = getRequiredString("nav.storage.s3.signing_region", secret = false)
+    fun getS3ServiceEndpoint() : String = getRequiredString("nav.storage.s3.service_endpoint", secret = false)
 
-    fun getIssuer() : String {
-        return getString("nav.authorization.issuer")
-    }
 
     fun logIndirectlyUsedConfiguration() {
         logger.info("# Indirectly used configuration")
