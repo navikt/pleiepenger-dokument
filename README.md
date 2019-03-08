@@ -36,6 +36,12 @@ POST @ /v1/dokument
 - En file part med navn "content" som inneholder filen. Samme part må ha "Content-Type header" til content-type av dokumentet.
 - En form part med navn "title" som inneholder tittelen på dokumentet
 - Eller en JSON request på samme format som henting av dokument som JSON beskrevet ovenfor.
+- Returnerer også en entity med id til dokumentet
+```json
+{
+    "id" : "eyJraWQiOiIxIiwidHlwIjoiSldUIiwiYWxnIjoibm9uZSJ9.eyJqdGkiOiJiZTRhMjM5Yy1hZDIxLTQ5OTYtOTE3MS1kNjljY2Y1OGE4YjAifQ"
+}
+```
 
 ## Correlation ID vs Request ID
 Correlation ID blir propagert videre, og har ikke nødvendigvis sitt opphav hos konsumenten.

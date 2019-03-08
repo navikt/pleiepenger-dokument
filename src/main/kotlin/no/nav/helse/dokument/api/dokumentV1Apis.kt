@@ -2,8 +2,6 @@ package no.nav.helse.dokument.api
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.principal
 import io.ktor.features.origin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -22,7 +20,6 @@ import io.ktor.routing.delete
 import io.ktor.routing.get
 import io.ktor.routing.post
 import no.nav.helse.DefaultError
-import no.nav.helse.Eier
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
 import no.nav.helse.dokument.DokumentService
@@ -168,7 +165,7 @@ private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : Dokumen
 private suspend fun ApplicationCall.respondCreatedDokument(dokumentId: DokumentId) {
     val url = URLBuilder(getBaseUrlFromRequest()).path(BASE_PATH,dokumentId.id).build().toString()
     response.header(HttpHeaders.Location, url)
-    respond(HttpStatusCode.Created)
+    respond(HttpStatusCode.Created, mapOf(Pair("id", dokumentId.id)))
 }
 
 private fun ApplicationCall.getBaseUrlFromRequest() : String {

@@ -1,7 +1,9 @@
 package no.nav.helse
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.content.PartData
+import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
@@ -9,6 +11,9 @@ import kotlinx.io.streams.asInput
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+private val objectMapper = ObjectMapper.server()
 
 fun TestApplicationEngine.lasteOppDokumentMultipart(
     token: String,
@@ -64,13 +69,7 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
         )
     }.apply {
         assertEquals(expectedHttpStatusCode, response.status())
-        return if (HttpStatusCode.Created == expectedHttpStatusCode) {
-            val locationHeader= response.headers[HttpHeaders.Location]
-            assertNotNull(locationHeader)
-            locationHeader
-        } else {
-            ""
-        }
+        return if(expectedHttpStatusCode == HttpStatusCode.Created) assertResponseAndGetLocationHeader() else ""
     }
 }
 
@@ -97,13 +96,23 @@ fun TestApplicationEngine.lasteOppDokumentJson(
             """.trimIndent()
         ) }.apply {
             assertEquals(HttpStatusCode.Created, response.status())
-            val locationHeader= response.headers[HttpHeaders.Location]
-            assertNotNull(locationHeader)
-            return locationHeader
+            return assertResponseAndGetLocationHeader()
         }
 }
 
 
 fun String.fromResources() : ByteArray {
     return Thread.currentThread().contextClassLoader.getResource(this).readBytes()
+}
+
+private fun TestApplicationCall.assertResponseAndGetLocationHeader() : String {
+    assertNotNull(response.byteContent)
+    val entity : Map<String, String> = objectMapper.readValue(response.byteContent!!)
+    assertNotNull(entity)
+    assertTrue(entity.containsKey("id"))
+    assertNotNull(entity["id"])
+    val locationHeader = response.headers[HttpHeaders.Location]
+    assertNotNull(locationHeader)
+    assertEquals(locationHeader.substringAfterLast("/"), entity["id"])
+    return locationHeader
 }
