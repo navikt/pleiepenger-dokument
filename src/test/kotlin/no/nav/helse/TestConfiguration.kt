@@ -13,9 +13,13 @@ object TestConfiguration {
         authorizedSubjects : String = "",
         passphrase1 : String = "password",
         passphrase2 : String = "oldpassword",
-        passphrase3: String = "reallyoldpassword"
+        passphrase3: String = "reallyoldpassword",
+        s3ServiceEndpoint : String? = s3?.getServiceEndpoint(),
+        s3SigningRegion : String? = s3?.getSigningRegion(),
+        s3ExpiryInDays : String = "1"
+
     ) : Map<String, String> {
-        return mapOf(
+        val map =  mutableMapOf(
             Pair("ktor.deployment.port","$port"),
             Pair("nav.authorization.jwks_url","$jwksUrl"),
             Pair("nav.authorization.issuer","$issuer"),
@@ -25,12 +29,19 @@ object TestConfiguration {
             Pair("CRYPTO_PASSPHRASE_1",passphrase1),
             Pair("CRYPTO_PASSPHRASE_2",passphrase2),
             Pair("CRYPTO_PASSPHRASE_3",passphrase3),
-            Pair("nav.storage.s3.service_endpoint", "${s3?.getServiceEndpoint()}"),
-            Pair("nav.storage.s3.signing_region", "${s3?.getSigningRegion()}"),
-            Pair("nav.storage.s3.access_key", "${s3?.getAccessKey()}"),
-            Pair("nav.storage.s3.secret_key", "${s3?.getSecretKey()}"),
-            Pair("nav.storage.s3.expiration_in_days", "1")
+            Pair("nav.storage.s3.service_endpoint", "$s3ServiceEndpoint"),
+            Pair("nav.storage.s3.signing_region", "$s3SigningRegion"),
+            Pair("nav.storage.s3.expiration_in_days", s3ExpiryInDays)
         )
+
+        if (!s3?.getSecretKey().isNullOrEmpty()) {
+            map["nav.storage.s3.secret_key"] = s3!!.getSecretKey()
+        }
+        if (!s3?.getAccessKey().isNullOrEmpty()) {
+            map["nav.storage.s3.access_key"] = s3!!.getAccessKey()
+        }
+
+        return map.toMap()
     }
 
     fun asArray(map : Map<String, String>) : Array<String>  {

@@ -42,12 +42,12 @@ class S3Storage(private val s3 : AmazonS3,
 
     init {
         ensureBucketExists()
-        ensureProperExpiration()
+        ensureProperBucketLifecycleConfiguration()
     }
 
 
     private fun ensureBucketExists() {
-        if( !s3.listBuckets().any { it.name == BUCKET_NAME }) {
+        if (!s3.listBuckets().any { it.name == BUCKET_NAME }) {
             logger.info("Bucket $BUCKET_NAME finnes ikke fra før, oppretter.")
             createBucket()
             logger.info("Bucket opprettet.")
@@ -56,10 +56,10 @@ class S3Storage(private val s3 : AmazonS3,
         }
     }
 
-    private fun ensureProperExpiration() {
-        logger.trace("Setter expiration for bucket til $expirationInDays dager.")
-        s3.setBucketLifecycleConfiguration(BUCKET_NAME, objectExpiresInDays(expirationInDays))
-        logger.trace("Expiration satt.")
+    private fun ensureProperBucketLifecycleConfiguration() {
+        logger.trace("Konfigurerer lifecycle for bucket.")
+        s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays))
+        logger.trace("Konfigurert.")
     }
 
     private fun createBucket() {
@@ -70,14 +70,15 @@ class S3Storage(private val s3 : AmazonS3,
 
     }
 
-    private fun objectExpiresInDays(days: Int): BucketLifecycleConfiguration {
-        return BucketLifecycleConfiguration().withRules(
-            BucketLifecycleConfiguration.Rule()
-                .withId("$BUCKET_NAME-$days")
-                .withFilter(LifecycleFilter())
-                .withStatus(BucketLifecycleConfiguration.ENABLED)
-                .withExpirationInDays(days)
-        )
+    private fun bucketLifecycleConfiguration(days: Int): BucketLifecycleConfiguration {
+        logger.info("Expiry på bucket settes til $days dager.")
+        val rules= BucketLifecycleConfiguration.Rule()
+            .withId("$BUCKET_NAME-$days")
+            .withFilter(LifecycleFilter())
+            .withStatus(BucketLifecycleConfiguration.ENABLED)
+            .withExpirationInDays(days)
+
+        return BucketLifecycleConfiguration().withRules(rules)
     }
 
 }

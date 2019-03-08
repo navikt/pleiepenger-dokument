@@ -37,6 +37,7 @@ dependencies {
 
     // Lagring
     compile("com.amazonaws:aws-java-sdk-s3:1.11.513")
+    compile("org.slf4j:jcl-over-slf4j:1.7.25")
 
     // Test
     testCompile ("com.github.tomakehurst:wiremock:$wiremockVersion")
