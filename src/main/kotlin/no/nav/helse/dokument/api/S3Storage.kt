@@ -24,6 +24,9 @@ class S3Storage(private val s3 : AmazonS3,
         } catch (cause : AmazonS3Exception) {
             logger.warn("Feil ved henting med key '${key.value}'. Mest sannsynlig finnes det ikke. Feilmelding = '${cause.message}'")
             null
+        } catch (cause : Throwable) {
+            logger.error("Feil ved henting med key '${key.value}", cause)
+            null
         }
     }
 
@@ -39,15 +42,16 @@ class S3Storage(private val s3 : AmazonS3,
         s3.putObject(BUCKET_NAME, key.value, value.value)
     }
 
-
     init {
+        logger.info("Initialiserer S3 Storage.")
         ensureBucketExists()
         ensureProperBucketLifecycleConfiguration()
+        logger.info("S3 Storage initialisert OK.")
     }
 
 
     private fun ensureBucketExists() {
-        if (!s3.listBuckets().any { it.name == BUCKET_NAME }) {
+        if (!s3.doesBucketExistV2(BUCKET_NAME)) {
             logger.info("Bucket $BUCKET_NAME finnes ikke fra før, oppretter.")
             createBucket()
             logger.info("Bucket opprettet.")
@@ -63,11 +67,7 @@ class S3Storage(private val s3 : AmazonS3,
     }
 
     private fun createBucket() {
-        s3.createBucket(
-            CreateBucketRequest(BUCKET_NAME)
-                .withCannedAcl(CannedAccessControlList.Private)
-        )
-
+        s3.createBucket(CreateBucketRequest(BUCKET_NAME).withCannedAcl(CannedAccessControlList.Private))
     }
 
     private fun bucketLifecycleConfiguration(days: Int): BucketLifecycleConfiguration {

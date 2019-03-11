@@ -56,6 +56,7 @@ fun Route.dokumentV1Apis(
             eier = eierResolver.hentEier(call)
         )
         logger.trace("Dokument lagret.")
+        logger.info("$dokumentId")
 
         call.respondCreatedDokument(dokumentId)
     }
@@ -65,7 +66,7 @@ fun Route.dokumentV1Apis(
         val dokumentId = call.dokumentId()
         val etterspurtJson = call.request.etterspurtJson()
         logger.info("Henter dokument")
-        logger.info("DokumentId=$dokumentId")
+        logger.info("$dokumentId")
 
         logger.trace("EtterspurtJson=$etterspurtJson")
 
@@ -91,7 +92,7 @@ fun Route.dokumentV1Apis(
         call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
         logger.info("Sletter dokument")
-        logger.info("DokumentId=$dokumentId")
+        logger.info("$dokumentId")
 
         val result = dokumentService.slettDokument(
             dokumentId = dokumentId,
