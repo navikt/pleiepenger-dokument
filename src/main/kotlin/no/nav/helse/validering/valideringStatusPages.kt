@@ -7,7 +7,11 @@ import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import no.nav.helse.DefaultError
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.net.URI
+
+private val logger: Logger = LoggerFactory.getLogger("nav.valideringStatusPages")
 
 fun StatusPages.Configuration.valideringStatusPages() {
 
@@ -22,6 +26,7 @@ fun StatusPages.Configuration.valideringStatusPages() {
             title = invalidParametersTitle,
             invalidParameters = cause.brudd
         )
+        logger.warn("Valideringsfeil. ${cause.brudd.joinToString()}")
         call.respond(HttpStatusCode.UnprocessableEntity, error)
         throw cause
     }

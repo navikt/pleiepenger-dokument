@@ -15,10 +15,7 @@ import io.ktor.request.*
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
-import io.ktor.routing.Route
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.post
+import io.ktor.routing.*
 import no.nav.helse.DefaultError
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
@@ -41,7 +38,8 @@ private const val TITLE_PART_NAME = "title"
 
 fun Route.dokumentV1Apis(
     dokumentService: DokumentService,
-    eierResolver: EierResolver
+    eierResolver: EierResolver,
+    contentTypeService: ContentTypeService
 ) {
 
     post(BASE_PATH) {
@@ -49,10 +47,14 @@ fun Route.dokumentV1Apis(
         logger.info("Lagrer dokument")
         logger.trace("Henter dokument fra requesten")
         val dokument = call.hentDokumentFraRequest()
+        val brudd = valider(contentTypeService = contentTypeService, dokument = dokument)
+        if (brudd.isNotEmpty()) {
+            throw Valideringsfeil(brudd)
+        }
 
         logger.trace("Dokument hetent fra reqeusten, forsøker å lagre")
         val dokumentId = dokumentService.lagreDokument(
-            dokument = dokument,
+            dokument = dokument.tilDokument(),
             eier = eierResolver.hentEier(call)
         )
         logger.trace("Dokument lagret.")
@@ -106,20 +108,26 @@ fun Route.dokumentV1Apis(
     }
 }
 
-private suspend fun ApplicationCall.hentDokumentFraRequest(): Dokument {
-    val dokumentDto = if (request.isMultipart()) {
+private fun valider(
+    contentTypeService: ContentTypeService,
+    dokument: DokumentDto
+) : List<Brudd> {
+    logger.trace("Validerer dokumentet")
+    val brudd = dokument.valider()
+    if (!contentTypeService.isSupported(contentType = dokument.contentType!!, content = dokument.content!!)) {
+        brudd.add(Brudd(HttpHeaders.ContentType, "Ikke Supportert dokument med Content-Type ${dokument.contentType}"))
+    }
+    return brudd.toList()
+}
+
+private suspend fun ApplicationCall.hentDokumentFraRequest(): DokumentDto {
+    return if (request.isMultipart()) {
         logger.trace("Behandler multipart request")
         receiveMultipart().getDokumentDto()
     } else  {
         logger.trace("Behandler json request")
         receive()
     }
-
-    logger.trace("Validerer dokumentet")
-    val brudd = dokumentDto.valider()
-    logger.trace("${brudd.size} valideringsfeil")
-    if (!brudd.isEmpty()) throw Valideringsfeil(brudd)
-    return dokumentDto.tilDokument()
 }
 
 private fun ApplicationCall.dokumentId() : DokumentId {
@@ -178,13 +186,13 @@ private fun ApplicationCall.getBaseUrlFromRequest() : String {
 }
 
 private data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
-    fun valider() : List<Brudd> {
+    fun valider() : MutableList<Brudd> {
         val brudd = mutableListOf<Brudd>()
         if (content == null) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Fant ingen 'part' som er en fil."))
         if (content != null && content.size > MAX_DOKUMENT_SIZE) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Dokumentet er større en maks tillat 8MB."))
         if (contentType == null) brudd.add(Brudd(parameter = HttpHeaders.ContentType, error = "Ingen Content-Type satt på fil."))
         if (title == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
-        return brudd.toList()
+        return brudd
     }
     fun tilDokument() : Dokument {
         return Dokument(

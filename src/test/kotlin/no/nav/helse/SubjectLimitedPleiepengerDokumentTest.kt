@@ -95,6 +95,48 @@ class SubjectLimitedPleiepengerDokumentTest {
     }
 
     @Test
+    fun `Lagring og henting med eier satt som query fungerer`() {
+        val eier = "123456"
+
+        val url = engine.lasteOppDokumentJson(
+            token = authorizedServiceAccountAccessToken,
+            eier = eier
+        )
+
+        val path = "${Url(url).fullPath}?eier=$eier"
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-med-eier-query-lagret-med")
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
+    }
+
+    @Test
+    fun `Lagring og henting med eier satt som to forskjellige query parametere feiler`() {
+
+        val url = engine.lasteOppDokumentJson(
+            token = authorizedServiceAccountAccessToken,
+            eier = "123"
+        )
+
+        val path = "${Url(url).fullPath}?eier=321"
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-med-eier-query-mismatch")
+            }.apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+            }
+        }
+    }
+
+
+    @Test
     fun `Lagring uten eier query og henting med eier query satt til noe annet en subject i token skal feile`() {
         val url = engine.lasteOppDokumentMultipart(
             token = authorizedServiceAccountAccessToken

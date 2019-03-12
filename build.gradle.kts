@@ -43,6 +43,9 @@ dependencies {
     compile("com.amazonaws:aws-java-sdk-s3:1.11.513")
     compile("org.slf4j:jcl-over-slf4j:1.7.25")
 
+    // Sjekke dokumenter
+    compile("org.apache.tika:tika-core:1.20")
+
     // Test
     testCompile ("com.github.tomakehurst:wiremock:$wiremockVersion")
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {

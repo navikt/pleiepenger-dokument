@@ -12,6 +12,7 @@ import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dokument.Dokument
+import no.nav.helse.validering.Valideringsfeil
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -84,8 +85,6 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `request med service account Access Token fungerer`() {
-        val aktoerId = "12345"
-
         val url = engine.lasteOppDokumentMultipart(
             token = authorizedServiceAccountAccessToken
         )
@@ -93,7 +92,7 @@ class PleiepengerDokumentTest {
 
         with(engine) {
 
-            handleRequest(HttpMethod.Get, "$path?aktoer_id=$aktoerId") {
+            handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
             }.apply {
@@ -182,7 +181,6 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `opplasting, henting og sletting av dokument som sytembruker`() {
-        val aktoerId = "134679"
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources()
 
@@ -195,7 +193,7 @@ class PleiepengerDokumentTest {
                 contentType = "image/jpeg"
 
             )
-            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
+            val path = Url(url).fullPath
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
@@ -247,7 +245,6 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `lagring og dokumenter som json istedenfor multipart fungerer`() {
-        val aktoerId = "182489"
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources()
 
@@ -260,7 +257,7 @@ class PleiepengerDokumentTest {
                 contentType = "image/jpeg"
 
             )
-            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
+            val path = Url(url).fullPath
 
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
@@ -277,7 +274,6 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `lagring av application json dokument fungerer`() {
-        val aktoerId = "234679"
         with(engine) {
             val json = "jwkset.json".fromResources()
 
@@ -290,7 +286,7 @@ class PleiepengerDokumentTest {
                 contentType = "application/json"
 
             )
-            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
+            val path = Url(url).fullPath
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
@@ -301,6 +297,38 @@ class PleiepengerDokumentTest {
                 assertEquals(ContentType.Application.Json, response.contentType())
                 assertTrue(Arrays.equals(json, response.byteContent))
             }
+        }
+    }
+
+    @Test(expected = Valideringsfeil::class)
+    fun `lagring av zip dokument feiler`() {
+        with(engine) {
+            val zip = "iphone_6.zip".fromResources()
+
+            // LASTER OPP Dokument
+            lasteOppDokumentJson(
+                token = authorizedServiceAccountAccessToken,
+                fileContent = zip,
+                fileName = "iphone_6.zip",
+                tittel = "Zip av Bilde av en iphone",
+                contentType = "application/zip"
+            )
+        }
+    }
+
+    @Test(expected = Valideringsfeil::class)
+    fun `lagring av zip dokument med content type pdf feiler`() {
+        with(engine) {
+            val zip = "iphone_6.zip".fromResources()
+
+            // LASTER OPP Dokument
+            lasteOppDokumentJson(
+                token = authorizedServiceAccountAccessToken,
+                fileContent = zip,
+                fileName = "iphone_6.zip",
+                tittel = "Zip av Bilde av en iphone",
+                contentType = "application/pdf"
+            )
         }
     }
 }

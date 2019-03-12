@@ -19,10 +19,7 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
-import no.nav.helse.dokument.api.EierResolver
-import no.nav.helse.dokument.api.S3Storage
-import no.nav.helse.dokument.api.dokumentV1Apis
-import no.nav.helse.dokument.api.metadataStatusPages
+import no.nav.helse.dokument.api.*
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -101,7 +98,8 @@ fun Application.pleiepengerDokument() {
                 ),
                 eierResolver = EierResolver(
                     authorizedSubjects = authorizedSubjects
-                )
+                ),
+                contentTypeService = ContentTypeService()
             )
         }
 

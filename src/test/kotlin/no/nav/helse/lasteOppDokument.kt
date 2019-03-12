@@ -79,11 +79,14 @@ fun TestApplicationEngine.lasteOppDokumentJson(
     fileName: String = "iPhone_6.jpg",
     fileContent: ByteArray = fileName.fromResources(),
     tittel: String = "En eller annen tittel",
-    contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg"
+    contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
+    eier : String? = null
 ) : String {
     val base64encodedContent = Base64.getEncoder().encodeToString(fileContent)
 
-    handleRequest(HttpMethod.Post, "/v1/dokument") {
+    val path = if (eier == null) "/v1/dokument" else "/v1/dokument?eier=$eier"
+
+    handleRequest(HttpMethod.Post, path) {
         addHeader(HttpHeaders.Authorization, "Bearer $token")
         addHeader(HttpHeaders.ContentType, "application/json")
         addHeader(HttpHeaders.XCorrelationId, "laster-opp-doument-ok-json")
