@@ -17,6 +17,9 @@ private const val BUCKET_NAME = "pleiepenger-dokument"
 
 class S3Storage(private val s3 : AmazonS3,
                 private val expirationInDays : Int) : Storage {
+    override fun ready() {
+        s3.getBucketLocation(BUCKET_NAME)
+    }
 
     override fun hent(key: StorageKey): StorageValue? {
         return try {

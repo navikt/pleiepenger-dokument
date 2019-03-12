@@ -27,6 +27,10 @@ dependencies {
     compile("io.ktor:ktor-auth-jwt:$ktorVersion")
     compile ("io.ktor:ktor-jackson:$ktorVersion")
 
+    // Ktor Client
+    compile ("io.ktor:ktor-client-core:$ktorVersion")
+    compile ("io.ktor:ktor-client-apache:$ktorVersion")
+
     // Logging
     compile ("ch.qos.logback:logback-classic:$logbackVersion")
     compile ("net.logstash.logback:logstash-logback-encoder:$logstashLogbackVersion")

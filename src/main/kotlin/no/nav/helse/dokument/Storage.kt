@@ -4,6 +4,7 @@ interface Storage {
     fun hent(key : StorageKey) : StorageValue?
     fun slett(storageKey: StorageKey) : Boolean
     fun lagre(key: StorageKey, value: StorageValue)
+    fun ready()
 }
 
 data class StorageKey(val value: String)

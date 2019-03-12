@@ -127,6 +127,8 @@ class DokumentServiceTest {
     }
 
     private class InMemoryStorage : Storage{
+        override fun ready() {}
+
         private val storage = mutableMapOf<StorageKey, StorageValue>()
 
         override fun slett(storageKey: StorageKey) : Boolean {

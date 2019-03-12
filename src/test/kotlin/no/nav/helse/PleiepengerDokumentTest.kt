@@ -73,6 +73,9 @@ class PleiepengerDokumentTest {
                     assertEquals(HttpStatusCode.OK, response.status())
                     handleRequest(HttpMethod.Get, "/metrics") {}.apply {
                         assertEquals(HttpStatusCode.OK, response.status())
+                        handleRequest(HttpMethod.Get, "/isready-deep") {}.apply {
+                            assertEquals(HttpStatusCode.OK, response.status())
+                        }
                     }
                 }
             }

@@ -66,22 +66,7 @@ class SubjectLimitedPleiepengerDokumentTest {
             logger.info("Tear down complete")
         }
     }
-
-    @Test
-    fun `test isready, isalive og metrics`() {
-        with(engine) {
-            handleRequest(HttpMethod.Get, "/isready") {}.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                handleRequest(HttpMethod.Get, "/isalive") {}.apply {
-                    assertEquals(HttpStatusCode.OK, response.status())
-                    handleRequest(HttpMethod.Get, "/metrics") {}.apply {
-                        assertEquals(HttpStatusCode.OK, response.status())
-                    }
-                }
-            }
-        }
-    }
-
+    
     @Test
     fun `En authorized subject kan lagre og hente dokument`() {
         val url = engine.lasteOppDokumentMultipart(

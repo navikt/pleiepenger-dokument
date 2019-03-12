@@ -9,6 +9,7 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.request.header
 import io.ktor.response.header
@@ -105,7 +106,11 @@ fun Application.pleiepengerDokument() {
         }
 
         monitoring(
-            collectorRegistry = collectorRegistry
+            collectorRegistry = collectorRegistry,
+            s3Storage = s3Storage,
+            pingUrls = mapOf(
+                Pair(configuration.getJwksUrl(), HttpStatusCode.OK)
+            )
         )
     }
 
