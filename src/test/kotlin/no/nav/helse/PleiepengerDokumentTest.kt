@@ -274,5 +274,34 @@ class PleiepengerDokumentTest {
             }
         }
     }
+
+    @Test
+    fun `lagring av application json dokument fungerer`() {
+        val aktoerId = "234679"
+        with(engine) {
+            val json = "jwkset.json".fromResources()
+
+            // LASTER OPP Dokument
+            val url = lasteOppDokumentJson(
+                token = authorizedServiceAccountAccessToken,
+                fileContent = json,
+                fileName = "jwkset.json",
+                tittel = "Test JWK set",
+                contentType = "application/json"
+
+            )
+            val path = "${Url(url).fullPath}?aktoer_id=$aktoerId"
+            // HENTER OPPLASTET DOKUMENT
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok")
+
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals(ContentType.Application.Json, response.contentType())
+                assertTrue(Arrays.equals(json, response.byteContent))
+            }
+        }
+    }
 }
 
