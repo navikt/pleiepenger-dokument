@@ -32,7 +32,7 @@ class PleiepengerDokumentWithoutMocks {
                 authorizedSubjects = "srvpps-prosessering,srvpleiepenger-joark",
                 s3ServiceEndpoint = "https://s3.nais.preprod.local",
                 s3SigningRegion = "us-east-1",
-                s3ExpiryInDays = "30"
+                s3ExpiryInDays = null
             ))
 
             val q1EndUserArgs = TestConfiguration.asArray(TestConfiguration.asMap(

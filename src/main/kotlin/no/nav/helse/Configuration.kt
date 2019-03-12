@@ -79,7 +79,7 @@ data class Configuration(private val config : ApplicationConfig) {
             .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(getS3AccessKey(), getS3SecretKey())))
             .build()
     }
-    fun getS3ExpirationInDays() : Int = getRequiredString("nav.storage.s3.expiration_in_days", secret = false).toInt()
+    fun getS3ExpirationInDays() : Int? = getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
 
 
     fun logIndirectlyUsedConfiguration() {

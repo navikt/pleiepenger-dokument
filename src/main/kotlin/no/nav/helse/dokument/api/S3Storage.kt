@@ -1,7 +1,8 @@
 package no.nav.helse.dokument.api
 
+import com.amazonaws.AmazonServiceException
+import com.amazonaws.SdkClientException
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.CreateBucketRequest
@@ -13,36 +14,50 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
-private const val BUCKET_NAME = "pleiepenger-dokument"
+private const val BUCKET_NAME = "pleiepengerdokument"
 
 class S3Storage(private val s3 : AmazonS3,
-                private val expirationInDays : Int) : Storage {
+                private val expirationInDays : Int?) : Storage {
+
     override fun ready() {
-        s3.getBucketLocation(BUCKET_NAME)
+        s3Operation (
+            operation = { s3.getBucketLocation(BUCKET_NAME) }
+        )
     }
 
     override fun hent(key: StorageKey): StorageValue? {
-        return try {
-            StorageValue(s3.getObjectAsString(BUCKET_NAME, key.value))
-        } catch (cause : AmazonS3Exception) {
-            logger.warn("Feil ved henting med key '${key.value}'. Mest sannsynlig finnes det ikke. Feilmelding = '${cause.message}'")
-            null
-        } catch (cause : Throwable) {
-            logger.error("Feil ved henting med key '${key.value}", cause)
-            null
+        val objectAsString = s3Operation(
+            operation = { s3.getObjectAsString(BUCKET_NAME, key.value) },
+            allowServiceException = true
+        )
+
+        if (objectAsString == null) {
+            logger.info("Fant ikke value for key ${key.value}")
+            return null
         }
+
+        return StorageValue(objectAsString)
     }
 
     override fun slett(storageKey: StorageKey): Boolean {
         val value = hent(storageKey)
         return if (value == null) false else {
-            s3.deleteObject(BUCKET_NAME, storageKey.value)
-            true
+            return try {
+                s3Operation(
+                    operation = { s3.deleteObject(BUCKET_NAME, storageKey.value) }
+                )
+                true
+            } catch (cause: Throwable) {
+                logger.warn("Fikk ikke slettet value for key ${storageKey.value}", cause)
+                false
+            }
         }
     }
 
     override fun lagre(key: StorageKey, value: StorageValue) {
-        s3.putObject(BUCKET_NAME, key.value, value.value)
+        s3Operation(
+            operation = { s3.putObject(BUCKET_NAME, key.value, value.value) }
+        )
     }
 
     init {
@@ -54,7 +69,7 @@ class S3Storage(private val s3 : AmazonS3,
 
 
     private fun ensureBucketExists() {
-        if (!s3.doesBucketExistV2(BUCKET_NAME)) {
+        if (!s3Operation( operation = { s3.doesBucketExistV2(BUCKET_NAME) } )!!) {
             logger.info("Bucket $BUCKET_NAME finnes ikke fra før, oppretter.")
             createBucket()
             logger.info("Bucket opprettet.")
@@ -64,24 +79,54 @@ class S3Storage(private val s3 : AmazonS3,
     }
 
     private fun ensureProperBucketLifecycleConfiguration() {
-        logger.trace("Konfigurerer lifecycle for bucket.")
-        s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays))
-        logger.trace("Konfigurert.")
+        val lifecycleConfigurationEnabled = expirationInDays != null && expirationInDays > 0
+        logger.info("expiryInDays=$expirationInDays")
+        logger.info("lifecycleConfigurationEnabled=$lifecycleConfigurationEnabled")
+
+        if (lifecycleConfigurationEnabled) {
+            logger.trace("Konfigurerer lifecycle for bucket.")
+            logger.info("Expiry på bucket objects settes til $expirationInDays dager.")
+            s3Operation(
+                operation = { s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays!!)) }
+            )
+            logger.trace("Liceyclye konfigurasjon lagret.")
+
+        } else {
+            logger.info("Sletter eventuelle aktive lifecycle konfigurasjoner.")
+            s3Operation(
+                operation = { s3.deleteBucketLifecycleConfiguration(BUCKET_NAME) }
+            )
+            logger.info("Sletting av licecycle konfigurasjoner OK.")
+        }
     }
 
     private fun createBucket() {
-        s3.createBucket(CreateBucketRequest(BUCKET_NAME).withCannedAcl(CannedAccessControlList.Private))
+        s3Operation(
+            operation = { s3.createBucket(CreateBucketRequest(BUCKET_NAME).withCannedAcl(CannedAccessControlList.Private)) }
+        )
     }
 
     private fun bucketLifecycleConfiguration(days: Int): BucketLifecycleConfiguration {
-        logger.info("Expiry på bucket settes til $days dager.")
         val rules= BucketLifecycleConfiguration.Rule()
             .withId("$BUCKET_NAME-$days")
             .withFilter(LifecycleFilter())
             .withStatus(BucketLifecycleConfiguration.ENABLED)
             .withExpirationInDays(days)
-
         return BucketLifecycleConfiguration().withRules(rules)
     }
 
+    private fun<T> s3Operation(
+        operation : () -> T,
+        allowServiceException : Boolean = false) : T? {
+        return try {
+            operation.invoke()
+        } catch (cause : AmazonServiceException) {
+            if (allowServiceException) return null
+            else throw IllegalStateException("Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}", cause)
+        } catch (cause: SdkClientException) {
+            throw IllegalStateException("Fikk ikke response fra S3. ${cause.message}", cause)
+        } catch (cause: Throwable) {
+            throw IllegalStateException("Uventet feil ved tjenestekall mot S3.", cause)
+        }
+    }
 }
