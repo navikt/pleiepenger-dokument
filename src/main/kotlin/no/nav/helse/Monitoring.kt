@@ -4,6 +4,7 @@ import io.ktor.application.call
 import io.ktor.client.HttpClient
 import io.ktor.client.call.call
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
@@ -13,6 +14,10 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import no.nav.helse.dokument.api.S3Storage
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
@@ -46,7 +51,7 @@ fun Route.monitoring(
         call.respondText("READY")
     }
 
-    get("/isready-deep") {
+    get("/health") {
         val success = mutableListOf<String>()
         val error = mutableListOf<String>()
 
@@ -83,21 +88,48 @@ suspend fun pingUrlsCheck(
     error: MutableList<String>,
     success: MutableList<String>
 ) {
-    for (pingUrl in pingUrls) {
-        try {
-            httpClient.call(pingUrl.key).response.use {
-                if (it.status == pingUrl.value) {
-                    success.add("Tilkobling mot ${pingUrl.key} OK.")
-                } else {
-                    error.add("Feil ved oppkobling mot ${pingUrl.key}. Forventet ${pingUrl.value} men fikk ${it.status}")
+    val httpResponses = coroutineScope {
+        val futures = mutableListOf<Deferred<WrappedHttpResponse>>()
+
+        pingUrls.forEach { url, expectedHttpStatusCode ->
+            futures.add(async {
+                try {
+                    httpClient.call(url).response.use {
+                        WrappedHttpResponse(
+                            response = it,
+                            expectedHttpStatusCode = expectedHttpStatusCode,
+                            url = url
+                        )
+                    }
+                } catch (cause: Throwable) {
+                    logger.error("Feil ved tilkobling mot $url.", cause)
+                    WrappedHttpResponse(
+                        expectedHttpStatusCode = expectedHttpStatusCode,
+                        url = url,
+                        error = cause.message
+                    )
                 }
-            }
-        } catch (cause: Throwable) {
-            logger.error("Feil ved oppkobling mot ${pingUrl.key}", cause)
-            error.add("Feil ved oppkobling mot ${pingUrl.key}. ${cause.message}")
+            })
+
+        }
+        futures.awaitAll()
+    }
+
+    httpResponses.forEach {
+        when {
+            it.response == null -> error.add("Feil ved oppkobling mot ${it.url}. Forventet ${it.expectedHttpStatusCode} men fikk ingen response. ${it.error}.")
+            it.response.status == it.expectedHttpStatusCode -> success.add("Tilkobling mot ${it.url} OK.")
+            else -> error.add("Feil ved oppkobling mot ${it.url}. Forventet ${it.expectedHttpStatusCode} men fikk ${it.response.status}.")
         }
     }
 }
+
+private data class WrappedHttpResponse (
+    val url : URL,
+    val expectedHttpStatusCode: HttpStatusCode,
+    val response : HttpResponse? = null,
+    val error : String? = null
+)
 
 private fun s3check(
     s3Storage: S3Storage,
@@ -106,10 +138,10 @@ private fun s3check(
 ) {
     try {
         s3Storage.ready()
-        success.add("Oppkobling mot S3 OK.")
+        success.add("Tilkobling mot S3 OK.")
     } catch (cause: Throwable) {
-        logger.error("Feil ved oppkobling mot S3.", cause)
-        error.add("Feil ved oppkobling mot S3, ${cause.message}")
+        logger.error("Feil ved tilkobling mot S3.", cause)
+        error.add("Feil ved tilkobling mot S3, ${cause.message}.")
     }
 }
 
