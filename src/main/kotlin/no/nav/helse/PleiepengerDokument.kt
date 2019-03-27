@@ -15,13 +15,16 @@ import io.ktor.request.header
 import io.ktor.response.header
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
-import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.api.*
+import no.nav.helse.dusseldorf.ktor.core.DefaultProbeRoutes
 import no.nav.helse.dusseldorf.ktor.core.id
 import no.nav.helse.dusseldorf.ktor.core.logProxyProperties
+import no.nav.helse.dusseldorf.ktor.health.HealthRoute
+import no.nav.helse.dusseldorf.ktor.health.HttpRequestHealthCheck
+import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -105,11 +108,19 @@ fun Application.pleiepengerDokument() {
             )
         }
 
-        monitoring(
-            collectorRegistry = CollectorRegistry.defaultRegistry,
-            s3Storage = s3Storage,
-            pingUrls = mapOf(
-                Pair(configuration.getJwksUrl(), HttpStatusCode.OK)
+        DefaultProbeRoutes()
+        MetricsRoute()
+        HealthRoute(
+            healthChecks = setOf(
+                HttpRequestHealthCheck(
+                    app = appId,
+                    urlExpectedHttpStatusCodeMap = mapOf(
+                        configuration.getJwksUrl() to HttpStatusCode.OK
+                    )
+                ),
+                S3StorageHealthCheck(
+                    s3Storage = s3Storage
+                )
             )
         )
     }

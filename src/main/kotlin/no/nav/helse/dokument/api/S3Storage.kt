@@ -10,6 +10,9 @@ import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter
 import no.nav.helse.dokument.Storage
 import no.nav.helse.dokument.StorageKey
 import no.nav.helse.dokument.StorageValue
+import no.nav.helse.dusseldorf.ktor.health.HealthCheck
+import no.nav.helse.dusseldorf.ktor.health.Healthy
+import no.nav.helse.dusseldorf.ktor.health.Result
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -127,6 +130,23 @@ class S3Storage(private val s3 : AmazonS3,
             throw IllegalStateException("Fikk ikke response fra S3. ${cause.message}", cause)
         } catch (cause: Throwable) {
             throw IllegalStateException("Uventet feil ved tjenestekall mot S3.", cause)
+        }
+    }
+}
+
+class S3StorageHealthCheck(
+    private val s3Storage: S3Storage
+) : HealthCheck {
+    private val logger: Logger = LoggerFactory.getLogger("nav.S3StorageHealthCheck")
+    private val name = "S3StorageHealthCheck"
+
+    override suspend fun check(): Result {
+        return try {
+            s3Storage.ready()
+            Healthy(name = name, result = "Tilkobling mot S3 OK.")
+        } catch (cause: Throwable) {
+            logger.error("Feil ved tilkobling mot S3.", cause)
+            Healthy(name = name, result = cause.message ?: "Feil ved tilkobling mot S3.")
         }
     }
 }
