@@ -2,6 +2,7 @@ package no.nav.helse
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -24,6 +25,7 @@ import no.nav.helse.dusseldorf.ktor.core.id
 import no.nav.helse.dusseldorf.ktor.core.logProxyProperties
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HttpRequestHealthCheck
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
@@ -33,7 +35,6 @@ import java.util.concurrent.TimeUnit
 
 private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokument")
 private const val GENERATED_REQUEST_ID_PREFIX = "generated-"
-private const val REALM = "pleiepenger-dokument"
 
 fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
 
@@ -53,7 +54,7 @@ fun Application.pleiepengerDokument() {
 
         jwt {
             verifier(jwksProvider, issuer)
-            realm = REALM
+            realm = appId
             validate { credentials ->
                 when {
                     authorizedSubjects.isEmpty() -> {
@@ -75,7 +76,7 @@ fun Application.pleiepengerDokument() {
 
     install(ContentNegotiation) {
         jackson {
-            ObjectMapper.server(this)
+            dusseldorfConfigured()
         }
     }
 
@@ -99,7 +100,7 @@ fun Application.pleiepengerDokument() {
                         decryptionPassphrases = configuration.getDecryptionPassphrases()
                     ),
                     storage = s3Storage,
-                    objectMapper = ObjectMapper.server()
+                    objectMapper = jacksonObjectMapper().dusseldorfConfigured()
                 ),
                 eierResolver = EierResolver(
                     authorizedSubjects = authorizedSubjects
