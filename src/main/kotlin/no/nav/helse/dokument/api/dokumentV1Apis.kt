@@ -16,22 +16,16 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
 import io.ktor.routing.*
-import no.nav.helse.DefaultError
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
 import no.nav.helse.dokument.DokumentService
-import no.nav.helse.validering.Brudd
-import no.nav.helse.validering.Valideringsfeil
+import no.nav.helse.dusseldorf.ktor.core.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URI
 
 private val logger: Logger = LoggerFactory.getLogger("nav.dokumentApis")
 private const val BASE_PATH = "v1/dokument"
 private const val MAX_DOKUMENT_SIZE = 8 * 1024 * 1024
-
-private val dokumentNotFoundType = URI.create("/errors/document-not-found")
-private const val dokumentNotFoundTitle = "Inget dokument funnet med etterspurt ID."
 
 private const val CONTENT_PART_NAME = "content"
 private const val TITLE_PART_NAME = "title"
@@ -43,13 +37,12 @@ fun Route.dokumentV1Apis(
 ) {
 
     post(BASE_PATH) {
-        call.request.ensureCorrelationId()
         logger.info("Lagrer dokument")
         logger.trace("Henter dokument fra requesten")
         val dokument = call.hentDokumentFraRequest()
-        val brudd = valider(contentTypeService = contentTypeService, dokument = dokument)
-        if (brudd.isNotEmpty()) {
-            throw Valideringsfeil(brudd)
+        val violations = valider(contentTypeService = contentTypeService, dokument = dokument)
+        if (violations.isNotEmpty()) {
+            throw Throwblem(ValidationProblemDetails(violations))
         }
 
         logger.trace("Dokument hetent fra reqeusten, forsøker å lagre")
@@ -64,7 +57,6 @@ fun Route.dokumentV1Apis(
     }
 
     get("$BASE_PATH/{dokumentId}") {
-        call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
         val etterspurtJson = call.request.etterspurtJson()
         logger.info("Henter dokument")
@@ -91,7 +83,6 @@ fun Route.dokumentV1Apis(
     }
 
     delete("$BASE_PATH/{dokumentId}") {
-        call.request.ensureCorrelationId()
         val dokumentId = call.dokumentId()
         logger.info("Sletter dokument")
         logger.info("$dokumentId")
@@ -111,13 +102,13 @@ fun Route.dokumentV1Apis(
 private fun valider(
     contentTypeService: ContentTypeService,
     dokument: DokumentDto
-) : List<Brudd> {
+) : Set<Violation> {
     logger.trace("Validerer dokumentet")
-    val brudd = dokument.valider()
+    val violations = dokument.valider()
     if (!contentTypeService.isSupported(contentType = dokument.contentType!!, content = dokument.content!!)) {
-        brudd.add(Brudd(HttpHeaders.ContentType, "Ikke Supportert dokument med Content-Type ${dokument.contentType}"))
+        violations.add(Violation(parameterName = HttpHeaders.ContentType, reason = "Ikke Supportert dokument med Content-Type ${dokument.contentType}", parameterType = ParameterType.HEADER))
     }
-    return brudd.toList()
+    return violations.toSet()
 }
 
 private suspend fun ApplicationCall.hentDokumentFraRequest(): DokumentDto {
@@ -136,10 +127,6 @@ private fun ApplicationCall.dokumentId() : DokumentId {
 
 private fun ApplicationRequest.etterspurtJson() : Boolean {
     return ContentType.Application.Json.toString() == accept()
-}
-
-private fun ApplicationRequest.ensureCorrelationId() {
-    header(HttpHeaders.XCorrelationId) ?: throw ManglerCorrelationId()
 }
 
 private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
@@ -161,14 +148,13 @@ private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
 }
 
 private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : DokumentId) {
-    respond(
-        HttpStatusCode.NotFound, DefaultError(
-            status = HttpStatusCode.NotFound.value,
-            type = dokumentNotFoundType,
-            title = dokumentNotFoundTitle,
-            detail = "Dokument med ID ${dokumentId.id} ikke funnet."
-        )
+
+    val problemDetails = DefaultProblemDetails(
+        status = 404,
+        title = "document-not-found",
+        details = "Dokument med ID ${dokumentId.id} ikke funnet."
     )
+    respond(HttpStatusCode.NotFound, problemDetails)
 }
 
 private suspend fun ApplicationCall.respondCreatedDokument(dokumentId: DokumentId) {
@@ -186,13 +172,13 @@ private fun ApplicationCall.getBaseUrlFromRequest() : String {
 }
 
 private data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
-    fun valider() : MutableList<Brudd> {
-        val brudd = mutableListOf<Brudd>()
-        if (content == null) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Fant ingen 'part' som er en fil."))
-        if (content != null && content.size > MAX_DOKUMENT_SIZE) brudd.add(Brudd(parameter = CONTENT_PART_NAME, error = "Dokumentet er større en maks tillat 8MB."))
-        if (contentType == null) brudd.add(Brudd(parameter = HttpHeaders.ContentType, error = "Ingen Content-Type satt på fil."))
-        if (title == null) brudd.add(Brudd(parameter = TITLE_PART_NAME, error = "Fant ingen 'part' som er en form item."))
-        return brudd
+    fun valider() : MutableList<Violation> {
+        val violations = mutableListOf<Violation>()
+        if (content == null) violations.add(Violation(parameterName = CONTENT_PART_NAME, reason = "Fant ingen 'part' som er en fil.", parameterType = ParameterType.ENTITY))
+        if (content != null && content.size > MAX_DOKUMENT_SIZE) violations.add(Violation(parameterName = CONTENT_PART_NAME, reason = "Dokumentet er større en maks tillat 8MB.", parameterType = ParameterType.ENTITY))
+        if (contentType == null) violations.add(Violation(parameterName = HttpHeaders.ContentType, reason = "Ingen Content-Type satt på fil.", parameterType = ParameterType.ENTITY))
+        if (title == null) violations.add(Violation(parameterName = TITLE_PART_NAME, reason = "Fant ingen 'part' som er en form item.", parameterType = ParameterType.ENTITY))
+        return violations
     }
     fun tilDokument() : Dokument {
         return Dokument(

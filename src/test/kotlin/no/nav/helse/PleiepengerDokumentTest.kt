@@ -1,5 +1,6 @@
 package no.nav.helse
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.typesafe.config.ConfigFactory
@@ -12,7 +13,7 @@ import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dokument.Dokument
-import no.nav.helse.validering.Valideringsfeil
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -30,7 +31,7 @@ class PleiepengerDokumentTest {
 
         private val wireMockServer: WireMockServer = WiremockWrapper.bootstrap()
         private val authorizedServiceAccountAccessToken = Authorization.getAccessToken(wireMockServer.getIssuer(), "srvpleiepenger-joark")
-        private val objectMapper = ObjectMapper.server()
+        private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         private val s3 = S3()
 
 
@@ -300,7 +301,7 @@ class PleiepengerDokumentTest {
         }
     }
 
-    @Test(expected = Valideringsfeil::class)
+    @Test
     fun `lagring av zip dokument feiler`() {
         with(engine) {
             val zip = "iphone_6.zip".fromResources()
@@ -311,12 +312,13 @@ class PleiepengerDokumentTest {
                 fileContent = zip,
                 fileName = "iphone_6.zip",
                 tittel = "Zip av Bilde av en iphone",
-                contentType = "application/zip"
+                contentType = "application/zip",
+                expectedHttpStatusCode = HttpStatusCode.BadRequest
             )
         }
     }
 
-    @Test(expected = Valideringsfeil::class)
+    @Test
     fun `lagring av zip dokument med content type pdf feiler`() {
         with(engine) {
             val zip = "iphone_6.zip".fromResources()
@@ -327,7 +329,8 @@ class PleiepengerDokumentTest {
                 fileContent = zip,
                 fileName = "iphone_6.zip",
                 tittel = "Zip av Bilde av en iphone",
-                contentType = "application/pdf"
+                contentType = "application/pdf",
+                expectedHttpStatusCode = HttpStatusCode.BadRequest
             )
         }
     }

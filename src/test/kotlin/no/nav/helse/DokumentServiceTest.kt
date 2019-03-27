@@ -1,6 +1,8 @@
 package no.nav.helse
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.dokument.*
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.test.Test
@@ -16,7 +18,7 @@ class DokumentServiceTest {
     fun `Rullering av passord for kryptering fungerer slik at dokumenter kryptert foer endringen fortsatt kan dekrypteres og hentes ut`() {
         // Setup
         val storage = InMemoryStorage()
-        val objectMapper = ObjectMapper.server()
+        val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
 
         val eier1 = Eier("12345")
         val eier2 = Eier("678910")

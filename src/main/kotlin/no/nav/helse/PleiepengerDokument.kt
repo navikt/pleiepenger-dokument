@@ -21,13 +21,14 @@ import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dusseldorf.ktor.core.DefaultProbeRoutes
+import no.nav.helse.dusseldorf.ktor.core.DefaultStatusPages
 import no.nav.helse.dusseldorf.ktor.core.id
 import no.nav.helse.dusseldorf.ktor.core.logProxyProperties
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HttpRequestHealthCheck
+import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
-import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -81,9 +82,8 @@ fun Application.pleiepengerDokument() {
     }
 
     install(StatusPages) {
-        defaultStatusPages()
-        valideringStatusPages()
-        metadataStatusPages()
+        DefaultStatusPages()
+        JacksonStatusPages()
     }
 
     val s3Storage = S3Storage(

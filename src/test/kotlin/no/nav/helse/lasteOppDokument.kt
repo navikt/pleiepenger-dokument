@@ -1,5 +1,6 @@
 package no.nav.helse
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.content.PartData
@@ -8,12 +9,13 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import kotlinx.io.streams.asInput
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-private val objectMapper = ObjectMapper.server()
+private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
 
 fun TestApplicationEngine.lasteOppDokumentMultipart(
     token: String,
@@ -80,7 +82,8 @@ fun TestApplicationEngine.lasteOppDokumentJson(
     fileContent: ByteArray = fileName.fromResources(),
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
-    eier : String? = null
+    eier : String? = null,
+    expectedHttpStatusCode : HttpStatusCode = HttpStatusCode.Created
 ) : String {
     val base64encodedContent = Base64.getEncoder().encodeToString(fileContent)
 
@@ -98,8 +101,8 @@ fun TestApplicationEngine.lasteOppDokumentJson(
             }
             """.trimIndent()
         ) }.apply {
-            assertEquals(HttpStatusCode.Created, response.status())
-            return assertResponseAndGetLocationHeader()
+            assertEquals(expectedHttpStatusCode, response.status())
+            return if(expectedHttpStatusCode == HttpStatusCode.Created) assertResponseAndGetLocationHeader() else ""
         }
 }
 

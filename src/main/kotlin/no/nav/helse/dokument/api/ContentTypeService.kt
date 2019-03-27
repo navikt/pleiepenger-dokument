@@ -1,7 +1,8 @@
 package no.nav.helse.dokument.api
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.ContentType
-import no.nav.helse.ObjectMapper
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.apache.tika.Tika
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,7 +20,7 @@ class ContentTypeService {
     }
 
     private val tika = Tika()
-    private val objectMapper = ObjectMapper.server()
+    private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
     private val supportedContentTypes = listOf(JSON, PDF, XML, PNG, JPEG)
 
     fun isSupported(
