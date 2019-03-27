@@ -20,6 +20,8 @@ import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.api.*
+import no.nav.helse.dusseldorf.ktor.core.id
+import no.nav.helse.dusseldorf.ktor.core.logProxyProperties
 import no.nav.helse.validering.valideringStatusPages
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,11 +36,11 @@ fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args
 
 @KtorExperimentalAPI
 fun Application.pleiepengerDokument() {
-    val collectorRegistry = CollectorRegistry.defaultRegistry
+    val appId = environment.config.id()
+    logProxyProperties()
     DefaultExports.initialize()
 
     val configuration = Configuration(environment.config)
-    configuration.logIndirectlyUsedConfiguration()
 
     val authorizedSubjects = configuration.getAuthorizedSubjects()
 
@@ -104,7 +106,7 @@ fun Application.pleiepengerDokument() {
         }
 
         monitoring(
-            collectorRegistry = collectorRegistry,
+            collectorRegistry = CollectorRegistry.defaultRegistry,
             s3Storage = s3Storage,
             pingUrls = mapOf(
                 Pair(configuration.getJwksUrl(), HttpStatusCode.OK)
