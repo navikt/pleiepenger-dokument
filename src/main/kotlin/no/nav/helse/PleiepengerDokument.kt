@@ -125,6 +125,9 @@ fun Application.pleiepengerDokument() {
 
     install(CallMonitoring) {
         app = appId
+        overridePaths = mapOf(
+            Regex("/v1/dokument/.*") to "/v1/dokument"
+        )
     }
 
     install(CallId) {

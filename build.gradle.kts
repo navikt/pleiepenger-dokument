@@ -1,9 +1,10 @@
 import org.gradle.internal.impldep.org.fusesource.jansi.AnsiRenderer.test
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+
+val dusseldorfKtorVersion = "1.1.3.a31075d"
 val ktorVersion = ext.get("ktorVersion").toString()
 
-val dusseldorfKtorVersion = "1.1.3.8f419db" // TODO: a31075d når den er tilgjengelig på maven central
 val wiremockVersion = "2.19.0"
 val amazonawsVersion = "1.11.526"
 val slf4jVersion = "1.7.26"
