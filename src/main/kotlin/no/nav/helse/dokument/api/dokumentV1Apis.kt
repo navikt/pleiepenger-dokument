@@ -152,7 +152,7 @@ private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : Dokumen
     val problemDetails = DefaultProblemDetails(
         status = 404,
         title = "document-not-found",
-        details = "Dokument med ID ${dokumentId.id} ikke funnet."
+        detail = "Dokument med ID ${dokumentId.id} ikke funnet."
     )
     respond(HttpStatusCode.NotFound, problemDetails)
 }

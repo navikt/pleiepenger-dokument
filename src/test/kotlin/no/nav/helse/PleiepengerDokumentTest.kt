@@ -12,6 +12,7 @@ import io.ktor.server.testing.contentType
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.junit.AfterClass
@@ -53,6 +54,7 @@ class PleiepengerDokumentTest {
         @BeforeClass
         @JvmStatic
         fun buildUp() {
+            CollectorRegistry.defaultRegistry.clear()
             engine.start(wait = true)
         }
 

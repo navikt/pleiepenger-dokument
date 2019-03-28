@@ -9,33 +9,26 @@ import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
-import io.ktor.request.header
-import io.ktor.response.header
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.api.*
-import no.nav.helse.dusseldorf.ktor.core.DefaultProbeRoutes
-import no.nav.helse.dusseldorf.ktor.core.DefaultStatusPages
-import no.nav.helse.dusseldorf.ktor.core.id
-import no.nav.helse.dusseldorf.ktor.core.logProxyProperties
+import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
+import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
-import no.nav.helse.dusseldorf.ktor.health.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.helse.dusseldorf.ktor.metrics.CallMonitoring
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokument")
-private const val GENERATED_REQUEST_ID_PREFIX = "generated-"
 
 fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
 
@@ -91,22 +84,26 @@ fun Application.pleiepengerDokument() {
         expirationInDays = configuration.getS3ExpirationInDays()
     )
 
+    install(CallIdRequired)
+
     install(Routing) {
         authenticate {
-            dokumentV1Apis(
-                dokumentService = DokumentService(
-                    cryptography = Cryptography(
-                        encryptionPassphrase = configuration.getEncryptionPassphrase(),
-                        decryptionPassphrases = configuration.getDecryptionPassphrases()
+            requiresCallId {
+                dokumentV1Apis(
+                    dokumentService = DokumentService(
+                        cryptography = Cryptography(
+                            encryptionPassphrase = configuration.getEncryptionPassphrase(),
+                            decryptionPassphrases = configuration.getDecryptionPassphrases()
+                        ),
+                        storage = s3Storage,
+                        objectMapper = jacksonObjectMapper().dusseldorfConfigured()
                     ),
-                    storage = s3Storage,
-                    objectMapper = jacksonObjectMapper().dusseldorfConfigured()
-                ),
-                eierResolver = EierResolver(
-                    authorizedSubjects = authorizedSubjects
-                ),
-                contentTypeService = ContentTypeService()
-            )
+                    eierResolver = EierResolver(
+                        authorizedSubjects = authorizedSubjects
+                    ),
+                    contentTypeService = ContentTypeService()
+                )
+            }
         }
 
         DefaultProbeRoutes()
@@ -126,17 +123,17 @@ fun Application.pleiepengerDokument() {
         )
     }
 
+    install(CallMonitoring) {
+        app = appId
+    }
+
     install(CallId) {
-        header(HttpHeaders.XCorrelationId)
+        fromXCorrelationIdHeader()
     }
 
     install(CallLogging) {
-        callIdMdc("correlation_id")
-        mdc("request_id") { call ->
-            val requestId = call.request.header(HttpHeaders.XRequestId)?.removePrefix(GENERATED_REQUEST_ID_PREFIX) ?: "$GENERATED_REQUEST_ID_PREFIX${UUID.randomUUID()}"
-            call.response.header(HttpHeaders.XRequestId, requestId)
-            requestId
-        }
+        correlationIdAndRequestIdInMdc()
+        logRequests()
     }
 }
 

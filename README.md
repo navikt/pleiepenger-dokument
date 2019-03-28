@@ -43,6 +43,10 @@ POST @ /v1/dokument
 }
 ```
 
+## S3
+Instansene som mellomlagrer vedlegg før søknaden er sendt inn bruker userId 'ppd-mellomlagring-soknad'
+Instansene som mellomlagrer dokumenter før søknaden er journalført bruker userId 'ppd-mellomlagring-journalforing'
+
 ## Correlation ID vs Request ID
 Correlation ID blir propagert videre, og har ikke nødvendigvis sitt opphav hos konsumenten.
 Request ID blir ikke propagert videre, og skal ha sitt opphav hos konsumenten.

@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val ktorVersion = ext.get("ktorVersion").toString()
 
-val dusseldorfKtorVersion = "1.1.3.ab74601"
+val dusseldorfKtorVersion = "1.1.3.8f419db" // TODO: a31075d når den er tilgjengelig på maven central
 val wiremockVersion = "2.19.0"
 val amazonawsVersion = "1.11.526"
 val slf4jVersion = "1.7.26"
@@ -16,7 +16,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/9a0939d9e7858e46df9e1e22602e1e1d8b342de5/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/a31075dfd5242f4b33ebb8b4177ab96b4c89a436/gradle/dusseldorf-ktor.gradle.kts")
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21")
     }
@@ -32,8 +32,6 @@ dependencies {
 
     // Client
     compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
-    compile ("io.ktor:ktor-client-json-jvm:$ktorVersion")
-    compile ("io.ktor:ktor-client-jackson:$ktorVersion")
 
     // Lagring
     compile("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")

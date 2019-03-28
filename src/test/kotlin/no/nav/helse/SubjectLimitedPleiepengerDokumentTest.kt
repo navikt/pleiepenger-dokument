@@ -10,6 +10,7 @@ import io.ktor.server.testing.contentType
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.prometheus.client.CollectorRegistry
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -54,6 +55,7 @@ class SubjectLimitedPleiepengerDokumentTest {
         @BeforeClass
         @JvmStatic
         fun buildUp() {
+            CollectorRegistry.defaultRegistry.clear()
             engine.start(wait = true)
         }
 
