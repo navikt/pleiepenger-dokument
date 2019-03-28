@@ -7,6 +7,8 @@ import com.amazonaws.services.s3.model.BucketLifecycleConfiguration
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.CreateBucketRequest
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter
+import io.prometheus.client.Counter
+import io.prometheus.client.Histogram
 import no.nav.helse.dokument.Storage
 import no.nav.helse.dokument.StorageKey
 import no.nav.helse.dokument.StorageValue
@@ -19,19 +21,34 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
 private const val BUCKET_NAME = "pleiepengerdokument"
 
+private val s3Histogram = Histogram
+    .build("s3_operation_histogram",
+        "Histogram for operasjoner gjort mot S3.")
+    .labelNames("operation")
+    .register()
+
+private val s3Counter = Counter
+    .build(
+        "s3_operation_counter",
+        "Counter for utfall a operasjoner gjort mot S3.")
+    .labelNames("operation", "status")
+    .register()
+
 class S3Storage(private val s3 : AmazonS3,
                 private val expirationInDays : Int?) : Storage {
 
     override fun ready() {
         s3Operation (
-            operation = { s3.getBucketLocation(BUCKET_NAME) }
+            operation = { s3.getBucketLocation(BUCKET_NAME) },
+            operationName = "getBucketLocation"
         )
     }
 
     override fun hent(key: StorageKey): StorageValue? {
         val objectAsString = s3Operation(
             operation = { s3.getObjectAsString(BUCKET_NAME, key.value) },
-            allowServiceException = true
+            allowServiceException = true,
+            operationName = "getObjectAsString"
         )
 
         if (objectAsString == null) {
@@ -47,7 +64,8 @@ class S3Storage(private val s3 : AmazonS3,
         return if (value == null) false else {
             return try {
                 s3Operation(
-                    operation = { s3.deleteObject(BUCKET_NAME, storageKey.value) }
+                    operation = { s3.deleteObject(BUCKET_NAME, storageKey.value) },
+                    operationName = "deleteObject"
                 )
                 true
             } catch (cause: Throwable) {
@@ -59,7 +77,8 @@ class S3Storage(private val s3 : AmazonS3,
 
     override fun lagre(key: StorageKey, value: StorageValue) {
         s3Operation(
-            operation = { s3.putObject(BUCKET_NAME, key.value, value.value) }
+            operation = { s3.putObject(BUCKET_NAME, key.value, value.value) },
+            operationName = "putObject"
         )
     }
 
@@ -72,7 +91,7 @@ class S3Storage(private val s3 : AmazonS3,
 
 
     private fun ensureBucketExists() {
-        if (!s3Operation( operation = { s3.doesBucketExistV2(BUCKET_NAME) } )!!) {
+        if (!s3Operation( operation = { s3.doesBucketExistV2(BUCKET_NAME) } , operationName = "doesBucketExistV2" )!!) {
             logger.info("Bucket $BUCKET_NAME finnes ikke fra før, oppretter.")
             createBucket()
             logger.info("Bucket opprettet.")
@@ -90,14 +109,16 @@ class S3Storage(private val s3 : AmazonS3,
             logger.trace("Konfigurerer lifecycle for bucket.")
             logger.info("Expiry på bucket objects settes til $expirationInDays dager.")
             s3Operation(
-                operation = { s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays!!)) }
+                operation = { s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays!!)) },
+                operationName = "setBucketLifecycleConfiguration"
             )
             logger.trace("Liceyclye konfigurasjon lagret.")
 
         } else {
             logger.info("Sletter eventuelle aktive lifecycle konfigurasjoner.")
             s3Operation(
-                operation = { s3.deleteBucketLifecycleConfiguration(BUCKET_NAME) }
+                operation = { s3.deleteBucketLifecycleConfiguration(BUCKET_NAME) },
+                operationName = "deleteBucketLifecycleConfiguration"
             )
             logger.info("Sletting av licecycle konfigurasjoner OK.")
         }
@@ -105,7 +126,8 @@ class S3Storage(private val s3 : AmazonS3,
 
     private fun createBucket() {
         s3Operation(
-            operation = { s3.createBucket(CreateBucketRequest(BUCKET_NAME).withCannedAcl(CannedAccessControlList.Private)) }
+            operation = { s3.createBucket(CreateBucketRequest(BUCKET_NAME).withCannedAcl(CannedAccessControlList.Private)) },
+            operationName = "createBucket"
         )
     }
 
@@ -120,16 +142,27 @@ class S3Storage(private val s3 : AmazonS3,
 
     private fun<T> s3Operation(
         operation : () -> T,
+        operationName : String,
         allowServiceException : Boolean = false) : T? {
+        val timer = s3Histogram.labels(operationName).startTimer()
         return try {
-            operation.invoke()
+            val result = operation.invoke()
+            s3Counter.labels(operationName, "success").inc()
+            result
         } catch (cause : AmazonServiceException) {
             if (allowServiceException) return null
-            else throw IllegalStateException("Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}", cause)
+            else {
+                s3Counter.labels(operationName, "s3Failure").inc()
+                throw IllegalStateException("Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}", cause)
+            }
         } catch (cause: SdkClientException) {
+            s3Counter.labels(operationName, "connectionFailure").inc()
             throw IllegalStateException("Fikk ikke response fra S3. ${cause.message}", cause)
         } catch (cause: Throwable) {
+            s3Counter.labels(operationName, "failure").inc()
             throw IllegalStateException("Uventet feil ved tjenestekall mot S3.", cause)
+        } finally {
+            timer.observeDuration()
         }
     }
 }
