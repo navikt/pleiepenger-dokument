@@ -1,25 +1,24 @@
 import org.gradle.internal.impldep.org.fusesource.jansi.AnsiRenderer.test
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-
-val dusseldorfKtorVersion = "1.1.3.525b270"
+val dusseldorfKtorVersion = "1.1.5.2daa394"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.526"
-val slf4jVersion = "1.7.26"
+val amazonawsVersion = "1.11.539"
+val slf4jVersion = "1.7.25" // TODO: ext.get("slf4jVersion").toString()
 val tikaVersion = "1.20"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
 
 plugins {
-    kotlin("jvm") version "1.3.21"
+    kotlin("jvm") version "1.3.30"
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/525b2709f5f4e2f046d802812b7b8b89f5a66a17/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/2daa394a9a89518b727e4d5e7f23b8de4c524f76/gradle/dusseldorf-ktor.gradle.kts")
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.30")
     }
 }
 
@@ -46,8 +45,8 @@ dependencies {
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testCompile ("com.nimbusds:oauth2-oidc-sdk:5.56")
-    testCompile("org.testcontainers:localstack:1.10.6")
+    testCompile("com.nimbusds:oauth2-oidc-sdk:6.9")
+    testCompile("org.testcontainers:localstack:1.11.2")
 }
 
 repositories {
@@ -93,5 +92,5 @@ tasks.named<Jar>("jar") {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.2.1"
+    gradleVersion = "5.4"
 }
