@@ -3,6 +3,10 @@ package no.nav.helse.dokument
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.Eier
+import no.nav.helse.dokument.crypto.Cryptography
+import no.nav.helse.dokument.storage.Storage
+import no.nav.helse.dokument.storage.StorageKey
+import no.nav.helse.dokument.storage.StorageValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

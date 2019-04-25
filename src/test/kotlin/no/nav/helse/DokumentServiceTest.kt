@@ -2,6 +2,10 @@ package no.nav.helse
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.dokument.*
+import no.nav.helse.dokument.crypto.Cryptography
+import no.nav.helse.dokument.storage.Storage
+import no.nav.helse.dokument.storage.StorageKey
+import no.nav.helse.dokument.storage.StorageValue
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -128,7 +132,7 @@ class DokumentServiceTest {
         }
     }
 
-    private class InMemoryStorage : Storage{
+    private class InMemoryStorage : Storage {
         override fun ready() {}
 
         private val storage = mutableMapOf<StorageKey, StorageValue>()

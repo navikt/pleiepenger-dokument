@@ -1,4 +1,4 @@
-package no.nav.helse.dokument
+package no.nav.helse.dokument.storage
 
 interface Storage {
     fun hent(key : StorageKey) : StorageValue?

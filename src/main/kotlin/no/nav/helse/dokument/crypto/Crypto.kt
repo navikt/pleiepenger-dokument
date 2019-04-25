@@ -1,4 +1,4 @@
-package no.nav.helse.dokument
+package no.nav.helse.dokument.crypto
 
 import java.util.*
 import javax.crypto.Cipher

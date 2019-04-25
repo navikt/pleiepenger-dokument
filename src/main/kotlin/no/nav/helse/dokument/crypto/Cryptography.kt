@@ -1,4 +1,4 @@
-package no.nav.helse.dokument
+package no.nav.helse.dokument.crypto
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

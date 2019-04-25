@@ -1,4 +1,4 @@
-package no.nav.helse.dokument.api
+package no.nav.helse.dokument.storage
 
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.SdkClientException
@@ -9,9 +9,6 @@ import com.amazonaws.services.s3.model.CreateBucketRequest
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
-import no.nav.helse.dokument.Storage
-import no.nav.helse.dokument.StorageKey
-import no.nav.helse.dokument.StorageValue
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result

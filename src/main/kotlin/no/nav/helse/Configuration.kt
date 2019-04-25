@@ -66,4 +66,6 @@ data class Configuration(private val config : ApplicationConfig) {
             .build()
     }
     fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
+
+    fun enableVirusScan() : Boolean = config.getRequiredString("nav.enable_virus_scan", false).equals("true", true)
 }

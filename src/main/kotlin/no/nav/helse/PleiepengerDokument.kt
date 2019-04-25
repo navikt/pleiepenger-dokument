@@ -14,8 +14,10 @@ import io.ktor.jackson.jackson
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import no.nav.helse.dokument.Cryptography
+import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.DokumentService
+import no.nav.helse.dokument.storage.S3Storage
+import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.core.*
