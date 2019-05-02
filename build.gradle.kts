@@ -52,6 +52,8 @@ dependencies {
     testCompile("com.nimbusds:oauth2-oidc-sdk:6.9")
     testCompile("org.testcontainers:localstack:1.11.2")
     testCompile("io.mockk:mockk:1.9.3")
+    testCompile("org.skyscreamer:jsonassert:1.5.0")
+
 }
 
 repositories {
