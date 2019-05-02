@@ -13,7 +13,7 @@ class PleiepengerDokumentWithoutMocks {
         @JvmStatic
         fun main(args: Array<String>) {
 
-            System.setProperty("http.nonProxyHosts", "localhost")
+            System.setProperty("http.nonProxyHosts", "localhost|login.microsoftonline.com")
             System.setProperty("http.proxyHost", "127.0.0.1")
             System.setProperty("http.proxyPort", "5001")
             System.setProperty("https.proxyHost", "127.0.0.1")
@@ -46,7 +46,7 @@ class PleiepengerDokumentWithoutMocks {
                 s3ExpiryInDays = "1"
             ))
 
-            withApplication { no.nav.helse.main(q1ServiceAccountArgs) }
+            withApplication { no.nav.helse.main(q1EndUserArgs) }
         }
     }
 }
