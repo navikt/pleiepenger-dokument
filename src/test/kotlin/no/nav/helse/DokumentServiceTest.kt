@@ -1,6 +1,5 @@
 package no.nav.helse
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -9,7 +8,6 @@ import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.storage.Storage
 import no.nav.helse.dokument.storage.StorageKey
 import no.nav.helse.dokument.storage.StorageValue
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.test.Test
@@ -22,15 +20,9 @@ private val logger: Logger = LoggerFactory.getLogger("nav.DokumentServiceTest")
 class DokumentServiceTest {
 
     @Test
-    fun foo() {
-        val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
-        //objectMapper.readValue()
-    }
-    @Test
     fun `Rullering av passord for kryptering fungerer slik at dokumenter kryptert foer endringen fortsatt kan dekrypteres og hentes ut`() {
         // Setup
         val storage = InMemoryStorage()
-        val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         val virusScannerMock = mockk<VirusScanner>()
         every { runBlocking { virusScannerMock.scan(any()) }}.answers {  }
 
@@ -63,7 +55,6 @@ class DokumentServiceTest {
 
         val dokumentService1 = DokumentService(
             storage = storage,
-            objectMapper = objectMapper,
             cryptography = Cryptography(
                 encryptionPassphrase = passord1,
                 decryptionPassphrases = mapOf(passord1)
@@ -73,7 +64,6 @@ class DokumentServiceTest {
 
         val dokumentService2 = DokumentService(
             storage = storage,
-            objectMapper = objectMapper,
             cryptography = Cryptography(
                 encryptionPassphrase = passord2,
                 decryptionPassphrases = mapOf(passord1, passord2)
@@ -83,7 +73,6 @@ class DokumentServiceTest {
 
         val dokumentService3 = DokumentService(
             storage = storage,
-            objectMapper = objectMapper,
             cryptography = Cryptography(
                 encryptionPassphrase = passord3,
                 decryptionPassphrases = mapOf(passord1, passord2, passord3)

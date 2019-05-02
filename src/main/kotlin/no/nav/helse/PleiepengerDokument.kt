@@ -2,7 +2,6 @@ package no.nav.helse
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -99,7 +98,6 @@ fun Application.pleiepengerDokument() {
                             decryptionPassphrases = configuration.getDecryptionPassphrases()
                         ),
                         storage = s3Storage,
-                        objectMapper = jacksonObjectMapper().dusseldorfConfigured(),
                         virusScanner = getVirusScanner(configuration)
                     ),
                     eierResolver = EierResolver(

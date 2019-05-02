@@ -1,7 +1,5 @@
 package no.nav.helse.dokument
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.Eier
 import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.storage.Storage
@@ -15,7 +13,6 @@ private val logger: Logger = LoggerFactory.getLogger("nav.DokumentService")
 data class DokumentService(
     private val cryptography: Cryptography,
     private val storage: Storage,
-    private val objectMapper: ObjectMapper,
     private val virusScanner: VirusScanner?
 ) {
     init {
@@ -45,7 +42,7 @@ data class DokumentService(
 
         logger.trace("Dekryptert, mapper til dokument.")
 
-        return objectMapper.readValue(decrypted)
+        return DokumentSerDes.deserialize(decrypted)
     }
 
     fun slettDokument(
@@ -75,7 +72,7 @@ data class DokumentService(
 
         val encrypted = cryptography.encrypt(
             id = dokumentId.id,
-            plainText = objectMapper.writeValueAsString(dokument),
+            plainText = DokumentSerDes.serialize(dokument),
             eier = eier
         )
 

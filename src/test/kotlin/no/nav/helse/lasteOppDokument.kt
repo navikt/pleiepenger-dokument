@@ -1,5 +1,6 @@
 package no.nav.helse
 
+import com.auth0.jwt.JWT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
@@ -71,7 +72,10 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
         )
     }.apply {
         assertEquals(expectedHttpStatusCode, response.status())
-        return if(expectedHttpStatusCode == HttpStatusCode.Created) assertResponseAndGetLocationHeader() else ""
+        return if(expectedHttpStatusCode == HttpStatusCode.Created) {
+            testDokumentIdFormat(response.content)
+            assertResponseAndGetLocationHeader()
+        } else ""
     }
 }
 
@@ -102,13 +106,28 @@ fun TestApplicationEngine.lasteOppDokumentJson(
             """.trimIndent()
         ) }.apply {
             assertEquals(expectedHttpStatusCode, response.status())
-            return if(expectedHttpStatusCode == HttpStatusCode.Created) assertResponseAndGetLocationHeader() else ""
+            return if(expectedHttpStatusCode == HttpStatusCode.Created) {
+                testDokumentIdFormat(response.content)
+                assertResponseAndGetLocationHeader()
+            } else ""
         }
 }
 
 
 fun String.fromResources() : ByteArray {
     return Thread.currentThread().contextClassLoader.getResource(this).readBytes()
+}
+
+
+private fun testDokumentIdFormat(responseEntity: String?) {
+    assertNotNull(responseEntity)
+    val tree = objectMapper.readTree(responseEntity)
+    val id = tree.get("id").asText() + "."
+    val decodedId = JWT.decode(id)
+    assertNotNull(decodedId.getHeaderClaim("kid").asString())
+    assertEquals(decodedId.getHeaderClaim("typ").asString(), "JWT")
+    assertEquals(decodedId.getHeaderClaim("alg").asString(), "none")
+    assertNotNull(decodedId.getClaim("jti").asString())
 }
 
 private fun TestApplicationCall.assertResponseAndGetLocationHeader() : String {
