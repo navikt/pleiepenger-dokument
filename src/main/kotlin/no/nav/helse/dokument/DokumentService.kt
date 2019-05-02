@@ -67,7 +67,6 @@ data class DokumentService(
         dokument: Dokument,
         eier: Eier
     ) : DokumentId {
-        if (virusScanner != null) logger.trace("Scanner dokumentet for virus.")
         virusScanner?.scan(dokument)
 
         logger.trace("Generer DokumentID")

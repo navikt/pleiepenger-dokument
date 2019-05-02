@@ -2,10 +2,10 @@ package no.nav.helse.dokument
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.HttpClient
+import io.ktor.client.call.receive
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.accept
@@ -34,11 +34,15 @@ class VirusScanner(
 
     private val gateway = ClamAvGateway(url)
 
-    suspend fun scan(dokument: Dokument) : Boolean {
+    suspend fun scan(dokument: Dokument) {
+        logger.info("Scanner Dokument for virus.")
         val scanResult = gateway.scan(dokument)
         logger.info("scanResult=$scanResult")
         virusScannerCounter.labels(scanResult.name).inc()
-        return ScanResult.CLEAN == scanResult
+        if (ScanResult.INFECTED == scanResult) {
+            throw IllegalStateException("Dokumentet inneholder virus.")
+        }
+        // CLEAN/SCAN_ERROR håndteres som OK
     }
 }
 
@@ -58,14 +62,12 @@ private class ClamAvGateway(
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             return objectMapper
         }
+        private val objectMapper = configureObjectMapper(jacksonObjectMapper())
     }
-    private val monitoredHttpClient = MonitoredHttpClient( // TODO: Relativt lav connection times
+    private val monitoredHttpClient = MonitoredHttpClient(
         source = "pleiepenger-dokument",
         destination = "clam-av",
         httpClient = HttpClient(Apache) {
-            install(JsonFeature) {
-                serializer = JacksonSerializer { configureObjectMapper(this) }
-            }
             engine {
                 customizeClient { setProxyRoutePlanner() }
                 socketTimeout = 2_000  // Max time between TCP packets - default 10 seconds
@@ -83,19 +85,27 @@ private class ClamAvGateway(
         httpRequest.accept(ContentType.Application.Json)
         httpRequest.body = dokument.content
         httpRequest.url(url)
+
         val response = try {
-            monitoredHttpClient.requestAndReceive<ScanResponse>(httpRequest)
+            monitoredHttpClient.request(httpRequest)
         } catch (cause: Throwable) {
             logger.error("Uventet feil ved virusscanning av dokument", cause)
             return ScanResult.SCAN_ERROR
         }
-        return if (response.inneholderVirus()) ScanResult.INFECTED else ScanResult.CLEAN
 
-    }
+        val json = response.use { it.receive<String>() }
+        val responseTree = objectMapper.readTree(json)
 
-    private data class ScanResponse(
-        val result: String?
-    ) {
-        internal fun inneholderVirus() : Boolean = result?.toUpperCase() != "OK"
+        if (!responseTree.isArray || responseTree.size() != 1 || !responseTree.first().has("Result")) {
+            logger.error("Uventet format på response etter scanning; '$json'")
+            return ScanResult.SCAN_ERROR
+        }
+
+        val result = responseTree.first().get("Result").asText()
+        return result.tilScanResult()
     }
+}
+
+private fun String.tilScanResult(): ScanResult {
+    return if (toUpperCase() == "OK") ScanResult.CLEAN else ScanResult.INFECTED
 }

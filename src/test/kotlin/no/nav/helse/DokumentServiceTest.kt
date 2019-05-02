@@ -22,12 +22,17 @@ private val logger: Logger = LoggerFactory.getLogger("nav.DokumentServiceTest")
 class DokumentServiceTest {
 
     @Test
+    fun foo() {
+        val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+        //objectMapper.readValue()
+    }
+    @Test
     fun `Rullering av passord for kryptering fungerer slik at dokumenter kryptert foer endringen fortsatt kan dekrypteres og hentes ut`() {
         // Setup
         val storage = InMemoryStorage()
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         val virusScannerMock = mockk<VirusScanner>()
-        every { runBlocking { virusScannerMock.scan(any()) }}.returns(true)
+        every { runBlocking { virusScannerMock.scan(any()) }}.answers {  }
 
 
         val eier1 = Eier("12345")

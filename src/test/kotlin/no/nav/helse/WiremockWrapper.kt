@@ -52,9 +52,9 @@ object WiremockWrapper {
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
                         .withBody("""
-                            {
-                                "result": "OK"
-                            }
+                           [{
+                            "Result": "OK"
+                           }]
                         """.trimIndent())
                 )
         )

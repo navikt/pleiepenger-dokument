@@ -31,6 +31,7 @@ class PleiepengerDokumentWithoutMocks {
                 issuer = "https://security-token-service.nais.preprod.local",
                 authorizedSubjects = "srvpps-prosessering,srvpleiepenger-joark",
                 s3ServiceEndpoint = "https://s3.nais.preprod.local",
+                virusScanUrl = "https://clamav.nais.oera-q.local/scan",
                 s3SigningRegion = "us-east-1",
                 s3ExpiryInDays = null
             ))
@@ -40,6 +41,7 @@ class PleiepengerDokumentWithoutMocks {
                 jwksUrl = "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten_ver1",
                 issuer = "https://login.microsoftonline.com/d38f25aa-eab8-4c50-9f28-ebf92c1256f2/v2.0/",
                 s3ServiceEndpoint = "https://s3.nais.preprod.local",
+                virusScanUrl = "https://clamav.nais.oera-q.local/scan",
                 s3SigningRegion = "us-east-1",
                 s3ExpiryInDays = "1"
             ))
