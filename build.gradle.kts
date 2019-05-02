@@ -5,21 +5,21 @@ val dusseldorfKtorVersion = "1.1.5.d95f903"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.539"
+val amazonawsVersion = "1.11.544"
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val tikaVersion = "1.20"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
 
 plugins {
-    kotlin("jvm") version "1.3.30"
+    kotlin("jvm") version "1.3.31"
 }
 
 buildscript {
     apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/d95f903241194786e65a2f3f9b73afd4c2f5b410/gradle/dusseldorf-ktor.gradle.kts")
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.30")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31")
     }
 }
 
@@ -99,5 +99,5 @@ tasks.named<Jar>("jar") {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.4"
+    gradleVersion = "5.4.1"
 }
