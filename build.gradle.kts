@@ -28,10 +28,13 @@ dependencies {
     compile ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
+
     compile("io.ktor:ktor-auth-jwt:$ktorVersion")
 
     // Client
     compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
+    compile ("io.ktor:ktor-client-jackson:$ktorVersion")
+
 
     // Lagring
     compile("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")
@@ -47,6 +50,7 @@ dependencies {
     }
     testCompile("com.nimbusds:oauth2-oidc-sdk:6.9")
     testCompile("org.testcontainers:localstack:1.11.2")
+    testCompile("io.mockk:mockk:1.9.3")
 }
 
 repositories {

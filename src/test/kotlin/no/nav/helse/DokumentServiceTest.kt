@@ -1,6 +1,9 @@
 package no.nav.helse
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.dokument.*
 import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.storage.Storage
@@ -23,6 +26,9 @@ class DokumentServiceTest {
         // Setup
         val storage = InMemoryStorage()
         val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+        val virusScannerMock = mockk<VirusScanner>()
+        every { runBlocking { virusScannerMock.scan(any()) }}.returns(true)
+
 
         val eier1 = Eier("12345")
         val eier2 = Eier("678910")
@@ -56,7 +62,8 @@ class DokumentServiceTest {
             cryptography = Cryptography(
                 encryptionPassphrase = passord1,
                 decryptionPassphrases = mapOf(passord1)
-            )
+            ),
+            virusScanner = virusScannerMock
         )
 
         val dokumentService2 = DokumentService(
@@ -65,7 +72,8 @@ class DokumentServiceTest {
             cryptography = Cryptography(
                 encryptionPassphrase = passord2,
                 decryptionPassphrases = mapOf(passord1, passord2)
-            )
+            ),
+            virusScanner = virusScannerMock
         )
 
         val dokumentService3 = DokumentService(
@@ -74,39 +82,42 @@ class DokumentServiceTest {
             cryptography = Cryptography(
                 encryptionPassphrase = passord3,
                 decryptionPassphrases = mapOf(passord1, passord2, passord3)
-            )
+            ),
+            virusScanner = virusScannerMock
         )
 
         // Test
         // Lagrer de tre dokumentene so bruker hver sitt passord
-        val dokumentId1 = dokumentService1.lagreDokument(
-            dokument = dokument1,
-            eier = eier1
-        )
-        val dokumentId2 = dokumentService2.lagreDokument(
-            dokument = dokument2,
-            eier = eier2
-        )
-        val dokumentId3 = dokumentService3.lagreDokument(
-            dokument = dokument3,
-            eier = eier3
-        )
+        runBlocking {
+            val dokumentId1 = dokumentService1.lagreDokument(
+                dokument = dokument1,
+                eier = eier1
+            )
+            val dokumentId2 = dokumentService2.lagreDokument(
+                dokument = dokument2,
+                eier = eier2
+            )
+            val dokumentId3 = dokumentService3.lagreDokument(
+                dokument = dokument3,
+                eier = eier3
+            )
 
-        // dokumentId3 bør kun kunne bli hentet av dokumentService3
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = true)
+            // dokumentId3 bør kun kunne bli hentet av dokumentService3
+            hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
+            hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = false)
+            hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId3, eier = eier3, expectedDokument = dokument3, expectOk = true)
 
 
-        // dokumentId2 bør kunne hentes både med dokumentService2 og dokumentService3
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = false)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
+            // dokumentId2 bør kunne hentes både med dokumentService2 og dokumentService3
+            hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = false)
+            hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
+            hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId2, eier = eier2, expectedDokument = dokument2, expectOk = true)
 
-        // dokumentId1 bør kunne hentes med alle servicene
-        hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
-        hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+            // dokumentId1 bør kunne hentes med alle servicene
+            hentOgAssertDokument(dokumentService = dokumentService1, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+            hentOgAssertDokument(dokumentService = dokumentService2, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+            hentOgAssertDokument(dokumentService = dokumentService3, dokumentId = dokumentId1, eier = eier1, expectedDokument = dokument1, expectOk = true)
+        }
     }
 
 

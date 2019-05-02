@@ -15,8 +15,14 @@ private val logger: Logger = LoggerFactory.getLogger("nav.DokumentService")
 data class DokumentService(
     private val cryptography: Cryptography,
     private val storage: Storage,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val virusScanner: VirusScanner?
 ) {
+    init {
+        if (virusScanner == null) logger.info("Virusscanning av dokumenter før lagring er skrudd av.")
+        else logger.info("Virusscanning av dokumenter blir gjort før lagring.")
+    }
+
     fun hentDokument(
         dokumentId: DokumentId,
         eier: Eier
@@ -57,10 +63,13 @@ data class DokumentService(
         return result
     }
 
-    fun lagreDokument(
+    suspend fun lagreDokument(
         dokument: Dokument,
         eier: Eier
     ) : DokumentId {
+        if (virusScanner != null) logger.trace("Scanner dokumentet for virus.")
+        virusScanner?.scan(dokument)
+
         logger.trace("Generer DokumentID")
         val dokumentId = generateDokumentId()
         logger.trace("DokumentID=$dokumentId. Krypterer.")

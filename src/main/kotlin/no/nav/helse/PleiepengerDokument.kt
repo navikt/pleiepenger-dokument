@@ -16,6 +16,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.DokumentService
+import no.nav.helse.dokument.VirusScanner
 import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
@@ -98,7 +99,8 @@ fun Application.pleiepengerDokument() {
                             decryptionPassphrases = configuration.getDecryptionPassphrases()
                         ),
                         storage = s3Storage,
-                        objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+                        objectMapper = jacksonObjectMapper().dusseldorfConfigured(),
+                        virusScanner = getVirusScanner(configuration)
                     ),
                     eierResolver = EierResolver(
                         authorizedSubjects = authorizedSubjects
@@ -140,6 +142,12 @@ fun Application.pleiepengerDokument() {
         correlationIdAndRequestIdInMdc()
         logRequests()
     }
+}
+
+@KtorExperimentalAPI
+private fun getVirusScanner(config: Configuration) : VirusScanner? {
+    if (!config.enableVirusScan()) return null
+    return VirusScanner(url = config.getVirusScanUrl())
 }
 
 private fun JwkProviderBuilder.buildConfigured() : JwkProvider {

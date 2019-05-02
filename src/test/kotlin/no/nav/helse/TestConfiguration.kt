@@ -10,6 +10,7 @@ object TestConfiguration {
         port : Int = 8080,
         jwksUrl : String? = wireMockServer?.getJwksUrl(),
         issuer : String? = wireMockServer?.getIssuer(),
+        virusScanUrl : String? = wireMockServer?.getVirusScanUrl(),
         authorizedSubjects : String = "",
         passphrase1 : String = "password",
         passphrase2 : String = "oldpassword",
@@ -30,7 +31,8 @@ object TestConfiguration {
             Pair("CRYPTO_PASSPHRASE_2",passphrase2),
             Pair("CRYPTO_PASSPHRASE_3",passphrase3),
             Pair("nav.storage.s3.service_endpoint", "$s3ServiceEndpoint"),
-            Pair("nav.storage.s3.signing_region", "$s3SigningRegion")
+            Pair("nav.storage.s3.signing_region", "$s3SigningRegion"),
+            Pair("nav.virus_scan.url", "$virusScanUrl")
         )
 
         if (s3ExpiryInDays != null) {

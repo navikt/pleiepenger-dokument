@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("nav.WiremockWrapper")
 
 private const val jwkSetPath = "/auth-mock/jwk-set"
+private const val virusScanPath = "/virus-scan-mock/scan"
+
 
 object WiremockWrapper {
 
@@ -36,9 +38,26 @@ object WiremockWrapper {
         WireMock.configureFor(wireMockServer.port())
 
         stubJwkSet()
+        stubVirusScan()
 
         logger.info("Mock available on '{}'", wireMockServer.baseUrl())
         return wireMockServer
+    }
+
+    private fun stubVirusScan() {
+        WireMock.stubFor(
+            WireMock.put(WireMock.urlPathMatching(".*$virusScanPath.*"))
+                .willReturn(
+                    WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)
+                        .withBody("""
+                            {
+                                "result": "OK"
+                            }
+                        """.trimIndent())
+                )
+        )
     }
 
     private fun stubJwkSet() {
@@ -54,6 +73,9 @@ object WiremockWrapper {
     }
 }
 
+fun WireMockServer.getVirusScanUrl() : String {
+    return baseUrl() + virusScanPath
+}
 
 fun WireMockServer.getJwksUrl() : String {
     return baseUrl() + jwkSetPath
