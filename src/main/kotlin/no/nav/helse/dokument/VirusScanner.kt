@@ -93,11 +93,16 @@ private class ClamAvGateway(
             return ScanResult.SCAN_ERROR
         }
 
-        val json = response.use { it.receive<String>() }
-        val responseTree = objectMapper.readTree(json)
+        val responseTree = try {
+            val json = response.use { it.receive<String>() }
+            objectMapper.readTree(json)
+        } catch (cause: Throwable) {
+            logger.error("Klarte ikke å mappe response", cause)
+            return ScanResult.SCAN_ERROR
+        }
 
         if (!responseTree.isArray || responseTree.size() != 1 || !responseTree.first().has("Result")) {
-            logger.error("Uventet format på response etter scanning; '$json'")
+            logger.error("Uventet format på response etter scanning.")
             return ScanResult.SCAN_ERROR
         }
 

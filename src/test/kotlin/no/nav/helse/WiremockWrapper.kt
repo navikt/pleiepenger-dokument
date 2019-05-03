@@ -13,7 +13,6 @@ private val logger: Logger = LoggerFactory.getLogger("nav.WiremockWrapper")
 private const val jwkSetPath = "/auth-mock/jwk-set"
 private const val virusScanPath = "/virus-scan-mock/scan"
 
-
 object WiremockWrapper {
 
     fun bootstrap(
@@ -38,13 +37,21 @@ object WiremockWrapper {
         WireMock.configureFor(wireMockServer.port())
 
         stubJwkSet()
-        stubVirusScan()
+        stubVirusScanClean()
 
         logger.info("Mock available on '{}'", wireMockServer.baseUrl())
         return wireMockServer
     }
 
-    private fun stubVirusScan() {
+    fun stubVirusScanClean() {
+        stubVirusScan(false)
+    }
+
+    fun stubVirusScanInfected() {
+        stubVirusScan(true)
+    }
+
+    private fun stubVirusScan(infected: Boolean) {
         WireMock.stubFor(
             WireMock.put(WireMock.urlPathMatching(".*$virusScanPath.*"))
                 .willReturn(
@@ -53,12 +60,13 @@ object WiremockWrapper {
                         .withStatus(200)
                         .withBody("""
                            [{
-                            "Result": "OK"
+                            "Result": "${if (infected) "NoeAnnetEnnOK" else "OK"}"
                            }]
                         """.trimIndent())
                 )
         )
     }
+
 
     private fun stubJwkSet() {
         WireMock.stubFor(
@@ -84,4 +92,3 @@ fun WireMockServer.getJwksUrl() : String {
 fun WireMockServer.getIssuer() : String {
     return baseUrl()
 }
-

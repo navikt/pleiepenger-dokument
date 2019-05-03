@@ -336,5 +336,23 @@ class PleiepengerDokumentTest {
             )
         }
     }
+
+    @Test
+    fun `opplasting av virus feiler`() {
+        WiremockWrapper.stubVirusScanInfected()
+        with(engine) {
+            val liksomVirus = "iPhone_6.jpg".fromResources()
+
+            lasteOppDokumentJson(
+                token = authorizedServiceAccountAccessToken,
+                fileContent = liksomVirus,
+                fileName = "liksom_virus.jpg",
+                tittel = "Et liksom virus",
+                contentType = "image/jpeg",
+                expectedHttpStatusCode = HttpStatusCode.InternalServerError
+            )
+        }
+        WiremockWrapper.stubVirusScanClean()
+    }
 }
 
