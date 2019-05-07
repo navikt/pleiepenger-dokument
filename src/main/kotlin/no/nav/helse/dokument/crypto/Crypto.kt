@@ -27,7 +27,7 @@ class Crypto(
         try {
             val cipher = Cipher.getInstance(ALGO)
             cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(128, iv.toByteArray()))
-            return Base64.getEncoder().encodeToString(cipher.doFinal(plainText.toByteArray()))
+            return Base64.getUrlEncoder().encodeToString(cipher.doFinal(plainText.toByteArray()))
         } catch (ex: Exception) {
             throw RuntimeException("Error while encrypting text", ex)
         }
@@ -37,7 +37,7 @@ class Crypto(
         try {
             val cipher = Cipher.getInstance(ALGO)
             cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, iv.toByteArray()))
-            return String(cipher.doFinal(Base64.getDecoder().decode(encrypted)))
+            return String(cipher.doFinal(Base64.getUrlDecoder().decode(encrypted)))
         } catch (ex: Exception) {
             throw RuntimeException("Error while decrypting text", ex)
         }

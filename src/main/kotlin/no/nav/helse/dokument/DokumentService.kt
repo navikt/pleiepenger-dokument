@@ -105,9 +105,11 @@ data class DokumentService(
             eier = eier
         )
         logger.trace("Storage Key kryptert.")
-        return StorageKey(
+        val storageKey = StorageKey(
             value = encrypted
         )
+        logger.info("$storageKey")
+        return storageKey
     }
 
     private fun generateDokumentId() : DokumentId = DokumentId(id = cryptography.id())
