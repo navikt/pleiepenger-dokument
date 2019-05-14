@@ -69,4 +69,6 @@ data class Configuration(private val config : ApplicationConfig) {
 
     fun enableVirusScan() : Boolean = config.getRequiredString("nav.virus_scan.enabled", false).equals("true", true)
     fun getVirusScanUrl() : URL = URL(config.getRequiredString("nav.virus_scan.url", secret = false))
+
+    fun getBaseUrl() : String = config.getRequiredString("nav.base_url", secret = false)
 }

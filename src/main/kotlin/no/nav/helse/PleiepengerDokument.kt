@@ -103,7 +103,8 @@ fun Application.pleiepengerDokument() {
                     eierResolver = EierResolver(
                         authorizedSubjects = authorizedSubjects
                     ),
-                    contentTypeService = ContentTypeService()
+                    contentTypeService = ContentTypeService(),
+                    baseUrl = configuration.getBaseUrl()
                 )
             }
         }

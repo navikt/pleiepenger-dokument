@@ -32,7 +32,8 @@ object TestConfiguration {
             Pair("CRYPTO_PASSPHRASE_3",passphrase3),
             Pair("nav.storage.s3.service_endpoint", "$s3ServiceEndpoint"),
             Pair("nav.storage.s3.signing_region", "$s3SigningRegion"),
-            Pair("nav.virus_scan.url", "$virusScanUrl")
+            Pair("nav.virus_scan.url", "$virusScanUrl"),
+            Pair("nav.base_url", "http://localhost:$port")
         )
 
         if (s3ExpiryInDays != null) {

@@ -2,7 +2,6 @@ package no.nav.helse.dokument.api
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.features.origin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -33,7 +32,8 @@ private const val TITLE_PART_NAME = "title"
 fun Route.dokumentV1Apis(
     dokumentService: DokumentService,
     eierResolver: EierResolver,
-    contentTypeService: ContentTypeService
+    contentTypeService: ContentTypeService,
+    baseUrl: String
 ) {
 
     post(BASE_PATH) {
@@ -53,7 +53,7 @@ fun Route.dokumentV1Apis(
         logger.trace("Dokument lagret.")
         logger.info("$dokumentId")
 
-        call.respondCreatedDokument(dokumentId)
+        call.respondCreatedDokument(baseUrl, dokumentId)
     }
 
     get("$BASE_PATH/{dokumentId}") {
@@ -157,17 +157,10 @@ private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : Dokumen
     respond(HttpStatusCode.NotFound, problemDetails)
 }
 
-private suspend fun ApplicationCall.respondCreatedDokument(dokumentId: DokumentId) {
-    val url = URLBuilder(getBaseUrlFromRequest()).path(BASE_PATH,dokumentId.id).build().toString()
+private suspend fun ApplicationCall.respondCreatedDokument(baseUrl : String, dokumentId: DokumentId) {
+    val url = URLBuilder(baseUrl).path(BASE_PATH,dokumentId.id).build().toString()
     response.header(HttpHeaders.Location, url)
     respond(HttpStatusCode.Created, mapOf(Pair("id", dokumentId.id)))
-}
-
-private fun ApplicationCall.getBaseUrlFromRequest() : String {
-    val port = request.port()
-    val host = request.host()
-    val scheme = if (port == 443) "https" else request.origin.scheme
-    return "$scheme://$host$port"
 }
 
 private data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
