@@ -136,7 +136,7 @@ private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
 
     for (partData in readAllParts()) {
         if (partData is PartData.FileItem && CONTENT_PART_NAME == partData.name) {
-            content = partData.streamProvider().readBytes()
+            content = partData.streamProvider().use { it.readBytes() }
             contentType = partData.contentType.toString()
         } else if (partData is PartData.FormItem && TITLE_PART_NAME == partData.name) {
             title = partData.value
