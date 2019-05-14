@@ -164,10 +164,9 @@ private suspend fun ApplicationCall.respondCreatedDokument(dokumentId: DokumentI
 }
 
 private fun ApplicationCall.getBaseUrlFromRequest() : String {
-    val host = request.origin.host
-    val isLocalhost = "localhost".equals(host, ignoreCase = true)
-    val scheme = if (isLocalhost) "http" else "https"
-    val port = if (isLocalhost) ":${request.origin.port}" else ""
+    val port = request.port()
+    val host = request.host()
+    val scheme = if (port == 443) "https" else request.origin.scheme
     return "$scheme://$host$port"
 }
 
