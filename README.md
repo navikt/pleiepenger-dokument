@@ -43,6 +43,9 @@ POST @ /v1/dokument
 }
 ```
 
+## Bygge prosjektet
+Krever et miljø med Docker installert for å kjøre tester.
+
 ## S3
 Instansene som mellomlagrer vedlegg før søknaden er sendt inn bruker userId 'ppd-mellomlagring-soknad'
 Instansene som mellomlagrer dokumenter før søknaden er journalført bruker userId 'ppd-mellomlagring-journalforing'

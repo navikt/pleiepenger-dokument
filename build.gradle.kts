@@ -1,13 +1,12 @@
-import org.gradle.internal.impldep.org.fusesource.jansi.AnsiRenderer.test
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.1.5.df85431"
+val dusseldorfKtorVersion = "1.2.1.d8bbb4b"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.545"
+val amazonawsVersion = "1.11.563"
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val tikaVersion = "1.20"
+val tikaVersion = "1.21"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
 
@@ -16,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/df854316781b5bb450869fdf4dda3e1bc7adb547/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/d8bbb4b7e72d051c4abd9e3f8cfdc54e5f970c54/gradle/dusseldorf-ktor.gradle.kts")
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31")
