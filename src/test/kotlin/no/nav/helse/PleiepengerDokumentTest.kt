@@ -14,6 +14,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
+import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -185,7 +186,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `opplasting, henting og sletting av dokument som sytembruker`() {
         with(engine) {
-            val jpeg = "iPhone_6.jpg".fromResources()
+            val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
             // LASTER OPP Dokument
             val url = lasteOppDokumentMultipart(
@@ -249,7 +250,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `lagring og dokumenter som json istedenfor multipart fungerer`() {
         with(engine) {
-            val jpeg = "iPhone_6.jpg".fromResources()
+            val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
             // LASTER OPP DOKUMENT
             val url = lasteOppDokumentJson(
@@ -278,7 +279,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `lagring av application json dokument fungerer`() {
         with(engine) {
-            val json = "jwkset.json".fromResources()
+            val json = "jwkset.json".fromResources().readBytes()
 
             // LASTER OPP Dokument
             val url = lasteOppDokumentJson(
@@ -306,7 +307,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `lagring av zip dokument feiler`() {
         with(engine) {
-            val zip = "iphone_6.zip".fromResources()
+            val zip = "iphone_6.zip".fromResources().readBytes()
 
             // LASTER OPP Dokument
             lasteOppDokumentJson(
@@ -323,7 +324,7 @@ class PleiepengerDokumentTest {
     @Test
     fun `lagring av zip dokument med content type pdf feiler`() {
         with(engine) {
-            val zip = "iphone_6.zip".fromResources()
+            val zip = "iphone_6.zip".fromResources().readBytes()
 
             // LASTER OPP Dokument
             lasteOppDokumentJson(
@@ -339,9 +340,8 @@ class PleiepengerDokumentTest {
 
     @Test
     fun `opplasting av virus feiler`() {
-        WiremockWrapper.stubVirusScanInfected()
         with(engine) {
-            val liksomVirus = "iPhone_6.jpg".fromResources()
+            val liksomVirus = "iPhone_6_infected.jpg".fromResources().readBytes()
 
             lasteOppDokumentJson(
                 token = authorizedServiceAccountAccessToken,
@@ -352,7 +352,6 @@ class PleiepengerDokumentTest {
                 expectedHttpStatusCode = HttpStatusCode.InternalServerError
             )
         }
-        WiremockWrapper.stubVirusScanClean()
     }
 }
 

@@ -10,6 +10,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import kotlinx.io.streams.asInput
+import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import java.util.*
 import kotlin.test.assertEquals
@@ -21,7 +22,7 @@ private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
 fun TestApplicationEngine.lasteOppDokumentMultipart(
     token: String,
     fileName: String = "iPhone_6.jpg",
-    fileContent: ByteArray = fileName.fromResources(),
+    fileContent: ByteArray = fileName.fromResources().readBytes(),
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
     expectedHttpStatusCode : HttpStatusCode = HttpStatusCode.Created
@@ -83,7 +84,7 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
 fun TestApplicationEngine.lasteOppDokumentJson(
     token: String,
     fileName: String = "iPhone_6.jpg",
-    fileContent: ByteArray = fileName.fromResources(),
+    fileContent: ByteArray = fileName.fromResources().readBytes(),
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
     eier : String? = null,
@@ -112,12 +113,6 @@ fun TestApplicationEngine.lasteOppDokumentJson(
             } else ""
         }
 }
-
-
-fun String.fromResources() : ByteArray {
-    return Thread.currentThread().contextClassLoader.getResource(this).readBytes()
-}
-
 
 private fun testDokumentIdFormat(responseEntity: String?) {
     assertNotNull(responseEntity)

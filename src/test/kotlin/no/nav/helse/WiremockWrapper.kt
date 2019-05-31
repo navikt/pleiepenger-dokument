@@ -20,6 +20,7 @@ object WiremockWrapper {
         extensions : Array<Extension> = arrayOf()) : WireMockServer {
 
         val wireMockConfiguration = WireMockConfiguration.options()
+        wireMockConfiguration.extensions(VirsScanResponseTransformer())
 
         extensions.forEach {
             wireMockConfiguration.extensions(it)
@@ -37,36 +38,23 @@ object WiremockWrapper {
         WireMock.configureFor(wireMockServer.port())
 
         stubJwkSet()
-        stubVirusScanClean()
+        stubVirusScan()
 
         logger.info("Mock available on '{}'", wireMockServer.baseUrl())
         return wireMockServer
     }
 
-    fun stubVirusScanClean() {
-        stubVirusScan(false)
-    }
-
-    fun stubVirusScanInfected() {
-        stubVirusScan(true)
-    }
-
-    private fun stubVirusScan(infected: Boolean) {
+    private fun stubVirusScan() {
         WireMock.stubFor(
             WireMock.put(WireMock.urlPathMatching(".*$virusScanPath.*"))
                 .willReturn(
                     WireMock.aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)
-                        .withBody("""
-                           [{
-                            "Result": "${if (infected) "NoeAnnetEnnOK" else "OK"}"
-                           }]
-                        """.trimIndent())
+                        .withTransformers("virus-scan")
                 )
         )
     }
-
 
     private fun stubJwkSet() {
         WireMock.stubFor(
