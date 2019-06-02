@@ -19,7 +19,6 @@ import no.nav.helse.dokument.VirusScanner
 import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
-import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
@@ -113,12 +112,6 @@ fun Application.pleiepengerDokument() {
         MetricsRoute()
         HealthRoute(
             healthChecks = setOf(
-                HttpRequestHealthCheck(
-                    app = appId,
-                    urlExpectedHttpStatusCodeMap = mapOf(
-                        configuration.getJwksUrl() to HttpStatusCode.OK
-                    )
-                ),
                 S3StorageHealthCheck(
                     s3Storage = s3Storage
                 )

@@ -1,11 +1,13 @@
 package no.nav.helse.dokument
 
+import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPut
 import io.prometheus.client.Counter
 import org.json.JSONArray
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.net.URL
 import java.time.Duration
 
@@ -49,19 +51,21 @@ private class ClamAvGateway(
         private val logger = LoggerFactory.getLogger("nav.ClamAvGateway")
         private val timeout = Duration.ofSeconds(2).toMillisPart()
         private val headers = mapOf(
-            "Accept" to "application/json"
+            Headers.ACCEPT to "application/json",
+            Headers.CONTENT_TYPE to "text/plain"
         )
     }
 
+    private val urlString = url.toString()
     internal suspend fun scan(dokument: Dokument) : ScanResult {
+        val contentStream = { ByteArrayInputStream(dokument.content) }
 
-        val (_, _, res) = url.toString()
+        val (_, _, res) = urlString
             .httpPut()
-            .body(dokument.content)
+            .body(contentStream)
             .timeout(timeout)
             .header(headers)
-            .responseString()
-            //.awaitStringResponseResult()
+            .awaitStringResponseResult()
 
         return res.fold(
             { success ->

@@ -36,8 +36,8 @@ dependencies {
     compile ("com.github.kittinunf.fuel:fuel-coroutines:2.1.0")
     compile("org.json:json:20180813")
 
-    compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
-    compile ("io.ktor:ktor-client-jackson:$ktorVersion")
+    //compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
+    //compile ("io.ktor:ktor-client-jackson:$ktorVersion")
 
 
     // Lagring
