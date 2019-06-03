@@ -10,6 +10,7 @@ import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
@@ -19,12 +20,13 @@ import no.nav.helse.dokument.VirusScanner
 import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
+import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.helse.dusseldorf.ktor.metrics.CallMonitoring
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
+import no.nav.helse.dusseldorf.ktor.metrics.init
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -114,16 +116,18 @@ fun Application.pleiepengerDokument() {
             healthChecks = setOf(
                 S3StorageHealthCheck(
                     s3Storage = s3Storage
+                ),
+                HttpRequestHealthCheck(
+                    mapOf(
+                        configuration.getJwksUrl() to HttpStatusCode.OK
+                    )
                 )
             )
         )
     }
 
-    install(CallMonitoring) {
-        app = appId
-        overridePaths = mapOf(
-            Regex("/v1/dokument/.*") to "/v1/dokument"
-        )
+    install(MicrometerMetrics) {
+        init(appId)
     }
 
     install(CallId) {

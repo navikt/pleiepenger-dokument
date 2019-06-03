@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.2.1.d8bbb4b"
+val dusseldorfKtorVersion = "1.2.1.7cbc5fc"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
@@ -15,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/d8bbb4b7e72d051c4abd9e3f8cfdc54e5f970c54/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/26ae0acd2baed1b0adc7a81daf002e3c003b8836/gradle/dusseldorf-ktor.gradle.kts")
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31")
@@ -28,17 +28,10 @@ dependencies {
     compile ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
-
-    compile("io.ktor:ktor-auth-jwt:$ktorVersion")
+    compile ("io.ktor:ktor-auth-jwt:$ktorVersion")
 
     // Client
-    compile ("com.github.kittinunf.fuel:fuel:2.1.0")
-    compile ("com.github.kittinunf.fuel:fuel-coroutines:2.1.0")
-    compile("org.json:json:20180813")
-
-    //compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
-    //compile ("io.ktor:ktor-client-jackson:$ktorVersion")
-
+    compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
 
     // Lagring
     compile("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")
