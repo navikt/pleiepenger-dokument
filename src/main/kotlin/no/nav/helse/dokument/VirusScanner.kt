@@ -4,6 +4,7 @@ import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpPut
 import io.prometheus.client.Counter
+import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import org.json.JSONArray
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -45,7 +46,7 @@ private enum class ScanResult {
 
 
 private class ClamAvGateway(
-    private val url: URL
+    url: URL
 ) {
     private companion object {
         private val logger = LoggerFactory.getLogger("nav.ClamAvGateway")
@@ -60,13 +61,18 @@ private class ClamAvGateway(
     internal suspend fun scan(dokument: Dokument) : ScanResult {
         val contentStream = { ByteArrayInputStream(dokument.content) }
 
-        val (_, _, res) = urlString
-            .httpPut()
-            .body(contentStream)
-            .timeout(timeout)
-            .header(headers)
-            .awaitStringResponseResult()
-
+        val (_, _, res) = Operation.monitored(
+            app = "pleiepenger-dokument",
+            operation = "scanne-dokument-for-virus",
+            resultResolver = { 200 == it.second.statusCode}
+        ) {
+            urlString
+                .httpPut()
+                .body(contentStream)
+                .timeout(timeout)
+                .header(headers)
+                .awaitStringResponseResult()
+        }
         return res.fold(
             { success ->
                 try {
@@ -79,7 +85,7 @@ private class ClamAvGateway(
                     ScanResult.SCAN_ERROR
                 }
 
-            }, // TOD: Result
+            },
             { error ->
                 logger.error("Feil ved virusscan. $error")
                 ScanResult.SCAN_ERROR
