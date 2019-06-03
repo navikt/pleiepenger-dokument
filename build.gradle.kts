@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.2.1.7cbc5fc"
+val dusseldorfKtorVersion = "1.2.1.26ae0ac"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
