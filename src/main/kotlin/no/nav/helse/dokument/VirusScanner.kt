@@ -9,11 +9,11 @@ import org.json.JSONArray
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
-import java.net.URL
+import java.net.URI
 import java.time.Duration
 
 class VirusScanner(
-    url: URL
+    url: URI
 ) {
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger("nav.VirusScanner")
@@ -46,7 +46,7 @@ private enum class ScanResult {
 
 
 private class ClamAvGateway(
-    url: URL
+    url: URI
 ) {
     private companion object {
         private val logger = LoggerFactory.getLogger("nav.ClamAvGateway")

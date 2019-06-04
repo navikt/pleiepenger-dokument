@@ -47,7 +47,7 @@ fun Application.pleiepengerDokument() {
 
     install(Authentication) {
         val issuer = configuration.getIssuer()
-        val jwksProvider = JwkProviderBuilder(configuration.getJwksUrl()).buildConfigured()
+        val jwksProvider = JwkProviderBuilder(configuration.getJwksUrl().toURL()).buildConfigured()
 
         jwt {
             verifier(jwksProvider, issuer)
@@ -132,6 +132,10 @@ fun Application.pleiepengerDokument() {
 
     install(CallId) {
         fromXCorrelationIdHeader()
+    }
+
+    intercept(ApplicationCallPipeline.Monitoring) {
+        call.request.log()
     }
 
     install(CallLogging) {

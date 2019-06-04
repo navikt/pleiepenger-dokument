@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.2.1.26ae0ac"
+val dusseldorfKtorVersion = "1.2.1.8edfbd2"
 val ktorVersion = ext.get("ktorVersion").toString()
 
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.563"
+val amazonawsVersion = "1.11.564"
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val tikaVersion = "1.21"
 
@@ -15,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/26ae0acd2baed1b0adc7a81daf002e3c003b8836/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/8edfbd24be87c3fe009d878998f0894b8d249324/gradle/dusseldorf-ktor.gradle.kts")
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31")

@@ -10,7 +10,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.core.getOptionalList
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
-import java.net.URL
+import java.net.URI
 
 private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
 
@@ -51,7 +51,7 @@ data class Configuration(private val config : ApplicationConfig) {
         )
     }
 
-    fun getJwksUrl() : URL = URL(config.getRequiredString("nav.authorization.jwks_url", secret = false))
+    fun getJwksUrl() = URI(config.getRequiredString("nav.authorization.jwks_url", secret = false))
     fun getIssuer() : String = config.getRequiredString("nav.authorization.issuer", secret = false)
 
     private fun getS3AccessKey() : String = config.getRequiredString("nav.storage.s3.access_key", secret = true)
@@ -68,7 +68,7 @@ data class Configuration(private val config : ApplicationConfig) {
     fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
 
     fun enableVirusScan() : Boolean = config.getRequiredString("nav.virus_scan.enabled", false).equals("true", true)
-    fun getVirusScanUrl() : URL = URL(config.getRequiredString("nav.virus_scan.url", secret = false))
+    fun getVirusScanUrl() = URI(config.getRequiredString("nav.virus_scan.url", secret = false))
 
     fun getBaseUrl() : String = config.getRequiredString("nav.base_url", secret = false)
 }
