@@ -21,8 +21,10 @@ import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
+import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
+import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
@@ -113,13 +115,15 @@ fun Application.pleiepengerDokument() {
         DefaultProbeRoutes()
         MetricsRoute()
         HealthRoute(
-            healthChecks = setOf(
-                S3StorageHealthCheck(
-                    s3Storage = s3Storage
-                ),
-                HttpRequestHealthCheck(
-                    mapOf(
-                        configuration.getJwksUrl() to HttpStatusCode.OK
+            healthService = HealthService(
+                setOf(
+                    S3StorageHealthCheck(
+                        s3Storage = s3Storage
+                    ),
+                    HttpRequestHealthCheck(
+                        mapOf(
+                            configuration.getJwksUrl() to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
+                        )
                     )
                 )
             )
