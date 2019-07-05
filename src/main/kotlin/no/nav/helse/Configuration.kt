@@ -1,5 +1,6 @@
 package no.nav.helse
 
+import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
@@ -13,6 +14,8 @@ import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import java.net.URI
 
 private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
+private const val S3_HTTP_REQUEST_TIMEOUT = 3 * 1000
+private const val S3_HTTP_REQUEST_RETIRES = 3
 
 @KtorExperimentalAPI
 data class Configuration(private val config : ApplicationConfig) {
@@ -63,6 +66,11 @@ data class Configuration(private val config : ApplicationConfig) {
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(getS3ServiceEndpoint(), getS3SigningRegion()))
             .enablePathStyleAccess()
             .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(getS3AccessKey(), getS3SecretKey())))
+            .withClientConfiguration(
+                ClientConfiguration()
+                    .withRequestTimeout(S3_HTTP_REQUEST_TIMEOUT)
+                    .withMaxErrorRetry(S3_HTTP_REQUEST_RETIRES)
+            )
             .build()
     }
     fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()

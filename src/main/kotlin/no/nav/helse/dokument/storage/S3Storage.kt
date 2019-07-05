@@ -15,24 +15,26 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
-private const val BUCKET_NAME = "pleiepengerdokument"
-
-private val s3Histogram = Histogram
-    .build("s3_operation_histogram",
-        "Histogram for operasjoner gjort mot S3.")
-    .labelNames("operation")
-    .register()
-
-private val s3Counter = Counter
-    .build(
-        "s3_operation_counter",
-        "Counter for utfall a operasjoner gjort mot S3.")
-    .labelNames("operation", "status")
-    .register()
-
 class S3Storage(private val s3 : AmazonS3,
                 private val expirationInDays : Int?) : Storage {
+
+    private companion object {
+        private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
+        private const val BUCKET_NAME = "pleiepengerdokument"
+
+        private val s3Histogram = Histogram
+            .build("s3_operation_histogram",
+                "Histogram for operasjoner gjort mot S3.")
+            .labelNames("operation")
+            .register()
+
+        private val s3Counter = Counter
+            .build(
+                "s3_operation_counter",
+                "Counter for utfall a operasjoner gjort mot S3.")
+            .labelNames("operation", "status")
+            .register()
+    }
 
     override fun ready() {
         s3Operation (
@@ -44,7 +46,7 @@ class S3Storage(private val s3 : AmazonS3,
     override fun hent(key: StorageKey): StorageValue? {
         val objectAsString = s3Operation(
             operation = { s3.getObjectAsString(BUCKET_NAME, key.value) },
-            allowServiceException = true,
+            allowNotFound = true,
             operationName = "getObjectAsString"
         )
 
@@ -140,14 +142,14 @@ class S3Storage(private val s3 : AmazonS3,
     private fun<T> s3Operation(
         operation : () -> T,
         operationName : String,
-        allowServiceException : Boolean = false) : T? {
+        allowNotFound : Boolean = false) : T? {
         val timer = s3Histogram.labels(operationName).startTimer()
         return try {
             val result = operation.invoke()
             s3Counter.labels(operationName, "success").inc()
             result
         } catch (cause : AmazonServiceException) {
-            if (allowServiceException) return null
+            if (404 == cause.statusCode && allowNotFound) return null
             else {
                 s3Counter.labels(operationName, "s3Failure").inc()
                 throw IllegalStateException("Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}", cause)
@@ -167,8 +169,11 @@ class S3Storage(private val s3 : AmazonS3,
 class S3StorageHealthCheck(
     private val s3Storage: S3Storage
 ) : HealthCheck {
-    private val logger: Logger = LoggerFactory.getLogger("nav.S3StorageHealthCheck")
-    private val name = "S3StorageHealthCheck"
+
+    private companion object {
+        private val logger: Logger = LoggerFactory.getLogger("nav.S3StorageHealthCheck")
+        private val name = "S3StorageHealthCheck"
+    }
 
     override suspend fun check(): Result {
         return try {
