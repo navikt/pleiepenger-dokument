@@ -9,11 +9,10 @@ jobs:
       - image: 'circleci/openjdk:11-jdk'
     steps:
       - checkout
-      - setup_remote_docker
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
-      - run: ./gradlew check shadowJar
+      - run: ./gradlew shadowJar
       - save_cache:
           paths:
             - ~/.gradle
@@ -22,11 +21,9 @@ jobs:
           image: navikt/pleiepenger-dokument
   check:
     working_directory: ~/pleiepenger-dokument
-    docker:
-      - image: 'circleci/openjdk:11-jdk'
+    machine: true
     steps:
       - checkout
-      - setup_remote_docker
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
@@ -40,17 +37,14 @@ workflows:
   version: 2
   deploy-docker-and-nais:
     jobs:
+      - check
       - build:
           context: NAIS deployment
+          requires:
+            - check
           filters:
             branches:
               only:
-                - master
-                - /dev-.*/
-      - check:
-          filters:
-            branches:
-              ignore:
                 - master
                 - /dev-.*/
       - nais/deploy:
