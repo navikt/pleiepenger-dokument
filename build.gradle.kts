@@ -1,25 +1,22 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 val dusseldorfKtorVersion = "1.2.2.8f413ad"
 val ktorVersion = ext.get("ktorVersion").toString()
-
-val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.587"
 val slf4jVersion = ext.get("slf4jVersion").toString()
+val wiremockVersion = "2.19.0"
+val amazonawsVersion = "1.11.589"
 val tikaVersion = "1.21"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
 
 plugins {
     kotlin("jvm") version "1.3.40"
+    id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 buildscript {
     apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/8f413ad909a79e6f5e5897f43f009152ab2f0f35/gradle/dusseldorf-ktor.gradle.kts")
-
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.40")
-    }
 }
 
 dependencies {
@@ -74,24 +71,15 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.named<KotlinCompile>("compileTestKotlin") {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-tasks.named<Jar>("jar") {
-    baseName = "app"
-
+tasks.withType<ShadowJar> {
+    archiveBaseName.set("app")
+    archiveClassifier.set("")
     manifest {
-        attributes["Main-Class"] = mainClass
-        attributes["Class-Path"] = configurations["compile"].map {
-            it.name
-        }.joinToString(separator = " ")
-    }
-
-    configurations["compile"].forEach {
-        val file = File("$buildDir/libs/${it.name}")
-        if (!file.exists())
-            it.copyTo(file)
+        attributes(
+            mapOf(
+                "Main-Class" to mainClass
+            )
+        )
     }
 }
 
