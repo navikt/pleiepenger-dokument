@@ -21,7 +21,8 @@ jobs:
           image: navikt/pleiepenger-dokument
   check:
     working_directory: ~/pleiepenger-dokument
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - restore_cache:
