@@ -1,0 +1,53 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: pleiepenger-dokument
+  namespace: default
+  labels:
+    team: {{team}}
+spec:
+  image: {{version}}
+  port: 8080
+  liveness:
+    path: isalive
+    initialDelay: 20
+    timeout: 1
+    periodSeconds: 5
+    failureThreshold: 10
+  readiness:
+    path: isready
+    initialDelay: 20
+    timeout: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  ingresses:
+    - https://pleiepenger-dokument.nais.preprod.local
+  replicas:
+    min: 1
+    max: 1
+    cpuThresholdPercentage: 90
+  prometheus:
+    enabled: true
+    path: /metrics
+  vault:
+    enabled: true
+  env:
+    - name: JWKS_URL
+      value: https://security-token-service.nais.preprod.local/rest/v1/sts/jwks
+    - name: ISSUER
+      value: https://security-token-service.nais.preprod.local
+    - name: AUTHORIZED_SUBJECTS
+      value: srvpps-prosessering,srvpleiepenger-joark,srvpps-mottak
+    - name: S3_SERVICE_ENDPOINT
+      value: http://s3.nais-rook
+    - name: S3_SIGNING_REGION
+      value: us-east-1
+    - name: VIRUS_SCAN_ENABLED
+      value: "false"
+    - name: BASE_URL
+      value: https://pleiepenger-dokument.nais.preprod.local
