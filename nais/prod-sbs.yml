@@ -50,5 +50,3 @@ spec:
       value: "1"
     - name: VIRUS_SCAN_URL
       value: http://clamav.nais.svc.nais.local/scan
-    - name: VAULT_ENABLED
-      value: "true"
