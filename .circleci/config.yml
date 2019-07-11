@@ -98,3 +98,33 @@ workflows:
                 - /dev-.*/
           requires:
             - build
+      - nais/deploy:
+          name: prod-sbs-deploy
+          build-and-push-docker-image: false
+          repo: navikt/pleiepenger-dokument
+          image: navikt/pleiepenger-dokument
+          github-app-id: 35124
+          nais-template: nais/prod-sbs.yml
+          environment: prod-sbs
+          team: dusseldorf
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build
+      - nais/deploy:
+          name: prod-fss-deploy
+          build-and-push-docker-image: false
+          repo: navikt/pleiepenger-dokument
+          image: navikt/pleiepenger-dokument
+          github-app-id: 35124
+          nais-template: nais/prod-fss.yml
+          environment: prod-fss
+          team: dusseldorf
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build
