@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.2.2.8f413ad"
+val dusseldorfKtorVersion = "1.2.2.a0b6647"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.589"
+val amazonawsVersion = "1.11.601"
 val tikaVersion = "1.21"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
@@ -16,7 +16,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/8f413ad909a79e6f5e5897f43f009152ab2f0f35/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/a0b664771b80ee748a3b3a9220de1fb205ab3871/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -25,7 +25,7 @@ dependencies {
     compile ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
     compile ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
-    compile ("io.ktor:ktor-auth-jwt:$ktorVersion")
+    compile ( "no.nav.helse:dusseldorf-ktor-auth:$dusseldorfKtorVersion")
 
     // Client
     compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
@@ -38,7 +38,7 @@ dependencies {
     compile("org.apache.tika:tika-core:$tikaVersion")
 
     // Test
-    testCompile ("com.github.tomakehurst:wiremock:$wiremockVersion")
+    testCompile ( "no.nav.helse:dusseldorf-ktor-test-support:$dusseldorfKtorVersion")
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
