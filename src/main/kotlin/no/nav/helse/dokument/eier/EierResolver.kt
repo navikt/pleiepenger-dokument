@@ -6,32 +6,31 @@ import io.ktor.auth.principal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
-private val logger: Logger = LoggerFactory.getLogger("nav.EierResolver")
-
-class EierResolver(
-    authorizedSubjects : List<String>
+internal class EierResolver(
+    private val hentEierFra: HentEierFra
 ) {
-    private val tillattEierFraQuery =
-        authorizedSubjects.isNotEmpty() // Kun tillatt å hente eier fra query når det er white listed subjects
-
-    init {
-        logger.info("TillatEierFraQuery=$tillattEierFraQuery")
+    private companion object {
+        private val logger: Logger = LoggerFactory.getLogger(EierResolver::class.java)
     }
 
-    fun hentEier(call: ApplicationCall) : Eier {
-        var eierId : String? = null
-        if (tillattEierFraQuery) {
-            logger.trace("Ser om det er en query parameter 'eier' som skal brukes")
-            eierId = call.request.queryParameters["eier"]
-        }
-        return if (!eierId.isNullOrEmpty())  {
-            logger.trace("Bruker eier fra query parameter 'eier'")
-            Eier(eierId)
-        } else  {
-            logger.trace("Forsøker å hente eier fra JWT token 'subject' claim")
-            val jwtPrincipal : JWTPrincipal = call.principal() ?: throw IllegalStateException("Principal ikke satt.")
-            Eier(jwtPrincipal.payload.subject)
-        }
+    init {
+        logger.info("HentEierFra=${hentEierFra.name}")
+    }
+
+    internal fun hentEier(call: ApplicationCall) : Eier = when (hentEierFra) {
+        HentEierFra.ACCESS_TOKEN_SUB_CLAIM -> eierFraPrincipal(call)
+        HentEierFra.QUERY_PARAMETER_EIER -> eierFraQuery(call)
+    }
+
+    private fun eierFraPrincipal(call: ApplicationCall) : Eier {
+        logger.trace("Forsøker å hente eier fra JWT token 'sub' claim")
+        val jwtPrincipal : JWTPrincipal = call.principal() ?: throw IllegalStateException("Principal ikke satt.")
+        return Eier(jwtPrincipal.payload.subject)
+    }
+
+    private fun eierFraQuery(call: ApplicationCall) : Eier {
+        logger.trace("Ser om det er en query parameter 'eier' som skal brukes")
+        val eierId = call.request.queryParameters["eier"] ?: throw IllegalStateException("'eier' query parameter ikke satt.")
+        return Eier(eierId)
     }
 }

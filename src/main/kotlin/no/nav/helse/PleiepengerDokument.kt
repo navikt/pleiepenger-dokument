@@ -1,12 +1,8 @@
 package no.nav.helse
 
-import com.auth0.jwk.JwkProvider
-import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.jwt.jwt
 import io.ktor.features.*
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -21,6 +17,10 @@ import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dokument.eier.EierResolver
+import no.nav.helse.dusseldorf.ktor.auth.ClaimRule
+import no.nav.helse.dusseldorf.ktor.auth.Issuer
+import no.nav.helse.dusseldorf.ktor.auth.allIssuers
+import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.core.*
@@ -32,7 +32,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
+import java.net.URI
 
 private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokument")
 
@@ -45,33 +45,10 @@ fun Application.pleiepengerDokument() {
     DefaultExports.initialize()
 
     val configuration = Configuration(environment.config)
-
-    val authorizedSubjects = configuration.getAuthorizedSubjects()
+    val issuers = configuration.issuers()
 
     install(Authentication) {
-        val issuer = configuration.getIssuer()
-        val jwksProvider = JwkProviderBuilder(configuration.getJwksUrl().toURL()).buildConfigured()
-
-        jwt {
-            verifier(jwksProvider, issuer)
-            realm = appId
-            validate { credentials ->
-                when {
-                    authorizedSubjects.isEmpty() -> {
-                        logger.trace("Authorized: Ettersom alle subject kan benytte tjenesten.")
-                        return@validate JWTPrincipal(credentials.payload)
-                    }
-                    credentials.payload.subject in authorizedSubjects -> {
-                        logger.trace("Authorized : ${credentials.payload.subject} er i listen [${authorizedSubjects.joinToString()}]")
-                        return@validate JWTPrincipal(credentials.payload)
-                    }
-                    else -> {
-                        logger.warn("Unauthorized : ${credentials.payload.subject} er ikke i listen [${authorizedSubjects.joinToString()}]")
-                        return@validate null
-                    }
-                }
-            }
-        }
+        multipleJwtIssuers(issuers)
     }
 
     install(ContentNegotiation) {
@@ -93,7 +70,7 @@ fun Application.pleiepengerDokument() {
     install(CallIdRequired)
 
     install(Routing) {
-        authenticate {
+        authenticate(*issuers.allIssuers()) {
             requiresCallId {
                 dokumentV1Apis(
                     dokumentService = DokumentService(
@@ -105,7 +82,7 @@ fun Application.pleiepengerDokument() {
                         virusScanner = getVirusScanner(configuration)
                     ),
                     eierResolver = EierResolver(
-                        authorizedSubjects = authorizedSubjects
+                        hentEierFra = configuration.hentEierFra()
                     ),
                     contentTypeService = ContentTypeService(),
                     baseUrl = configuration.getBaseUrl()
@@ -121,11 +98,7 @@ fun Application.pleiepengerDokument() {
                     S3StorageHealthCheck(
                         s3Storage = s3Storage
                     ),
-                    HttpRequestHealthCheck(
-                        mapOf(
-                            configuration.getJwksUrl() to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
-                        )
-                    )
+                    HttpRequestHealthCheck(issuers.healthCheckMap())
                 )
             )
         )
@@ -155,8 +128,11 @@ private fun getVirusScanner(config: Configuration) : VirusScanner? {
     return VirusScanner(url = config.getVirusScanUrl())
 }
 
-private fun JwkProviderBuilder.buildConfigured() : JwkProvider {
-    cached(10, 24, TimeUnit.HOURS)
-    rateLimited(10, 1, TimeUnit.MINUTES)
-    return build()
+private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(
+    initial : MutableMap<URI, HttpRequestHealthConfig> = mutableMapOf()
+) : Map<URI, HttpRequestHealthConfig> {
+    forEach { issuer, _ ->
+        initial[issuer.jwksUri()] = HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
+    }
+    return initial.toMap()
 }

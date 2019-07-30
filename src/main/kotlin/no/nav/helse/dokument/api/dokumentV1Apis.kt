@@ -30,7 +30,7 @@ private const val MAX_DOKUMENT_SIZE = 8 * 1024 * 1024
 private const val CONTENT_PART_NAME = "content"
 private const val TITLE_PART_NAME = "title"
 
-fun Route.dokumentV1Apis(
+internal fun Route.dokumentV1Apis(
     dokumentService: DokumentService,
     eierResolver: EierResolver,
     contentTypeService: ContentTypeService,

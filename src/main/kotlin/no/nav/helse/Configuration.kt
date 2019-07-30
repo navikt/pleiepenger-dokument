@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.dokument.eier.HentEierFra
 import no.nav.helse.dusseldorf.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.core.getOptionalList
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
@@ -27,7 +28,10 @@ internal data class Configuration(private val config : ApplicationConfig) {
     }
 
     private val issuers = config.issuers().withAdditionalClaimRules(
-        mapOf(NAIS_STS_ALIAS to setOf(StandardClaimRules.Companion.EnforceSubjectOneOf(getAuthorizedSubjects().toSet())))
+        mapOf(
+            NAIS_STS_ALIAS to setOf(StandardClaimRules.Companion.EnforceSubjectOneOf(getNaisStsAuthorizedClients().toSet())),
+            LOGIN_SERVICE_V1_ALIAS to setOf(EnforceEqualsOrContains("acr", "Level4"))
+        )
     )
 
     init {
@@ -64,17 +68,15 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
     // Auth
     private fun isLoginServiceV1Configured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() }.isNotEmpty()
-    private fun getAuthorizedSubjects(): List<String> {
+    private fun getNaisStsAuthorizedClients(): List<String> {
         return config.getOptionalList(
-            key = "nav.authorization.authorized_subjects",
+            key = "nav.nais-sts.authorized_clients",
             builder = { value -> value},
             secret = false
         )
     }
     internal fun issuers() = issuers
-
-    fun getJwksUrl() = URI(config.getRequiredString("nav.authorization.jwks_url", secret = false))
-    fun getIssuer() : String = config.getRequiredString("nav.authorization.issuer", secret = false)
+    internal fun hentEierFra() = if (isLoginServiceV1Configured()) HentEierFra.ACCESS_TOKEN_SUB_CLAIM else HentEierFra.QUERY_PARAMETER_EIER
 
     // S3
     private fun getS3AccessKey() : String = config.getRequiredString("nav.storage.s3.access_key", secret = true)
