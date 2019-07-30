@@ -20,6 +20,7 @@ import no.nav.helse.dokument.VirusScanner
 import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
+import no.nav.helse.dokument.eier.EierResolver
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.core.*

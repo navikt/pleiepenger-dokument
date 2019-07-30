@@ -1,9 +1,8 @@
-package no.nav.helse.dokument.api
+package no.nav.helse.dokument.eier
 
 import io.ktor.application.ApplicationCall
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.principal
-import no.nav.helse.Eier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

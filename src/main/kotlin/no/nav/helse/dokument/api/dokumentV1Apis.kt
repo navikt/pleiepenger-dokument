@@ -18,6 +18,7 @@ import io.ktor.routing.*
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dokument.DokumentId
 import no.nav.helse.dokument.DokumentService
+import no.nav.helse.dokument.eier.EierResolver
 import no.nav.helse.dusseldorf.ktor.core.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

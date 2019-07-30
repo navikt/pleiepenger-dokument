@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav.helse.dokument.eier
 
 /**
  * Eier av dokumentet
