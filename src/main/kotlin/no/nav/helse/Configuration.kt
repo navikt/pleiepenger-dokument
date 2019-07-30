@@ -8,30 +8,46 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.helse.dusseldorf.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.core.getOptionalList
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import java.net.URI
 
-private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
-private const val S3_HTTP_REQUEST_TIMEOUT = 3 * 1000
-private const val S3_HTTP_REQUEST_RETIRES = 3
-
 @KtorExperimentalAPI
-data class Configuration(private val config : ApplicationConfig) {
+internal data class Configuration(private val config : ApplicationConfig) {
 
+    private companion object {
+        private const val CRYPTO_PASSPHRASE_PREFIX = "CRYPTO_PASSPHRASE_"
+        private const val S3_HTTP_REQUEST_TIMEOUT = 3 * 1000
+        private const val S3_HTTP_REQUEST_RETIRES = 3
+
+        private const val NAIS_STS_ALIAS = "nais-sts"
+        private const val LOGIN_SERVICE_V1_ALIAS = "login-service-v1"
+    }
+
+    private val issuers = config.issuers().withAdditionalClaimRules(
+        mapOf(NAIS_STS_ALIAS to setOf(StandardClaimRules.Companion.EnforceSubjectOneOf(getAuthorizedSubjects().toSet())))
+    )
+
+    init {
+        if (issuers.isEmpty()) throw IllegalStateException("Må konfigureres minst en issuer.")
+        if (isLoginServiceV1Configured() && issuers.size != 1) {
+            throw IllegalStateException("Når issuer '$LOGIN_SERVICE_V1_ALIAS' er konfigurert må det være den eneste.")
+        }
+    }
+
+    // Crypto
     private fun getCryptoPasshrase(key: String) : String {
         val configValue = config.getOptionalString(key = key, secret = true)
         if (configValue != null) return configValue
         return System.getenv(key) ?: throw IllegalStateException("Environment Variable $key må være satt")
     }
-
-    fun getEncryptionPassphrase() : Pair<Int, String> {
+    internal fun getEncryptionPassphrase() : Pair<Int, String> {
         val identifier = config.getRequiredString("nav.crypto.passphrase.encryption_identifier", secret = false).toInt()
         val passphrase = getCryptoPasshrase("$CRYPTO_PASSPHRASE_PREFIX$identifier")
         return Pair(identifier, passphrase)
     }
-
     fun getDecryptionPassphrases() : Map<Int, String> {
         val identifiers = config.getOptionalList( // Kan være kun den vi krypterer med
             key = "nav.crypto.passphrase.decryption_identifiers",
@@ -46,22 +62,26 @@ data class Configuration(private val config : ApplicationConfig) {
         return decryptionPassphrases.toMap()
     }
 
-    fun getAuthorizedSubjects(): List<String> {
+    // Auth
+    private fun isLoginServiceV1Configured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() }.isNotEmpty()
+    private fun getAuthorizedSubjects(): List<String> {
         return config.getOptionalList(
             key = "nav.authorization.authorized_subjects",
             builder = { value -> value},
             secret = false
         )
     }
+    internal fun issuers() = issuers
 
     fun getJwksUrl() = URI(config.getRequiredString("nav.authorization.jwks_url", secret = false))
     fun getIssuer() : String = config.getRequiredString("nav.authorization.issuer", secret = false)
 
+    // S3
     private fun getS3AccessKey() : String = config.getRequiredString("nav.storage.s3.access_key", secret = true)
     private fun getS3SecretKey() : String = config.getRequiredString("nav.storage.s3.secret_key", secret = true)
     private fun getS3SigningRegion() : String = config.getRequiredString("nav.storage.s3.signing_region", secret = false)
     private fun getS3ServiceEndpoint() : String = config.getRequiredString("nav.storage.s3.service_endpoint", secret = false)
-    fun getS3Configured() : AmazonS3 {
+    internal fun getS3Configured() : AmazonS3 {
         return AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(getS3ServiceEndpoint(), getS3SigningRegion()))
             .enablePathStyleAccess()
@@ -73,10 +93,12 @@ data class Configuration(private val config : ApplicationConfig) {
             )
             .build()
     }
-    fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
+    internal fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
 
-    fun enableVirusScan() : Boolean = config.getRequiredString("nav.virus_scan.enabled", false).equals("true", true)
-    fun getVirusScanUrl() = URI(config.getRequiredString("nav.virus_scan.url", secret = false))
+    // Virus Scan
+    internal fun enableVirusScan() : Boolean = config.getRequiredString("nav.virus_scan.enabled", false).equals("true", true)
+    internal fun getVirusScanUrl() = URI(config.getRequiredString("nav.virus_scan.url", secret = false))
 
-    fun getBaseUrl() : String = config.getRequiredString("nav.base_url", secret = false)
+    // URL's
+    internal fun getBaseUrl() : String = config.getRequiredString("nav.base_url", secret = false)
 }
