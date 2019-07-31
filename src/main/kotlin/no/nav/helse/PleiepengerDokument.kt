@@ -17,10 +17,7 @@ import no.nav.helse.dokument.storage.S3Storage
 import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dokument.eier.EierResolver
-import no.nav.helse.dusseldorf.ktor.auth.ClaimRule
-import no.nav.helse.dusseldorf.ktor.auth.Issuer
-import no.nav.helse.dusseldorf.ktor.auth.allIssuers
-import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
+import no.nav.helse.dusseldorf.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.core.*
@@ -60,6 +57,7 @@ fun Application.pleiepengerDokument() {
     install(StatusPages) {
         DefaultStatusPages()
         JacksonStatusPages()
+        AuthStatusPages()
     }
 
     val s3Storage = S3Storage(

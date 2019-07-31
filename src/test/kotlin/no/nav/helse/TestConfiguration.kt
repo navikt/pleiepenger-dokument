@@ -12,24 +12,21 @@ internal object TestConfiguration {
         wireMockServer: WireMockServer? = null,
         s3: S3? = null,
         port : Int = 8080,
-        jwksUrl : String? = wireMockServer?.getJwksUrl(),
-        issuer : String? = wireMockServer?.getIssuer(),
         virusScanUrl : String? = wireMockServer?.getVirusScanUrl(),
-        authorizedSubjects : String = "",
         passphrase1 : String = "password",
         passphrase2 : String = "oldpassword",
         passphrase3: String = "reallyoldpassword",
+
         s3ServiceEndpoint : String? = s3?.getServiceEndpoint(),
         s3SigningRegion : String? = s3?.getSigningRegion(),
-        s3ExpiryInDays : String? = "1",
+        s3ExpiryInDays : Int?,
 
         konfigurerAzure: Boolean = false,
-        azureAuthorizedClients: Set<String> = setOf(),
+        azureAuthorizedClients: Set<String> = setOf("azure-client-1", "azure-client-2","azure-client-3"),
         konfigurerLoginService: Boolean = false,
         konfigurerNaisSts: Boolean = false,
-        naisStsAuthoriedClients: Set<String> = setOf(),
-        pleiepengerDokumentAzureClientId: String? = null
-
+        naisStsAuthoriedClients: Set<String> = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak"),
+        pleiepengerDokumentAzureClientId: String? = "pleiepenger-dokument"
     ) : Map<String, String> {
         val map =  mutableMapOf(
             Pair("ktor.deployment.port","$port"),
@@ -44,8 +41,9 @@ internal object TestConfiguration {
             Pair("nav.base_url", "http://localhost:$port")
         )
 
+        // S3
         if (s3ExpiryInDays != null) {
-            map["nav.storage.s3.expiration_in_days"] = s3ExpiryInDays
+            map["nav.storage.s3.expiration_in_days"] = "$s3ExpiryInDays"
         }
         if (!s3?.getSecretKey().isNullOrEmpty()) {
             map["nav.storage.s3.secret_key"] = s3!!.getSecretKey()
@@ -83,13 +81,5 @@ internal object TestConfiguration {
         }
 
         return map.toMap()
-    }
-
-    fun asArray(map : Map<String, String>) : Array<String>  {
-        val list = mutableListOf<String>()
-        map.forEach { configKey, configValue ->
-            list.add("-P:$configKey=$configValue")
-        }
-        return list.toTypedArray()
     }
 }
