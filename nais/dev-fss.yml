@@ -45,13 +45,13 @@ spec:
     - name: AZURE_CLIENT_ID
       value: 97f0b1bc-6aa9-4d44-a3c7-60b4318fbec4
     - name: AZURE_AUTHORIZED_CLIENTS
-      value: a6aef297-b9c9-4cac-82be-060d4fa68bb8,b32ae17c-0276-4006-9507-4ef49e0e5e20
+      value: a6aef297-b9c9-4cac-82be-060d4fa68bb8,b32ae17c-0276-4006-9507-4ef49e0e5e20,8caa7c32-1523-43a7-af95-63123938f45c
     - name: AZURE_V1_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration
     - name: AZURE_V2_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration
     - name: S3_SERVICE_ENDPOINT
-      value: http://s3.nais-rook
+      value: http://s3.nais-rook.svc.nais.local
     - name: S3_SIGNING_REGION
       value: us-east-1
     - name: VIRUS_SCAN_ENABLED

@@ -36,16 +36,25 @@ spec:
     path: /metrics
   vault:
     enabled: true
+  webproxy: true
   env:
-    - name: JWKS_URL
-      value: http://security-token-service/rest/v1/sts/jwks
-    - name: ISSUER
-      value: https://security-token-service.nais.adeo.no
-    - name: AUTHORIZED_SUBJECTS
+    - name: NAIS_STS_DISCOVERY_ENDPOINT
+      value: https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration
+    - name: NAIS_STS_AUTHORIZED_CLIENTS
       value: srvpps-prosessering,srvpleiepenger-joark,srvpps-mottak
+    - name: AZURE_CLIENT_ID
+      value: 0c5a6709-ba2a-42b7-bbfc-9b9f844e2ee2
+    - name: AZURE_AUTHORIZED_CLIENTS
+      value: 84ef0905-64b3-440b-8f6a-0d88ef81a0f0,cb751642-883c-48d3-9f82-06cc72c3e4b9,4dc7783f-ee44-4707-ae5c-1d824d19f59c
+    - name: AZURE_V1_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/.well-known/openid-configuration
+    - name: AZURE_V2_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
     - name: S3_SERVICE_ENDPOINT
-      value: http://s3.nais-rook
+      value: http://s3.nais-rook.svc.nais.local
     - name: S3_SIGNING_REGION
       value: us-east-1
     - name: VIRUS_SCAN_ENABLED
       value: "false"
+    - name: BASE_URL
+      value: https://pleiepenger-dokument.nais.adeo.no

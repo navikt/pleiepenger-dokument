@@ -5,7 +5,7 @@ val dusseldorfKtorVersion = "1.2.2.a2901ac"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val wiremockVersion = "2.19.0"
-val amazonawsVersion = "1.11.601"
+val amazonawsVersion = "1.11.602"
 val tikaVersion = "1.21"
 
 val mainClass = "no.nav.helse.PleiepengerDokumentKt"
@@ -42,7 +42,7 @@ dependencies {
     testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testCompile("org.testcontainers:localstack:1.11.2")
+    testCompile("org.testcontainers:localstack:1.12.0")
     testCompile("io.mockk:mockk:1.9.3")
     testCompile("org.skyscreamer:jsonassert:1.5.0")
 

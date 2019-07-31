@@ -38,10 +38,8 @@ spec:
     enabled: true
   webproxy: true
   env:
-    - name: JWKS_URL
-      value: https://login.microsoftonline.com/navnob2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten
-    - name: ISSUER
-      value: https://login.microsoftonline.com/8b7dfc8b-b52e-4741-bde4-d83ea366f94f/v2.0/
+    - name: LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/navnob2c.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_idporten
     - name: S3_SERVICE_ENDPOINT
       value: http://s3.nais-rook.svc.nais.local
     - name: S3_SIGNING_REGION
@@ -50,3 +48,5 @@ spec:
       value: "1"
     - name: VIRUS_SCAN_URL
       value: http://clamav.nais.svc.nais.local/scan
+    - name: BASE_URL
+      value: https://pleiepenger-dokument.nais.oera.no
