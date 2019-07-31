@@ -82,5 +82,5 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.5"
+    gradleVersion = "5.5.1"
 }
