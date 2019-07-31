@@ -16,6 +16,7 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.helse.dusseldorf.ktor.testsupport.jws.Azure
 import no.nav.helse.dusseldorf.ktor.testsupport.jws.NaisSts
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
@@ -56,9 +57,11 @@ class PleiepengerDokumentSystembrukerTest {
             val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
                 wireMockServer = wireMockServer,
                 s3 = s3,
-                //konfigurerAzure = true,
+                konfigurerAzure = true,
                 konfigurerNaisSts = true,
                 naisStsAuthoriedClients = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak"),
+                azureAuthorizedClients = setOf("azure-client-1"),
+                pleiepengerDokumentAzureClientId = "pleiepenger-dokument",
                 s3ExpiryInDays = null
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
@@ -126,17 +129,28 @@ class PleiepengerDokumentSystembrukerTest {
         }
     }
 
-
-
+    @Test
+    fun `opplasting, henting og sletting av dokument som nais sts bruker`() {
+        opplastingHentingOgSlettingFungerer(NaisSts.generateJwt(application = "srvpps-mottak"))
+    }
 
     @Test
-    fun `opplasting, henting og sletting av dokument som sytembruker`() {
+    fun `opplasting, henting og sletting av dokument som azure v1 bruker`() {
+        opplastingHentingOgSlettingFungerer(Azure.V1_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
+    }
+
+    @Test
+    fun `opplasting, henting og sletting av dokument som azure v2 bruker`() {
+        opplastingHentingOgSlettingFungerer(Azure.V2_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
+    }
+
+    private fun opplastingHentingOgSlettingFungerer(token: String) {
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
             // LASTER OPP Dokument
             val url = lasteOppDokumentMultipart(
-                token = authorizedServiceAccountAccessToken,
+                token = token,
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
@@ -148,7 +162,7 @@ class PleiepengerDokumentSystembrukerTest {
 
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok")
 
             }.apply {
@@ -158,7 +172,7 @@ class PleiepengerDokumentSystembrukerTest {
 
                 // HENTER OPPLASTET DOKUMENT SOM JSON
                 handleRequest(HttpMethod.Get, path) {
-                    addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                    addHeader(HttpHeaders.Authorization, "Bearer $token")
                     addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-json-ok")
                     addHeader(HttpHeaders.Accept, "application/json")
                 }.apply {
@@ -175,7 +189,7 @@ class PleiepengerDokumentSystembrukerTest {
                     assertEquals(expected, actual)
                     // SLETTER OPPLASTET DOKUMENT
                     handleRequest(HttpMethod.Delete, path) {
-                        addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                        addHeader(HttpHeaders.Authorization, "Bearer $token")
                         addHeader(HttpHeaders.XCorrelationId, "sletter-dokument-ok")
 
                     }.apply {
@@ -183,7 +197,7 @@ class PleiepengerDokumentSystembrukerTest {
 
                         // VERIFISERER AT DOKMENT ER SLETTET
                         handleRequest(HttpMethod.Get, path) {
-                            addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                            addHeader(HttpHeaders.Authorization, "Bearer $token")
                             addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ikke-funnet")
 
                         }.apply {
@@ -196,7 +210,7 @@ class PleiepengerDokumentSystembrukerTest {
     }
 
     @Test
-    fun `lagring og dokumenter som json istedenfor multipart fungerer`() {
+    fun `lagring og dokumenter som json istedenfor fungerer`() {
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
