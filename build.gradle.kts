@@ -1,10 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.2.2.a2901ac"
+val dusseldorfKtorVersion = "1.2.2.fb2a0af"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val wiremockVersion = "2.19.0"
 val amazonawsVersion = "1.11.602"
 val tikaVersion = "1.21"
 
@@ -16,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/a2901acef47b42b74db224f32da267fdaaba015b/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/fb2a0af320bfbba5e457e22f272a2f7e20038c35/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
