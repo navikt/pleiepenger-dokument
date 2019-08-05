@@ -2,7 +2,7 @@ package no.nav.helse.dokument.crypto
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import no.nav.helse.Eier
+import no.nav.helse.dokument.eier.Eier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*

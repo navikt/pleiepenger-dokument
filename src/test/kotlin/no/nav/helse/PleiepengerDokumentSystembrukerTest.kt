@@ -16,6 +16,9 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.helse.dusseldorf.ktor.testsupport.jws.Azure
+import no.nav.helse.dusseldorf.ktor.testsupport.jws.NaisSts
+import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
@@ -23,16 +26,28 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.test.*
 
-private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokumentTest")
-
 @KtorExperimentalAPI
-class PleiepengerDokumentTest {
+class PleiepengerDokumentSystembrukerTest {
 
     @KtorExperimentalAPI
     private companion object {
 
-        private val wireMockServer: WireMockServer = WiremockWrapper.bootstrap()
-        private val authorizedServiceAccountAccessToken = Authorization.getAccessToken(wireMockServer.getIssuer(), "srvpleiepenger-joark")
+        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSystembrukerTest::class.java)
+
+        private const val eier = "290990123456"
+        private const val eierQueryString = "?eier=$eier"
+
+        private val wireMockServer: WireMockServer = WireMockBuilder()
+            .withAzureSupport()
+            .withNaisStsSupport()
+            .pleiepengerDokumentConfiguration()
+            .build()
+            .stubVirusScan()
+
+        private fun getAccessToken() = NaisSts.generateJwt(application = "srvpps-mottak")
+
+
+        private val authorizedServiceAccountAccessToken = getAccessToken()
         private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
         private val s3 = S3()
 
@@ -41,7 +56,13 @@ class PleiepengerDokumentTest {
             val fileConfig = ConfigFactory.load()
             val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
                 wireMockServer = wireMockServer,
-                s3 = s3
+                s3 = s3,
+                konfigurerAzure = true,
+                konfigurerNaisSts = true,
+                naisStsAuthoriedClients = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak"),
+                azureAuthorizedClients = setOf("azure-client-1"),
+                pleiepengerDokumentAzureClientId = "pleiepenger-dokument",
+                s3ExpiryInDays = null
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
             return HoconApplicationConfig(mergedConfig)
@@ -69,6 +90,7 @@ class PleiepengerDokumentTest {
         }
     }
 
+
     @Test
     fun `test isready, isalive og metrics`() {
         with(engine) {
@@ -90,14 +112,15 @@ class PleiepengerDokumentTest {
     @Test
     fun `request med service account Access Token fungerer`() {
         val url = engine.lasteOppDokumentMultipart(
-            token = authorizedServiceAccountAccessToken
+            token = authorizedServiceAccountAccessToken,
+            eier = eier
         )
-        val path = Url(url).fullPath
+        val path = "${Url(url).fullPath}$eierQueryString"
 
         with(engine) {
 
             handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer ${getAccessToken()}")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
@@ -106,101 +129,40 @@ class PleiepengerDokumentTest {
         }
     }
 
-
     @Test
-    fun `request med sluttbruker ID-Token fungerer`() {
-        val fnr = "29099912345"
-
-        val idToken = Authorization.getIdToken(wireMockServer.getIssuer(), fnr)
-
-        val url = engine.lasteOppDokumentMultipart(
-            token = idToken,
-            fileName = "test.pdf",
-            tittel = "PDF"
-        )
-
-        val path = Url(url).fullPath
-
-        with(engine) {
-            handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $idToken")
-                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-sluttbruker")
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("application/pdf", response.contentType().toString())
-            }
-        }
+    fun `opplasting, henting og sletting av dokument som nais sts bruker`() {
+        opplastingHentingOgSlettingFungerer(NaisSts.generateJwt(application = "srvpps-mottak"))
     }
 
     @Test
-    fun `request med sluttbruker ID-Token for annen bruker fungerer ikke`() {
-        val fnrLagre = "29099012345"
-        val fnrHente = "29099067891"
-
-        val idTokenLagre = Authorization.getIdToken(wireMockServer.getIssuer(), fnrLagre)
-        val idTokenHente = Authorization.getIdToken(wireMockServer.getIssuer(), fnrHente)
-
-        val url = engine.lasteOppDokumentMultipart(
-            token = idTokenLagre,
-            fileName = "test.pdf",
-            tittel = "PDF"
-        )
-
-        val path = Url(url).fullPath
-
-        with(engine) {
-            handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $idTokenHente")
-                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-feil-sluttbruker")
-            }.apply {
-                assertEquals(HttpStatusCode.NotFound, response.status())
-            }
-        }
+    fun `opplasting, henting og sletting av dokument som azure v1 bruker`() {
+        opplastingHentingOgSlettingFungerer(Azure.V1_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
     }
 
     @Test
-    fun `request med token utstedt av en annen issuer feiler`() {
-        val fnr = "29099012345"
-        val idToken = Authorization.getIdToken("http://localhost:8080/en-anne-issuer", fnr)
-        with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/1234567") {
-                addHeader(HttpHeaders.Authorization, "Bearer $idToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
-            }.apply {
-                assertEquals(HttpStatusCode.Unauthorized, response.status())
-            }
-        }
+    fun `opplasting, henting og sletting av dokument som azure v2 bruker`() {
+        opplastingHentingOgSlettingFungerer(Azure.V2_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
     }
 
-    @Test
-    fun `request uten token feiler`() {
-        with(engine) {
-            handleRequest(HttpMethod.Get, "/v1/dokument/123456789") {
-                addHeader(HttpHeaders.XCorrelationId, "123")
-            }.apply {
-                assertEquals(HttpStatusCode.Unauthorized, response.status())
-            }
-        }
-    }
-
-    @Test
-    fun `opplasting, henting og sletting av dokument som sytembruker`() {
+    private fun opplastingHentingOgSlettingFungerer(token: String) {
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
             // LASTER OPP Dokument
             val url = lasteOppDokumentMultipart(
-                token = authorizedServiceAccountAccessToken,
+                token = token,
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
-                contentType = "image/jpeg"
+                contentType = "image/jpeg",
+                eier = eier
 
             )
-            val path = Url(url).fullPath
+            val path = "${Url(url).fullPath}$eierQueryString"
+
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
-                addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ok")
 
             }.apply {
@@ -210,7 +172,7 @@ class PleiepengerDokumentTest {
 
                 // HENTER OPPLASTET DOKUMENT SOM JSON
                 handleRequest(HttpMethod.Get, path) {
-                    addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                    addHeader(HttpHeaders.Authorization, "Bearer $token")
                     addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-json-ok")
                     addHeader(HttpHeaders.Accept, "application/json")
                 }.apply {
@@ -227,7 +189,7 @@ class PleiepengerDokumentTest {
                     assertEquals(expected, actual)
                     // SLETTER OPPLASTET DOKUMENT
                     handleRequest(HttpMethod.Delete, path) {
-                        addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                        addHeader(HttpHeaders.Authorization, "Bearer $token")
                         addHeader(HttpHeaders.XCorrelationId, "sletter-dokument-ok")
 
                     }.apply {
@@ -235,7 +197,7 @@ class PleiepengerDokumentTest {
 
                         // VERIFISERER AT DOKMENT ER SLETTET
                         handleRequest(HttpMethod.Get, path) {
-                            addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
+                            addHeader(HttpHeaders.Authorization, "Bearer $token")
                             addHeader(HttpHeaders.XCorrelationId, "henter-dokument-ikke-funnet")
 
                         }.apply {
@@ -248,7 +210,7 @@ class PleiepengerDokumentTest {
     }
 
     @Test
-    fun `lagring og dokumenter som json istedenfor multipart fungerer`() {
+    fun `lagring og dokumenter som json istedenfor fungerer`() {
         with(engine) {
             val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
@@ -258,10 +220,11 @@ class PleiepengerDokumentTest {
                 fileContent = jpeg,
                 fileName = "iPhone_6.jpg",
                 tittel = "Bilde av en iphone",
-                contentType = "image/jpeg"
+                contentType = "image/jpeg",
+                eier = eier
 
             )
-            val path = Url(url).fullPath
+            val path = "${Url(url).fullPath}$eierQueryString"
 
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
@@ -287,10 +250,11 @@ class PleiepengerDokumentTest {
                 fileContent = json,
                 fileName = "jwkset.json",
                 tittel = "Test JWK set",
-                contentType = "application/json"
+                contentType = "application/json",
+                eier = eier
 
             )
-            val path = Url(url).fullPath
+            val path = "${Url(url).fullPath}$eierQueryString"
             // HENTER OPPLASTET DOKUMENT
             handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $authorizedServiceAccountAccessToken")
@@ -311,6 +275,7 @@ class PleiepengerDokumentTest {
 
             // LASTER OPP Dokument
             lasteOppDokumentJson(
+                eier = eier,
                 token = authorizedServiceAccountAccessToken,
                 fileContent = zip,
                 fileName = "iphone_6.zip",
@@ -328,6 +293,7 @@ class PleiepengerDokumentTest {
 
             // LASTER OPP Dokument
             lasteOppDokumentJson(
+                eier = eier,
                 token = authorizedServiceAccountAccessToken,
                 fileContent = zip,
                 fileName = "iphone_6.zip",
@@ -339,18 +305,31 @@ class PleiepengerDokumentTest {
     }
 
     @Test
-    fun `opplasting av virus feiler`() {
-        with(engine) {
-            val liksomVirus = "iPhone_6_infected.jpg".fromResources().readBytes()
+    fun `En unauthorized subject kan ikke lagre dokument`() {
+        engine.lasteOppDokumentMultipart(
+            eier = eier,
+            token = NaisSts.generateJwt(application = "srv-notauth"),
+            expectedHttpStatusCode = HttpStatusCode.Forbidden
+        )
+    }
 
-            lasteOppDokumentJson(
-                token = authorizedServiceAccountAccessToken,
-                fileContent = liksomVirus,
-                fileName = "liksom_virus.jpg",
-                tittel = "Et liksom virus",
-                contentType = "image/jpeg",
-                expectedHttpStatusCode = HttpStatusCode.InternalServerError
-            )
+    @Test
+    fun `Lagring og henting med eier satt som to forskjellige query parametere feiler`() {
+
+        val url = engine.lasteOppDokumentJson(
+            token = authorizedServiceAccountAccessToken,
+            eier = "123"
+        )
+
+        val path = "${Url(url).fullPath}?eier=321"
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, path) {
+                addHeader(HttpHeaders.Authorization, "Bearer ${authorizedServiceAccountAccessToken}")
+                addHeader(HttpHeaders.XCorrelationId, "henter-dokument-med-eier-query-mismatch")
+            }.apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+            }
         }
     }
 }

@@ -1,25 +1,46 @@
 package no.nav.helse
 
 import io.ktor.server.testing.withApplication
+import no.nav.helse.dusseldorf.ktor.testsupport.asArguments
+import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokumentWithMocks")
 
 class PleiepengerDokumentWithMocks {
     companion object {
 
+        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentWithMocks::class.java)
+
         @JvmStatic
         fun main(args: Array<String>) {
 
-            val wireMockServer = WiremockWrapper.bootstrap(port = 8131)
+            val wireMockServer = WireMockBuilder()
+                .withPort(8131)
+                .withLoginServiceSupport()
+                .withAzureSupport()
+                .withNaisStsSupport()
+                .pleiepengerDokumentConfiguration()
+                .build()
+                .stubVirusScan()
+
             val s3 = S3()
 
-            val testArgs = TestConfiguration.asArray(TestConfiguration.asMap(
+            // Om true startes server kun med loginservice og 1 dag expiry på S3 bucket
+            // Om false startes sever med azure & nais sts og uten expiry på S3 bucket
+            val sluttBruker = false
+
+            val testArgs = TestConfiguration.asMap(
                 wireMockServer = wireMockServer,
                 s3 = s3,
-                port = 8132
-            ))
+                port = 8132,
+                konfigurerLoginService = sluttBruker,
+                konfigurerNaisSts = !sluttBruker,
+                konfigurerAzure = !sluttBruker,
+                s3ExpiryInDays = if (sluttBruker) 1 else null,
+                azureAuthorizedClients = setOf("en-azure-client"),
+                naisStsAuthoriedClients = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak")
+            ).asArguments()
 
             Runtime.getRuntime().addShutdownHook(object : Thread() {
                 override fun run() {

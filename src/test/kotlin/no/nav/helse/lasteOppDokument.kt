@@ -25,12 +25,15 @@ fun TestApplicationEngine.lasteOppDokumentMultipart(
     fileContent: ByteArray = fileName.fromResources().readBytes(),
     tittel: String = "En eller annen tittel",
     contentType: String = if (fileName.endsWith("pdf")) "application/pdf" else "image/jpeg",
-    expectedHttpStatusCode : HttpStatusCode = HttpStatusCode.Created
+    expectedHttpStatusCode : HttpStatusCode = HttpStatusCode.Created,
+    eier: String? = null
 ) : String {
 
     val boundary = "***dokument***"
 
-    handleRequest(HttpMethod.Post, "/v1/dokument") {
+    val path = if (eier == null) "/v1/dokument" else "/v1/dokument?eier=$eier"
+
+    handleRequest(HttpMethod.Post, path) {
         addHeader(HttpHeaders.Authorization, "Bearer $token")
         addHeader(HttpHeaders.XCorrelationId, "laster-opp-doument-ok-multipart")
         addHeader(

@@ -1,15 +1,22 @@
 # pleiepenger-dokument
 
-Mellomlagrer dokumenter før journalføring.
+[![CircleCI](https://circleci.com/gh/navikt/pleiepenger-dokument/tree/master.svg?style=svg)](https://circleci.com/gh/navikt/pleiepenger-dokument/tree/master)
+
+Mellomlagrer vedlegg før innsending av søknad, og dokumenter før journalføring.
 
 ## API
 ### Tilgang
-- Enten sluttbruker ID-Token i "Authorization" header (Bearer schema)
-- Eller Service Account Access Token i "Authorization" header (Bearer schema)
-- Eier av dokumenten settes fra subject claim i token
-- Sluttbrukere kan bare operere på sine egne dokumenter
-- Service Account kan operere på alles dokumenter ved å bruke query parameter "eier" ved lagring og henting/sletting så fremt det instansen er startet med restriksjoner på hvilke subjects som kan nå tjenesten (environment variable AUTHORIZED_SUBJECTS)
-- Uten restriksjoner på subject kan Service Account også kun operere på singe egne dokumenter.
+- Om Login Service er konfigurert som issuer må ID-token utstedt fra Login Service på Level4 sendes som "Authorization" header (Bearer schema). Da hentes eier av dokumentet fra tokenets `sub` claim. Det er da kun denne personen som kan operere på sine dokumenter.
+- Om Nais STS og/eller Azure er konfigurert som issuere må Access Token sendes i "Authorization" header (Bearer schema). Da hentes eier av dokumentet fra query parameter `eier`. En Systembruker kan operere på alles dokumenter.
+
+### Login Service
+ID-Tokenet må være på Level4
+
+### Nais STS
+Access Tokenet må tilhøre en av `NAIS_STS_AUTHORIZED_CLIENTS`
+
+### Azure
+Access Tokenet må tilhøre en av `AZURE_AUTHORIZED_CLIENTS`, audience må være `AZURE_CLIENT_ID` og det må være brukt et sertifikat ved utstedelse av Access Tokenet (Ikke client_id/client_secret)
 
 ### Hente dokument
 GET @ /v1/dokument/{dokumentId}
@@ -46,14 +53,21 @@ POST @ /v1/dokument
 ## Bygge prosjektet
 Krever et miljø med Docker installert for å kjøre tester.
 
+## Azure
+Display name != config `AZURE_CLIENT_ID` - Det er en UUID som varierer fra miljø til miljø.
+Instansene som mellomlagrer vedlegg før søknad er sendt inn bruker Azure client med display name 'pleiepenger-mellomlagring-soknad' (Denne brukes per nå ikke ettersom lagring av vedlegg gjøres ved bruk av Login Service tokens.)
+Instansene som mellomlagrer dokumenter før søknaden er journalført bruker Azure client med display name 'pleiepenger-mellomlagring-journalforing'
+
 ## S3
-Instansene som mellomlagrer vedlegg før søknaden er sendt inn bruker userId 'ppd-mellomlagring-soknad'
-Instansene som mellomlagrer dokumenter før søknaden er journalført bruker userId 'ppd-mellomlagring-journalforing'
+Instansene som mellomlagrer vedlegg før søknaden er sendt inn bruker userId 'ppd-mellomlagring-soknad' (S3 settes da opp med expiry på 1 dag)
+Instansene som mellomlagrer dokumenter før søknaden er journalført bruker userId 'ppd-mellomlagring-journalforing' (S3 settes da opp uten expiry. Dokumenter slettes eksplisitt så fort de er journalført.)
 
 ## Correlation ID vs Request ID
 Correlation ID blir propagert videre, og har ikke nødvendigvis sitt opphav hos konsumenten.
 Request ID blir ikke propagert videre, og skal ha sitt opphav hos konsumenten.
 
-## For NAV-ansatte
+## Henvendelser
+Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
 
-Interne henvendelser kan sendes via Slack i kanalen #team-düsseldorf
+Interne henvendelser kan sendes via Slack i kanalen #team-düsseldorf.
+

@@ -1,6 +1,6 @@
 package no.nav.helse.dokument
 
-import no.nav.helse.Eier
+import no.nav.helse.dokument.eier.Eier
 import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.storage.Storage
 import no.nav.helse.dokument.storage.StorageKey
