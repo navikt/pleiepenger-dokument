@@ -70,7 +70,7 @@ internal data class Configuration(private val config : ApplicationConfig) {
     private fun isLoginServiceV1Configured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() }.isNotEmpty()
     private fun getNaisStsAuthorizedClients(): List<String> {
         return config.getOptionalList(
-            key = "nav.nais-sts.authorized_clients",
+            key = "nav.auth.nais-sts.authorized_clients",
             builder = { value -> value},
             secret = false
         )

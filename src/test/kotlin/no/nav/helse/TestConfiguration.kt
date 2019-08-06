@@ -56,7 +56,7 @@ internal object TestConfiguration {
         if (wireMockServer != null && konfigurerNaisSts) {
             map["nav.auth.issuers.0.alias"] = "nais-sts"
             map["nav.auth.issuers.0.discovery_endpoint"] = wireMockServer.getNaisStsWellKnownUrl()
-            map["nav.nais-sts.authorized_clients"] = naisStsAuthoriedClients.joinToString(", ")
+            map["nav.auth.nais-sts.authorized_clients"] = naisStsAuthoriedClients.joinToString(", ")
         }
         if (wireMockServer != null && konfigurerLoginService) {
             map["nav.auth.issuers.1.alias"] = "login-service-v1"
