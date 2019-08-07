@@ -44,6 +44,7 @@ dependencies {
     testCompile("org.testcontainers:localstack:1.12.0")
     testCompile("io.mockk:mockk:1.9.3")
     testCompile("org.skyscreamer:jsonassert:1.5.0")
+    testCompile( "com.github.stefanbirkner:system-rules:1.19.0")
 
 }
 
