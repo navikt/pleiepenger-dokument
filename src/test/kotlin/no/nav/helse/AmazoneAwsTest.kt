@@ -4,8 +4,7 @@ import com.typesafe.config.ConfigFactory
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getAzureV2WellKnownUrl
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getNaisStsWellKnownUrl
+import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getLoginServiceV1WellKnownUrl
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.EnvironmentVariables
@@ -16,7 +15,7 @@ class AmazoneAwsTest {
 
     private companion object {
         val wireMockServer = WireMockBuilder()
-            .withAzureSupport()
+            .withLoginServiceSupport()
             .build()
     }
 
@@ -27,9 +26,7 @@ class AmazoneAwsTest {
     @Test
     fun `AmazonS3 Client blir initialisert selv om HTTP_PROXY & HTTPS_PROXY environment variable er satt uten userInfo-del`() {
         // Configuration klassen krever at minst en issuer er satt
-        environmentVariables.set("AZURE_V1_DISCOVERY_ENDPOINT", wireMockServer.getAzureV2WellKnownUrl())
-        environmentVariables.set("AZURE_CLIENT_ID", "foo")
-        environmentVariables.set("AZURE_AUTHORIZED_CLIENTS", "bar")
+        environmentVariables.set("LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT", wireMockServer.getLoginServiceV1WellKnownUrl())
 
         val httpProxy = "http://localhost:8085"
         val httpsProxy = "http://localhost:8086"
