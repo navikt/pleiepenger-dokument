@@ -32,13 +32,6 @@ internal data class Configuration(private val config : ApplicationConfig) {
         )
     )
 
-    init {
-        if (issuers.isEmpty()) throw IllegalStateException("Må konfigureres minst en issuer.")
-        if (isLoginServiceV1Configured() && issuers.size != 1) {
-            throw IllegalStateException("Når issuer '$LOGIN_SERVICE_V1_ALIAS' er konfigurert må det være den eneste.")
-        }
-    }
-
     // Crypto
     private fun getCryptoPasshrase(key: String) : String {
         val configValue = config.getOptionalString(key = key, secret = true)
@@ -66,7 +59,13 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
     // Auth
     private fun isLoginServiceV1Configured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() }.isNotEmpty()
-    internal fun issuers() = issuers
+    internal fun issuers() : Map<Issuer, Set<ClaimRule>> {
+        if (issuers.isEmpty()) throw IllegalStateException("Må konfigureres minst en issuer.")
+        if (isLoginServiceV1Configured() && issuers.size != 1) {
+            throw IllegalStateException("Når issuer '$LOGIN_SERVICE_V1_ALIAS' er konfigurert må det være den eneste.")
+        }
+        return issuers
+    }
     internal fun hentEierFra() = if (isLoginServiceV1Configured()) HentEierFra.ACCESS_TOKEN_SUB_CLAIM else HentEierFra.QUERY_PARAMETER_EIER
 
     // S3
