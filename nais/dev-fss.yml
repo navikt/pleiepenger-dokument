@@ -40,8 +40,6 @@ spec:
   env:
     - name: NAIS_STS_DISCOVERY_ENDPOINT
       value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
-    - name: NAIS_STS_AUTHORIZED_CLIENTS
-      value: srvpps-prosessering,srvpleiepenger-joark,srvpps-mottak
     - name: AZURE_CLIENT_ID
       value: 97f0b1bc-6aa9-4d44-a3c7-60b4318fbec4
     - name: AZURE_AUTHORIZED_CLIENTS

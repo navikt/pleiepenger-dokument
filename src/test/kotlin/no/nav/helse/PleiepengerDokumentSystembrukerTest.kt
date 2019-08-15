@@ -17,7 +17,6 @@ import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.testsupport.jws.Azure
-import no.nav.helse.dusseldorf.ktor.testsupport.jws.NaisSts
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -39,12 +38,11 @@ class PleiepengerDokumentSystembrukerTest {
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withAzureSupport()
-            .withNaisStsSupport()
             .pleiepengerDokumentConfiguration()
             .build()
             .stubVirusScan()
 
-        private fun getAccessToken() = NaisSts.generateJwt(application = "srvpps-mottak")
+        private fun getAccessToken() = Azure.V1_0.generateJwt(clientId = "azure-client-1", audience = "pleiepenger-dokument")
 
 
         private val authorizedServiceAccountAccessToken = getAccessToken()
@@ -58,8 +56,6 @@ class PleiepengerDokumentSystembrukerTest {
                 wireMockServer = wireMockServer,
                 s3 = s3,
                 konfigurerAzure = true,
-                konfigurerNaisSts = true,
-                naisStsAuthoriedClients = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak"),
                 azureAuthorizedClients = setOf("azure-client-1"),
                 pleiepengerDokumentAzureClientId = "pleiepenger-dokument",
                 s3ExpiryInDays = null
@@ -127,11 +123,6 @@ class PleiepengerDokumentSystembrukerTest {
                 assertEquals("image/jpeg", response.contentType().toString())
             }
         }
-    }
-
-    @Test
-    fun `opplasting, henting og sletting av dokument som nais sts bruker`() {
-        opplastingHentingOgSlettingFungerer(NaisSts.generateJwt(application = "srvpps-mottak"))
     }
 
     @Test
@@ -308,7 +299,7 @@ class PleiepengerDokumentSystembrukerTest {
     fun `En unauthorized subject kan ikke lagre dokument`() {
         engine.lasteOppDokumentMultipart(
             eier = eier,
-            token = NaisSts.generateJwt(application = "srv-notauth"),
+            token = Azure.V2_0.generateJwt(clientId = "azure-client-2", audience = "pleiepenger-dokument"),
             expectedHttpStatusCode = HttpStatusCode.Forbidden
         )
     }

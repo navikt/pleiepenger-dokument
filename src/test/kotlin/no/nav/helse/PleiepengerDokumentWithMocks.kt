@@ -6,7 +6,6 @@ import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-
 class PleiepengerDokumentWithMocks {
     companion object {
 
@@ -19,8 +18,6 @@ class PleiepengerDokumentWithMocks {
                 .withPort(8131)
                 .withLoginServiceSupport()
                 .withAzureSupport()
-                .withNaisStsSupport()
-                .pleiepengerDokumentConfiguration()
                 .build()
                 .stubVirusScan()
 
@@ -35,11 +32,9 @@ class PleiepengerDokumentWithMocks {
                 s3 = s3,
                 port = 8132,
                 konfigurerLoginService = sluttBruker,
-                konfigurerNaisSts = !sluttBruker,
                 konfigurerAzure = !sluttBruker,
                 s3ExpiryInDays = if (sluttBruker) 1 else null,
-                azureAuthorizedClients = setOf("en-azure-client"),
-                naisStsAuthoriedClients = setOf("srvpps-prosessering","srvpleiepenger-joark","srvpps-mottak")
+                azureAuthorizedClients = setOf("en-azure-client")
             ).asArguments()
 
             Runtime.getRuntime().addShutdownHook(object : Thread() {

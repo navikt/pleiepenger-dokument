@@ -23,13 +23,11 @@ internal data class Configuration(private val config : ApplicationConfig) {
         private const val S3_HTTP_REQUEST_TIMEOUT = 3 * 1000
         private const val S3_HTTP_REQUEST_RETIRES = 3
 
-        private const val NAIS_STS_ALIAS = "nais-sts"
         private const val LOGIN_SERVICE_V1_ALIAS = "login-service-v1"
     }
 
     private val issuers = config.issuers().withAdditionalClaimRules(
         mapOf(
-            NAIS_STS_ALIAS to setOf(StandardClaimRules.Companion.EnforceSubjectOneOf(getNaisStsAuthorizedClients().toSet())),
             LOGIN_SERVICE_V1_ALIAS to setOf(EnforceEqualsOrContains("acr", "Level4"))
         )
     )
@@ -68,13 +66,6 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
     // Auth
     private fun isLoginServiceV1Configured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() }.isNotEmpty()
-    private fun getNaisStsAuthorizedClients(): List<String> {
-        return config.getOptionalList(
-            key = "nav.auth.nais-sts.authorized_clients",
-            builder = { value -> value},
-            secret = false
-        )
-    }
     internal fun issuers() = issuers
     internal fun hentEierFra() = if (isLoginServiceV1Configured()) HentEierFra.ACCESS_TOKEN_SUB_CLAIM else HentEierFra.QUERY_PARAMETER_EIER
 
