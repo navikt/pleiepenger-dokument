@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: k9-dokument
+  name: pleiepenger-dokument
   namespace: default
   labels:
     team: {{team}}
@@ -56,4 +56,4 @@ spec:
     - name: VIRUS_SCAN_ENABLED
       value: "false"
     - name: BASE_URL
-      value: https://pleiepenger-dokument.nais.preprod.local
+      value: https://k9-dokument.nais.preprod.local
