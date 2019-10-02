@@ -6,7 +6,7 @@ import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 
 private const val virusScanPath = "/virus-scan-mock/scan"
 
-internal fun WireMockBuilder.pleiepengerDokumentConfiguration(): WireMockBuilder {
+internal fun WireMockBuilder.pleiepengerDokumentConfiguration(): WireMockBuilder { //TODO: Rename metodenavn.
     wireMockConfiguration {
         it.extensions(VirsScanResponseTransformer())
     }

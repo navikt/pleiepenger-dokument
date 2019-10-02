@@ -26,23 +26,23 @@ import java.util.*
 import kotlin.test.*
 
 @KtorExperimentalAPI
-class PleiepengerDokumentSystembrukerTest {
+class PleiepengerDokumentSystembrukerTest { //TODO: Rename fil og klassenavn.
 
     @KtorExperimentalAPI
     private companion object {
 
-        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSystembrukerTest::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSystembrukerTest::class.java) //TODO: Rename loggernavn.
 
         private const val eier = "290990123456"
         private const val eierQueryString = "?eier=$eier"
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withAzureSupport()
-            .pleiepengerDokumentConfiguration()
+            .pleiepengerDokumentConfiguration() //TODO: Rename metodenavn.
             .build()
             .stubVirusScan()
 
-        private fun getAccessToken() = Azure.V1_0.generateJwt(clientId = "azure-client-1", audience = "pleiepenger-dokument")
+        private fun getAccessToken() = Azure.V1_0.generateJwt(clientId = "azure-client-1", audience = "pleiepenger-dokument") //TODO: Rename metodeparameter (audience).
 
 
         private val authorizedServiceAccountAccessToken = getAccessToken()
@@ -57,7 +57,7 @@ class PleiepengerDokumentSystembrukerTest {
                 s3 = s3,
                 konfigurerAzure = true,
                 azureAuthorizedClients = setOf("azure-client-1"),
-                pleiepengerDokumentAzureClientId = "pleiepenger-dokument",
+                pleiepengerDokumentAzureClientId = "pleiepenger-dokument", //TODO: Rename metodeparameter.
                 s3ExpiryInDays = null
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
@@ -127,12 +127,12 @@ class PleiepengerDokumentSystembrukerTest {
 
     @Test
     fun `opplasting, henting og sletting av dokument som azure v1 bruker`() {
-        opplastingHentingOgSlettingFungerer(Azure.V1_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
+        opplastingHentingOgSlettingFungerer(Azure.V1_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument")) //TODO: Rename metodeparameter (audience).
     }
 
     @Test
     fun `opplasting, henting og sletting av dokument som azure v2 bruker`() {
-        opplastingHentingOgSlettingFungerer(Azure.V2_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument"))
+        opplastingHentingOgSlettingFungerer(Azure.V2_0.generateJwt(clientId= "azure-client-1", audience = "pleiepenger-dokument")) //TODO: Rename metodeparameter (audience).
     }
 
     private fun opplastingHentingOgSlettingFungerer(token: String) {
@@ -299,7 +299,7 @@ class PleiepengerDokumentSystembrukerTest {
     fun `En unauthorized subject kan ikke lagre dokument`() {
         engine.lasteOppDokumentMultipart(
             eier = eier,
-            token = Azure.V2_0.generateJwt(clientId = "azure-client-2", audience = "pleiepenger-dokument"),
+            token = Azure.V2_0.generateJwt(clientId = "azure-client-2", audience = "pleiepenger-dokument"), //TODO: Rename metodeparameter (audience).
             expectedHttpStatusCode = HttpStatusCode.Forbidden
         )
     }

@@ -20,7 +20,7 @@ class S3Storage(private val s3 : AmazonS3,
 
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
-        private const val BUCKET_NAME = "pleiepengerdokument"
+        private const val BUCKET_NAME = "pleiepengerdokument" //TODO: Rename s3 bucket
 
         private val s3Histogram = Histogram
             .build("s3_operation_histogram",

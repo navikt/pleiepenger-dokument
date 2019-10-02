@@ -24,7 +24,7 @@ internal object TestConfiguration {
         konfigurerAzure: Boolean = false,
         azureAuthorizedClients: Set<String> = setOf("azure-client-1", "azure-client-2","azure-client-3"),
         konfigurerLoginService: Boolean = false,
-        pleiepengerDokumentAzureClientId: String? = "pleiepenger-dokument"
+        pleiepengerDokumentAzureClientId: String? = "pleiepenger-dokument" //TODO: Rename variabel og verdi.
     ) : Map<String, String> {
         val map =  mutableMapOf(
             Pair("ktor.deployment.port","$port"),
@@ -56,7 +56,7 @@ internal object TestConfiguration {
             map["nav.auth.issuers.0.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
         }
         if (wireMockServer != null && konfigurerAzure) {
-            if (pleiepengerDokumentAzureClientId == null) throw IllegalStateException("pleiepengerDokumentAzureClientId må settes når Azure skal konfigureres.")
+            if (pleiepengerDokumentAzureClientId == null) throw IllegalStateException("pleiepengerDokumentAzureClientId må settes når Azure skal konfigureres.") //TODO: Rename feilmeldimg.
 
             map["nav.auth.issuers.1.type"] = "azure"
             map["nav.auth.issuers.1.alias"] = "azure-v1"

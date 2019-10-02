@@ -23,15 +23,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @KtorExperimentalAPI
-class PleiepengerDokumentSluttbrukerTest {
+class PleiepengerDokumentSluttbrukerTest { //TODO: Rename fil og klassenavn.
 
     @KtorExperimentalAPI
     private companion object {
-        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSluttbrukerTest::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSluttbrukerTest::class.java) //TODO: Rename logger navn.
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withLoginServiceSupport()
-            .pleiepengerDokumentConfiguration()
+            .pleiepengerDokumentConfiguration() //TODO: Rename metodenavn.
             .build()
             .stubVirusScan()
 
