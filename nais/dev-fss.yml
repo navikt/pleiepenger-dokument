@@ -56,4 +56,4 @@ spec:
     - name: VIRUS_SCAN_ENABLED
       value: "false"
     - name: BASE_URL
-      value: https://k9-dokument.nais.preprod.local
+      value: https://pleiepenger-dokument.nais.preprod.local
