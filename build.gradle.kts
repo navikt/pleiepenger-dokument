@@ -7,7 +7,7 @@ val slf4jVersion = ext.get("slf4jVersion").toString()
 val amazonawsVersion = "1.11.611"
 val tikaVersion = "1.22"
 
-val mainClass = "no.nav.helse.PleiepengerDokumentKt" //TODO: Rename mainClass navn.
+val mainClass = "no.nav.helse.K9DokumentKt"
 
 plugins {
     kotlin("jvm") version "1.3.41"
