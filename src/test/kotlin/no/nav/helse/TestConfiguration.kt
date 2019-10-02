@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getAzureV1WellKnownUrl
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getAzureV2WellKnownUrl
 import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getLoginServiceV1WellKnownUrl
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getNaisStsWellKnownUrl
 
 internal object TestConfiguration {
 
@@ -24,7 +23,7 @@ internal object TestConfiguration {
         konfigurerAzure: Boolean = false,
         azureAuthorizedClients: Set<String> = setOf("azure-client-1", "azure-client-2","azure-client-3"),
         konfigurerLoginService: Boolean = false,
-        pleiepengerDokumentAzureClientId: String? = "pleiepenger-dokument" //TODO: Rename variabel og verdi.
+        k9DokumentAzureClientId: String? = "k9-dokument"
     ) : Map<String, String> {
         val map =  mutableMapOf(
             Pair("ktor.deployment.port","$port"),
@@ -56,19 +55,19 @@ internal object TestConfiguration {
             map["nav.auth.issuers.0.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
         }
         if (wireMockServer != null && konfigurerAzure) {
-            if (pleiepengerDokumentAzureClientId == null) throw IllegalStateException("pleiepengerDokumentAzureClientId må settes når Azure skal konfigureres.") //TODO: Rename feilmeldimg.
+            if (k9DokumentAzureClientId == null) throw IllegalStateException("k9DokumentAzureClientId må settes når Azure skal konfigureres.")
 
             map["nav.auth.issuers.1.type"] = "azure"
             map["nav.auth.issuers.1.alias"] = "azure-v1"
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getAzureV1WellKnownUrl()
-            map["nav.auth.issuers.1.audience"] = pleiepengerDokumentAzureClientId
+            map["nav.auth.issuers.1.audience"] = k9DokumentAzureClientId
             map["nav.auth.issuers.1.azure.require_certificate_client_authentication"] = "true"
             map["nav.auth.issuers.1.azure.authorized_clients"] = azureAuthorizedClients.joinToString(",")
 
             map["nav.auth.issuers.2.type"] = "azure"
             map["nav.auth.issuers.2.alias"] = "azure-v2"
             map["nav.auth.issuers.2.discovery_endpoint"] = wireMockServer.getAzureV2WellKnownUrl()
-            map["nav.auth.issuers.2.audience"] = pleiepengerDokumentAzureClientId
+            map["nav.auth.issuers.2.audience"] = k9DokumentAzureClientId
             map["nav.auth.issuers.2.azure.require_certificate_client_authentication"] = "true"
             map["nav.auth.issuers.2.azure.authorized_clients"] = azureAuthorizedClients.joinToString(",")
         }

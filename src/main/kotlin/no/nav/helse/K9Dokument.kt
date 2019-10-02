@@ -31,12 +31,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 
-private val logger: Logger = LoggerFactory.getLogger("nav.PleiepengerDokument") //TODO: Rename logger
+private val logger: Logger = LoggerFactory.getLogger("nav.K9Dokument")
 
 fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
 
 @KtorExperimentalAPI
-fun Application.pleiepengerDokument() { //TODO: Rename klasse og fil.
+fun Application.k9Dokument() {
     val appId = environment.config.id()
     logProxyProperties()
     DefaultExports.initialize()

@@ -6,10 +6,10 @@ import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class PleiepengerDokumentWithMocks { //TODO: Rename fil og klassenavn.
+class K9DokumentWithMocks {
     companion object {
 
-        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentWithMocks::class.java) //TODO: Rename loggernavn.
+        private val logger: Logger = LoggerFactory.getLogger(K9DokumentWithMocks::class.java)
 
         @JvmStatic
         fun main(args: Array<String>) {
