@@ -1,11 +1,11 @@
-name: Build, push and deploy
+name: Build, push and deploy to production environment.
 on:
-  push:
+  pull_request:
     branches:
-    - dev-*
+      - master
 jobs:
-  deploy-to-dev:
-    name: dev-fss environment
+  build-and-deploy-to-prod-fss:
+    name: prod-fss environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,11 +33,27 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
-#      - name: deploy to dev-fss
-#        uses: navikt/deployment-cli/action@0.4.0
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}º
-#        with:
-#          cluster: dev-fss
-#          team: dusseldorf
-#          resources: nais/dev-fss.yaml
+#  deploy-prod-fss:
+#    name: Deploy to prod-fss
+#      runs-on: ubuntu-latest
+#      steps:
+#        - name: deploy
+#          uses: navikt/deployment-cli/action@0.4.0
+#          env:
+#            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          with:
+#            cluster: prod-fss
+#            team: dusseldorf
+#            resources: nais/prod-fss.yml
+#  deploy-dev-sbs:
+#    name: Deploy to prod-sbs
+#      runs-on: ubuntu-latest
+#      steps:
+#        - name: deploy to prod-sbs
+#          uses: navikt/deployment-cli/action@0.4.0
+#          env:
+#            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          with:
+#            cluster: prod-sbs
+#            team: dusseldorf
+#            resources: nais/prod-sbs.yml
