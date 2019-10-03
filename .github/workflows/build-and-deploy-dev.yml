@@ -33,14 +33,6 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
-      - name: deploy to dev-fss
-        uses: navikt/deployment-cli/action@0.4.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          cluster: dev-fss
-          team: dusseldorf
-          resources: nais/dev-fss.yaml
 #  deploy-dev-fss:
 #    name: Deploy to dev-fss
 #      runs-on: ubuntu-latest
