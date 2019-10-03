@@ -1,5 +1,7 @@
 name: Build, push and deploy
 on: push
+  branches:
+    - dev-*
 jobs:
   deploy-to-dev:
     name: dev-fss environment
