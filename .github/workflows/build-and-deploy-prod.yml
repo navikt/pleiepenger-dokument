@@ -2,10 +2,10 @@ name: Build, push and deploy to production environment.
 on:
   pull_request:
     branches:
-      - master
+    - master
 jobs:
-  build-and-deploy-to-prod-fss:
-    name: prod-fss environment
+  build:
+    name: build code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
