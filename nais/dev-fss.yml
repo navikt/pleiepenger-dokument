@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: pleiepenger-dokument
+  name: k9-dokument
   namespace: default
   labels:
     team: {{team}}
@@ -26,7 +26,7 @@ spec:
       cpu: 200m
       memory: 512Mi
   ingresses:
-    - https://pleiepenger-dokument.nais.preprod.local #TODO: Rename ingress
+    - https://pleiepenger-dokument.nais.preprod.local #TODO: fjern ingress
     - https://k9-dokument.nais.preprod.local
   replicas:
     min: 1

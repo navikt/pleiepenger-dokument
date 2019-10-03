@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: pleiepenger-dokument #TODO: Rename name
+  name: k9-dokument
   namespace: default
   labels:
     team: {{team}}
@@ -26,7 +26,8 @@ spec:
       cpu: 200m
       memory: 512Mi
   ingresses:
-    - https://pleiepenger-dokument.nais.adeo.no  #TODO: Rename ingress
+    - https://pleiepenger-dokument.nais.adeo.no  #TODO: fjern ingress
+    - https://k9-dokument.nais.adeo.no
   replicas:
     min: 1
     max: 1
@@ -55,4 +56,4 @@ spec:
     - name: VIRUS_SCAN_ENABLED
       value: "false"
     - name: BASE_URL
-      value: https://pleiepenger-dokument.nais.adeo.no  #TODO: Rename base_url value
+      value: https://k9-dokument.nais.adeo.no
