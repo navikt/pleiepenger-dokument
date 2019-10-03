@@ -4,7 +4,7 @@ orbs:
 
 jobs:
   build:
-    working_directory: ~/pleiepenger-dokument #TODO: Rename working_directory og repo?
+    working_directory: ~/k9-dokument
     docker:
       - image: 'circleci/openjdk:11-jdk'
     steps:
@@ -18,11 +18,11 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
       - nais/docker-deploy:
-          image: navikt/pleiepenger-dokument #TODO: Rename image og repo?
+          image: navikt/k9-dokument
 
   check:
     machine: true
-    working_directory: ~/pleiepenger-dokument #TODO: Rename working_directory og repo?
+    working_directory: ~/k9-dokument
     steps:
       - restore_cache:
           keys:
@@ -70,7 +70,7 @@ workflows:
           name: dev-sbs-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument #TODO: Rename image.
+          image: navikt/k9-dokument
           github-app-id: 35124
           nais-template: nais/dev-sbs.yml
           environment: dev-sbs
@@ -86,7 +86,7 @@ workflows:
           name: dev-fss-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument #TODO: Rename image.
+          image: navikt/k9-dokument
           github-app-id: 35124
           nais-template: nais/dev-fss.yml
           environment: dev-fss
@@ -102,7 +102,7 @@ workflows:
           name: prod-sbs-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument #TODO: Rename image.
+          image: navikt/k9-dokument
           github-app-id: 35124
           nais-template: nais/prod-sbs.yml
           environment: prod-sbs
@@ -117,7 +117,7 @@ workflows:
           name: prod-fss-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument #TODO: Rename image.
+          image: navikt/k9-dokument
           github-app-id: 35124
           nais-template: nais/prod-fss.yml
           environment: prod-fss
