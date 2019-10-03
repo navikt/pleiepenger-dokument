@@ -18,7 +18,7 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
       - nais/docker-deploy:
-          image: navikt/k9-dokument
+          image: navikt/pleiepenger-dokument
 
   check:
     machine: true
