@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: k9-dokument
+  name: pleiepenger-dokument
   namespace: default
   labels:
     team: {{team}}

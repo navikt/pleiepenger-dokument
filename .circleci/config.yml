@@ -70,7 +70,7 @@ workflows:
           name: dev-sbs-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/k9-dokument
+          image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/dev-sbs.yml
           environment: dev-sbs
@@ -86,7 +86,7 @@ workflows:
           name: dev-fss-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/k9-dokument
+          image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/dev-fss.yml
           environment: dev-fss
@@ -102,7 +102,7 @@ workflows:
           name: prod-sbs-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/k9-dokument
+          image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/prod-sbs.yml
           environment: prod-sbs
@@ -117,7 +117,7 @@ workflows:
           name: prod-fss-deploy
           build-and-push-docker-image: false
           repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/k9-dokument
+          image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/prod-fss.yml
           environment: prod-fss
