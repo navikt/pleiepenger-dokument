@@ -37,6 +37,8 @@ jobs:
     name: Deploy to dev-fss
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
       - name: deploy
         uses: navikt/deployment-cli/action@0.4.0
         env:
@@ -49,6 +51,8 @@ jobs:
     name: Deploy to dev-sbs
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
       - name: deploy to dev-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
