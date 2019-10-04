@@ -1,37 +1,14 @@
-# This workflow trigger on push to branches prefixed with dev-.
-name: Build, push and deploy to developement environment.
+name: Build, push and deploy to production environment.
 on:
-  push:
+  pull_request:
     branches:
       - dev-*
-
 jobs:
-  test:
-    name: Check Code
+  docker-push:
+    if: github.event.pull_request.merged == true # Runs only if pull request is merged into dev-*.
+    name: Create and push image.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - name: Check Code
-        run: ./gradlew check
-
-  build-code-and-push-docker:
-    name: Build code and push docker image
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - name: Build JAR
-        run: ./gradlew shadowJar # Creates a combined JAR of project and runTime dependencies.
       - name: Create Docker tag
         env:
           NAME: k9-dokument
@@ -49,40 +26,12 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
-      - name: pass image file to next job.
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker_image
-          path: .docker_image
-      - name: pass tag file to next job.
-        uses: actions/upload-artifact@v1
-        with:
-          name: docker_tag
-          path: .docker_tag
-
   deploy-dev-fss:
+    needs: docker-push # Depends on docker-push job
     name: Deploy to dev-fss
-    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-      # Download the image and tag file to use for the deployment cli.
-      - name: Download image file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_image
-      - name: Download tag file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_tag
-      - name: unpack
-        run: |
-          cp docker_image/.docker_image .
-          cp docker_tag/.docker_tag .
-      - name: debug
-        run: ls -la
-      - name: deploy to dev-fss
+      - name: deploy
         uses: navikt/deployment-cli/action@0.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,29 +39,11 @@ jobs:
           cluster: dev-fss
           team: dusseldorf
           resources: nais/dev-fss.yml
-
   deploy-dev-sbs:
+    needs: docker-push # Depends on docker-push job
     name: Deploy to dev-sbs
-    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-        # Download the image and tag file to use for the deployment cli.
-      - name: Download image file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_image
-      - name: Download tag file
-        uses: actions/download-artifact@v1
-        with:
-          name: docker_tag
-      - name: unpack
-        run: |
-          cp docker_image/.docker_image .
-          cp docker_tag/.docker_tag .
-      - name: debug
-        run: ls -la
       - name: deploy to dev-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
