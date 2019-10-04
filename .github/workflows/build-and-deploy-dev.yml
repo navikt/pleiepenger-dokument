@@ -35,25 +35,25 @@ jobs:
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
   deploy-dev-fss:
     name: Deploy to dev-fss
-      runs-on: ubuntu-latest
-      steps:
-        - name: deploy
-          uses: navikt/deployment-cli/action@0.4.0
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            cluster: dev-fss
-            team: dusseldorf
-            resources: nais/dev-fss.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy
+        uses: navikt/deployment-cli/action@0.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cluster: dev-fss
+          team: dusseldorf
+          resources: nais/dev-fss.yml
   deploy-dev-sbs:
     name: Deploy to dev-sbs
-      runs-on: ubuntu-latest
-      steps:
-        - name: deploy to dev-sbs
-          uses: navikt/deployment-cli/action@0.4.0
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            cluster: dev-sbs
-            team: dusseldorf
-            resources: nais/dev-sbs.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to dev-sbs
+        uses: navikt/deployment-cli/action@0.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cluster: dev-sbs
+          team: dusseldorf
+          resources: nais/dev-sbs.yml
