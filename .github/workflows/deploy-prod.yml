@@ -2,10 +2,10 @@ name: Build, push and deploy to production environment.
 on:
   pull_request:
     branches:
-      - dev-*
+    - master
 jobs:
   docker-push:
-    if: github.event.pull_request.merged == true # Runs only if pull request is merged into dev-*.
+    if: github.event.pull_request.merged == true # Runs only if pull request is merged into master.
     name: Create and push image.
     runs-on: ubuntu-latest
     steps:
@@ -26,9 +26,9 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
-  deploy-dev-fss:
+  deploy-prod-fss:
     needs: docker-push # Depends on docker-push job
-    name: Deploy to dev-fss
+    name: Deploy to prod-fss
     runs-on: ubuntu-latest
     steps:
       - name: deploy
@@ -36,19 +36,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          cluster: dev-fss
+          cluster: prod-fss
           team: dusseldorf
-          resources: nais/dev-fss.yml
+          resources: nais/prod-fss.yml
   deploy-dev-sbs:
     needs: docker-push # Depends on docker-push job
-    name: Deploy to dev-sbs
+    name: Deploy to prod-sbs
     runs-on: ubuntu-latest
     steps:
-      - name: deploy to dev-sbs
+      - name: deploy to prod-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          cluster: dev-sbs
+          cluster: prod-sbs
           team: dusseldorf
-          resources: nais/dev-sbs.yml
+          resources: nais/prod-sbs.yml
