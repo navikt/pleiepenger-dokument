@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: pleiepenger-dokument
+  name: k9-dokument
   namespace: default
   labels:
     team: {{team}}
@@ -26,7 +26,7 @@ spec:
       cpu: 200m
       memory: 512Mi
   ingresses:
-    - https://pleiepenger-dokument.nais.oera-q.local #TODO: fjern ingress
+    - https://k9-dokument.nais.oera-q.local
   replicas:
     min: 1
     max: 1
@@ -49,4 +49,4 @@ spec:
     - name: VIRUS_SCAN_URL
       value: http://clamav.nais.svc.nais.local/scan
     - name: BASE_URL
-      value: https://pleiepenger-dokument.nais.oera-q.local
+      value: https://k9-dokument.nais.oera-q.local

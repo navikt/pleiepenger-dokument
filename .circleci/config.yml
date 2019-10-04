@@ -66,38 +66,38 @@ workflows:
               only:
                 - master
                 - /dev-.*/
-      - nais/deploy:
-          name: dev-sbs-deploy
-          build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument
-          github-app-id: 35124
-          nais-template: nais/dev-sbs.yml
-          environment: dev-sbs
-          team: dusseldorf
-          filters:
-            branches:
-              only:
-                - master
-                - /dev-.*/
-          requires:
-            - build
-      - nais/deploy:
-          name: dev-fss-deploy
-          build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
-          image: navikt/pleiepenger-dokument
-          github-app-id: 35124
-          nais-template: nais/dev-fss.yml
-          environment: dev-fss
-          team: dusseldorf
-          filters:
-            branches:
-              only:
-                - master
-                - /dev-.*/
-          requires:
-            - build
+#      - nais/deploy:
+#          name: dev-sbs-deploy
+#          build-and-push-docker-image: false
+#          repo: navikt/pleiepenger-dokument
+#          image: navikt/pleiepenger-dokument
+#          github-app-id: 35124
+#          nais-template: nais/dev-sbs.yml
+#          environment: dev-sbs
+#          team: dusseldorf
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - /dev-.*/
+#          requires:
+#            - build
+#      - nais/deploy:
+#          name: dev-fss-deploy
+#          build-and-push-docker-image: false
+#          repo: navikt/pleiepenger-dokument
+#          image: navikt/pleiepenger-dokument
+#          github-app-id: 35124
+#          nais-template: nais/dev-fss.yml
+#          environment: dev-fss
+#          team: dusseldorf
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - /dev-.*/
+#          requires:
+#            - build
       - nais/deploy:
           name: prod-sbs-deploy
           build-and-push-docker-image: false
