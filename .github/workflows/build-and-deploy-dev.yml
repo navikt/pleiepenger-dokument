@@ -1,21 +1,14 @@
-name: Build, push and deploy to development environment.
+name: Build, push and deploy to production environment.
 on:
-  push:
+  pull_request:
     branches:
-    - add-github-actions
+      - dev-*
 jobs:
-  build:
-    name: build code
+  docker-push:
+    if: github.event.pull_request.merged == true # Runs only if pull request is merged into dev-*.
+    name: Create and push image.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-      - name: Build code
-        run: ./gradlew build
       - name: Create Docker tag
         env:
           NAME: k9-dokument
@@ -34,11 +27,10 @@ jobs:
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
   deploy-dev-fss:
+    needs: docker-push # Depends on docker-push job
     name: Deploy to dev-fss
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
       - name: deploy
         uses: navikt/deployment-cli/action@0.4.0
         env:
@@ -48,11 +40,10 @@ jobs:
           team: dusseldorf
           resources: nais/dev-fss.yml
   deploy-dev-sbs:
+    needs: docker-push # Depends on docker-push job
     name: Deploy to dev-sbs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v1
       - name: deploy to dev-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
