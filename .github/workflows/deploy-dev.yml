@@ -6,8 +6,8 @@ on:
       - add-github-actions
 
 jobs:
-  build:
-    name: Build code
+  test:
+    name: Check Code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,15 +16,22 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Gradle Build
-        run: ./gradlew build
+      - name: Check Code
+        run: ./gradlew check
 
-  docker-push:
-    name: Create and push image.
-    needs: build # Depends on build job
-    if: github.event.pull_request.merged == true # Runs only if pull request is merged into dev-*.
+  build-code-and-push-docker:
+    name: Build code and push docker image
+    needs: test
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build JAR
+        run: ./gradlew shadowJar # Creates a combined JAR of project and runTime dependencies.
       - name: Create Docker tag
         env:
           NAME: k9-dokument
@@ -55,7 +62,7 @@ jobs:
 
   deploy-dev-fss:
     name: Deploy to dev-fss
-    needs: docker-push # Depends on docker-push job
+    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
       # Download the image and tag file to use for the deployment cli.
@@ -67,7 +74,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: docker_tag
-      - name: deploy
+      - name: deploy to dev-fss
         uses: navikt/deployment-cli/action@0.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +85,7 @@ jobs:
 
   deploy-dev-sbs:
     name: Deploy to dev-sbs
-    needs: docker-push # Depends on docker-push job
+    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
       - name: Download image file
