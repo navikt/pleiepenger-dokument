@@ -65,7 +65,9 @@ jobs:
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
-      # Download the image and tag file to use for the deployment cli.
+      - name: Checkout code
+        uses: actions/checkout@v1
+        # Download the image and tag file to use for the deployment cli.
       - name: Download image file
         uses: actions/download-artifact@v1
         with:
@@ -88,7 +90,9 @@ jobs:
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
-      # Download the image and tag file to use for the deployment cli.
+      - name: Checkout code
+        uses: actions/checkout@v1
+        # Download the image and tag file to use for the deployment cli.
       - name: Download image file
         uses: actions/download-artifact@v1
         with:
