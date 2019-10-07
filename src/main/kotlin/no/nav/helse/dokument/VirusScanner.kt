@@ -62,7 +62,7 @@ private class ClamAvGateway(
         val contentStream = { ByteArrayInputStream(dokument.content) }
 
         val (_, _, res) = Operation.monitored(
-            app = "pleiepenger-dokument",
+            app = "k9-dokument",
             operation = "scanne-dokument-for-virus",
             resultResolver = { 200 == it.second.statusCode}
         ) {

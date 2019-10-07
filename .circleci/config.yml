@@ -4,7 +4,7 @@ orbs:
 
 jobs:
   build:
-    working_directory: ~/pleiepenger-dokument
+    working_directory: ~/k9-dokument
     docker:
       - image: 'circleci/openjdk:11-jdk'
     steps:
@@ -22,7 +22,7 @@ jobs:
 
   check:
     machine: true
-    working_directory: ~/pleiepenger-dokument
+    working_directory: ~/k9-dokument
     steps:
       - restore_cache:
           keys:
@@ -69,7 +69,7 @@ workflows:
       - nais/deploy:
           name: dev-sbs-deploy
           build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument
+          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
           image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/dev-sbs.yml
@@ -85,7 +85,7 @@ workflows:
       - nais/deploy:
           name: dev-fss-deploy
           build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument
+          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
           image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/dev-fss.yml
@@ -101,7 +101,7 @@ workflows:
       - nais/deploy:
           name: prod-sbs-deploy
           build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument
+          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
           image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/prod-sbs.yml
@@ -116,7 +116,7 @@ workflows:
       - nais/deploy:
           name: prod-fss-deploy
           build-and-push-docker-image: false
-          repo: navikt/pleiepenger-dokument
+          repo: navikt/pleiepenger-dokument #TODO: Rename repo.
           image: navikt/pleiepenger-dokument
           github-app-id: 35124
           nais-template: nais/prod-fss.yml

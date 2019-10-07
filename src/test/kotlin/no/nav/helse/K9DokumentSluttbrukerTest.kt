@@ -23,15 +23,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @KtorExperimentalAPI
-class PleiepengerDokumentSluttbrukerTest {
+class K9DokumentSluttbrukerTest {
 
     @KtorExperimentalAPI
     private companion object {
-        private val logger: Logger = LoggerFactory.getLogger(PleiepengerDokumentSluttbrukerTest::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(K9DokumentSluttbrukerTest::class.java)
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withLoginServiceSupport()
-            .pleiepengerDokumentConfiguration()
+            .k9DokumentConfiguration()
             .build()
             .stubVirusScan()
 

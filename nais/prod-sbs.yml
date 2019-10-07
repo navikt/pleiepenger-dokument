@@ -26,7 +26,7 @@ spec:
       cpu: 200m
       memory: 512Mi
   ingresses:
-    - https://pleiepenger-dokument.nais.oera.no
+    - https://pleiepenger-dokument.nais.oera.no #TODO: fjern ingress
   replicas:
     min: 1
     max: 1
