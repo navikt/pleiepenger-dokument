@@ -27,7 +27,6 @@ spec:
       memory: 512Mi
   ingresses:
     - https://pleiepenger-dokument.nais.oera.no #TODO: fjern ingress
-    - https://k9-dokument.nais.oera.no
   replicas:
     min: 1
     max: 1
@@ -50,4 +49,4 @@ spec:
     - name: VIRUS_SCAN_URL
       value: http://clamav.nais.svc.nais.local/scan
     - name: BASE_URL
-      value: https://k9-dokument.nais.oera.no
+      value: https://pleiepenger-dokument.nais.oera.no
