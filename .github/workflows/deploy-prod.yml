@@ -5,11 +5,33 @@ on:
     - master
 
 jobs:
-  docker-push:
-    name: Create and push image.
+  test:
+    name: Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Check Code
+        run: ./gradlew check
+
+  build-code-and-push-docker:
+    name: Build code and push docker image.
+    needs: test
     if: github.event.pull_request.merged == true # Runs only if pull request is merged into master.
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build JAR
+        run: ./gradlew shadowJar # Creates a combined JAR of project and runTime dependencies.
       - name: Create Docker tag
         env:
           NAME: k9-dokument
@@ -27,13 +49,32 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
+      - name: pass image file to next job.
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_image
+          path: .docker_image
+      - name: pass tag file to next job.
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_tag
+          path: .docker_tag
 
   deploy-prod-fss:
     name: Deploy to prod-fss
-    needs: docker-push # Depends on docker-push job
+    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
-      - name: deploy
+      # Download the image and tag file to use for the deployment cli.
+      - name: Download image file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_image
+      - name: Download tag file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_tag
+      - name: deploy to prod-fss
         uses: navikt/deployment-cli/action@0.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,9 +85,18 @@ jobs:
 
   deploy-dev-sbs:
     name: Deploy to prod-sbs
-    needs: docker-push # Depends on docker-push job
+    needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
+      # Download the image and tag file to use for the deployment cli.
+      - name: Download image file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_image
+      - name: Download tag file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_tag
       - name: deploy to prod-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
