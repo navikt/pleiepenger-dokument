@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - dev-*
+      - add-github-actions
 
 jobs:
   build:
