@@ -81,11 +81,11 @@ jobs:
     needs: docker-push # Depends on docker-push job
     runs-on: ubuntu-latest
     steps:
-      - name: Download docker image
-            uses: actions/download-artifact@v1
-            with:
-              name: docker_image
-      - name: Download docker image
+      - name: Download image file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_image
+      - name: Download tag file
         uses: actions/download-artifact@v1
         with:
           name: docker_tag
