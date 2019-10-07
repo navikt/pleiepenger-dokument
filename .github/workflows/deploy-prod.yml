@@ -3,10 +3,11 @@ on:
   pull_request:
     branches:
     - master
+
 jobs:
   docker-push:
-    if: github.event.pull_request.merged == true # Runs only if pull request is merged into master.
     name: Create and push image.
+    if: github.event.pull_request.merged == true # Runs only if pull request is merged into master.
     runs-on: ubuntu-latest
     steps:
       - name: Create Docker tag
@@ -26,9 +27,10 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
+
   deploy-prod-fss:
-    needs: docker-push # Depends on docker-push job
     name: Deploy to prod-fss
+    needs: docker-push # Depends on docker-push job
     runs-on: ubuntu-latest
     steps:
       - name: deploy
@@ -39,9 +41,10 @@ jobs:
           cluster: prod-fss
           team: dusseldorf
           resources: nais/prod-fss.yml
+
   deploy-dev-sbs:
-    needs: docker-push # Depends on docker-push job
     name: Deploy to prod-sbs
+    needs: docker-push # Depends on docker-push job
     runs-on: ubuntu-latest
     steps:
       - name: deploy to prod-sbs
