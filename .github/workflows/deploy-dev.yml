@@ -41,12 +41,31 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
+      - name: pass image file to next job.
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_image
+          path: .docker_image
+      - name: pass tag file to next job.
+        uses: actions/upload-artifact@v1
+        with:
+          name: docker_tag
+          path: .docker_tag
 
   deploy-dev-fss:
     name: Deploy to dev-fss
     needs: docker-push # Depends on docker-push job
     runs-on: ubuntu-latest
     steps:
+      # Download the image and tag file to use for the deployment cli.
+      - name: Download image file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_image
+      - name: Download tag file
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_tag
       - name: deploy
         uses: navikt/deployment-cli/action@0.4.0
         env:
@@ -61,6 +80,14 @@ jobs:
     needs: docker-push # Depends on docker-push job
     runs-on: ubuntu-latest
     steps:
+      - name: Download docker image
+            uses: actions/download-artifact@v1
+            with:
+              name: docker_image
+      - name: Download docker image
+        uses: actions/download-artifact@v1
+        with:
+          name: docker_tag
       - name: deploy to dev-sbs
         uses: navikt/deployment-cli/action@0.4.0
         env:
