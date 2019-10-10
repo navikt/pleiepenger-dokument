@@ -1,6 +1,9 @@
-# This workflow trigger on push to branches prefixed with dev-.
+# This workflow trigger on push to any branch.
 name: Build, push and deploy
-on: push
+on:
+  push:
+    branches:
+      - *
 
 jobs:
   test:
