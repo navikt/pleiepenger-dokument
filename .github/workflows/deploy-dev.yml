@@ -62,7 +62,7 @@ jobs:
 
   deploy-dev-fss:
     name: Deploy to dev-fss
-    if: ${{ startsWith($GITHUB_REF, 'dev-') }}
+    if: ${{ startsWith($GITHUB_REF, 'refs/heads/dev-') }} # If the branch starts with dev-
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +94,7 @@ jobs:
 
   deploy-dev-sbs:
     name: Deploy to dev-sbs
-    if: ${{ startsWith($GITHUB_REF, 'dev-') }}
+    if: ${{ startsWith($GITHUB_REF, 'refs/heads/dev-') }} # If the branch starts with dev-
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -126,7 +126,7 @@ jobs:
 
   deploy-prod-fss:
     name: Deploy to prod-fss
-    if: ${{ contains($GITHUB_REF, 'master') }}
+    if: $GITHUB_REF == refs/heads/master  # If the branch is master
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -158,7 +158,7 @@ jobs:
 
   deploy-prod-sbs:
     name: Deploy to prod-sbs
-    if: ${{ contains($GITHUB_REF, 'master') }}
+    if: $GITHUB_REF == refs/heads/master  # If the branch is master
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
