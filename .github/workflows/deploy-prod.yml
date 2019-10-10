@@ -1,3 +1,5 @@
+# This workflow trigger on pull requests to master.
+# It builds on open pull request and deploys when merged.
 name: Build, push and deploy to production environment.
 on:
   pull_request:

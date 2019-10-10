@@ -1,3 +1,4 @@
+# This workflow trigger on push to branches prefixed with dev-.
 name: Build, push and deploy to developement environment.
 on:
   push:
