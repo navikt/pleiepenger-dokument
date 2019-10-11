@@ -1,9 +1,6 @@
-# pleiepenger-dokument
-`TODO: Rename header`
+# k9-dokument
 
-
-[![CircleCI](https://circleci.com/gh/navikt/pleiepenger-dokument/tree/master.svg?style=svg)](https://circleci.com/gh/navikt/pleiepenger-dokument/tree/master)
-`TODO: Rename repo og link`
+![K9 Dokument](https://github.com/navikt/k9-dokument/workflows/Build,%20push%20and%20deploy/badge.svg)
 
 Mellomlagrer vedlegg før innsending av søknad, og dokumenter før journalføring.
 

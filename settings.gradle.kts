@@ -1,1 +1,1 @@
-rootProject.name = "pleiepenger-dokument" //TODO: Rename prosjektnanv, og repo?
+rootProject.name = "k9-dokument"
