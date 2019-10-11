@@ -1,6 +1,6 @@
 # k9-dokument
 
-![](https://github.com/navikt/k9-dokument/workflows/CI/CD/badge.svg)
+![](https://github.com/navikt/k9-dokument/workflows/CI%20/%20CD/badge.svg)
 
 Mellomlagrer vedlegg før innsending av søknad, og dokumenter før journalføring.
 
