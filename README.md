@@ -39,7 +39,6 @@ DELETE @ /v1/dokument/{dokumentId}
 ### Lagre dokument
 POST @ /v1/dokument
 - 201 response med "Location" Header satt som peker på URL'en til dokumentet.
-- Enten en Multipart Request;
 - En file part med navn "content" som inneholder filen. Samme part må ha "Content-Type header" til content-type av dokumentet.
 - En form part med navn "title" som inneholder tittelen på dokumentet
 - Eller en JSON request på samme format som henting av dokument som JSON beskrevet ovenfor.
