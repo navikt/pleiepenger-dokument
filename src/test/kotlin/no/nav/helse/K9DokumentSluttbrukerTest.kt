@@ -29,7 +29,7 @@ class K9DokumentSluttbrukerTest {
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger(K9DokumentSluttbrukerTest::class.java)
         private const val eier = "290990123456"
-        private val json = "jwkset.json".fromResources().readBytes()
+        private val content = "test.pdf".fromResources().readBytes()
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withLoginServiceSupport()
@@ -102,10 +102,10 @@ class K9DokumentSluttbrukerTest {
 
         val url = engine.lasteOppDokumentJson(
             token = idToken,
-            fileContent = json,
-            fileName = "jwkset.json",
-            tittel = "Test JWK set",
-            contentType = "application/json",
+            fileContent = content,
+            fileName = "test.pdf",
+            tittel = "PDF",
+            contentType = "application/pdf",
             eier = eier
         )
 
@@ -117,7 +117,7 @@ class K9DokumentSluttbrukerTest {
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-sluttbruker")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("application/json", response.contentType().toString())
+                assertEquals("application/pdf", response.contentType().toString())
             }
         }
     }
@@ -132,10 +132,10 @@ class K9DokumentSluttbrukerTest {
 
         val url = engine.lasteOppDokumentJson(
             token = idTokenLagre,
-            fileContent = json,
-            fileName = "jwkset.json",
-            tittel = "Test JWK set",
-            contentType = "application/json",
+            fileContent = content,
+            fileName = "test.pdf",
+            tittel = "PDF",
+            contentType = "application/pdf",
             eier = eier
         )
 
@@ -200,10 +200,10 @@ class K9DokumentSluttbrukerTest {
 
         val url = engine.lasteOppDokumentJson(
             token = idTokenLagre,
-            fileContent = json,
-            fileName = "jwkset.json",
-            tittel = "Test JWK set",
-            contentType = "application/json",
+            fileContent = content,
+            fileName = "test.pdf",
+            tittel = "PDF",
+            contentType = "application/pdf",
             eier = eier
         )
 
