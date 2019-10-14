@@ -35,6 +35,7 @@ class K9DokumentSystembrukerTest {
 
         private const val eier = "290990123456"
         private const val eierQueryString = "?eier=$eier"
+        private val json = "jwkset.json".fromResources().readBytes()
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withAzureSupport()
@@ -107,10 +108,16 @@ class K9DokumentSystembrukerTest {
 
     @Test
     fun `request med service account Access Token fungerer`() {
-        val url = engine.lasteOppDokumentMultipart(
+
+        val url = engine.lasteOppDokumentJson(
             token = authorizedServiceAccountAccessToken,
+            fileContent = json,
+            fileName = "jwkset.json",
+            tittel = "Test JWK set",
+            contentType = "application/json",
             eier = eier
         )
+
         val path = "${Url(url).fullPath}$eierQueryString"
 
         with(engine) {
@@ -120,7 +127,7 @@ class K9DokumentSystembrukerTest {
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-service-account")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("image/jpeg", response.contentType().toString())
+                assertEquals("application/json", response.contentType().toString())
             }
         }
     }
@@ -137,18 +144,17 @@ class K9DokumentSystembrukerTest {
 
     private fun opplastingHentingOgSlettingFungerer(token: String) {
         with(engine) {
-            val jpeg = "iPhone_6.jpg".fromResources().readBytes()
 
             // LASTER OPP Dokument
-            val url = lasteOppDokumentMultipart(
+            val url = engine.lasteOppDokumentJson(
                 token = token,
-                fileContent = jpeg,
-                fileName = "iPhone_6.jpg",
-                tittel = "Bilde av en iphone",
-                contentType = "image/jpeg",
+                fileContent = json,
+                fileName = "jwkset.json",
+                tittel = "Test JWK set",
+                contentType = "application/json",
                 eier = eier
-
             )
+
             val path = "${Url(url).fullPath}$eierQueryString"
 
             // HENTER OPPLASTET DOKUMENT
@@ -158,8 +164,8 @@ class K9DokumentSystembrukerTest {
 
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(ContentType.Image.JPEG, response.contentType())
-                assertTrue(Arrays.equals(jpeg, response.byteContent))
+                assertEquals(ContentType.Application.Json, response.contentType())
+                assertTrue(Arrays.equals(json, response.byteContent))
 
                 // HENTER OPPLASTET DOKUMENT SOM JSON
                 handleRequest(HttpMethod.Get, path) {
@@ -172,9 +178,9 @@ class K9DokumentSystembrukerTest {
                     assertEquals("application/json; charset=UTF-8", response.contentType().toString())
 
                     val expected = Dokument(
-                        content = jpeg,
-                        contentType = "image/jpeg",
-                        title = "Bilde av en iphone"
+                        content = json,
+                        contentType = "application/json",
+                        title = "Test JWK set"
                     )
                     val actual = objectMapper.readValue<Dokument>(response.content!!)
                     assertEquals(expected, actual)

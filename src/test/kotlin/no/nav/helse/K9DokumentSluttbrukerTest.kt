@@ -28,6 +28,8 @@ class K9DokumentSluttbrukerTest {
     @KtorExperimentalAPI
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger(K9DokumentSluttbrukerTest::class.java)
+        private const val eier = "290990123456"
+        private val json = "jwkset.json".fromResources().readBytes()
 
         private val wireMockServer: WireMockServer = WireMockBuilder()
             .withLoginServiceSupport()
@@ -98,10 +100,13 @@ class K9DokumentSluttbrukerTest {
 
         val idToken = LoginService.V1_0.generateJwt(fnr)
 
-        val url = engine.lasteOppDokumentMultipart(
+        val url = engine.lasteOppDokumentJson(
             token = idToken,
-            fileName = "test.pdf",
-            tittel = "PDF"
+            fileContent = json,
+            fileName = "jwkset.json",
+            tittel = "Test JWK set",
+            contentType = "application/json",
+            eier = eier
         )
 
         val path = Url(url).fullPath
@@ -112,7 +117,7 @@ class K9DokumentSluttbrukerTest {
                 addHeader(HttpHeaders.XCorrelationId, "henter-dokument-som-sluttbruker")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("application/pdf", response.contentType().toString())
+                assertEquals("application/json", response.contentType().toString())
             }
         }
     }
@@ -125,10 +130,13 @@ class K9DokumentSluttbrukerTest {
         val idTokenLagre = LoginService.V1_0.generateJwt(fnrLagre)
         val idTokenHente = LoginService.V1_0.generateJwt(fnrHente)
 
-        val url = engine.lasteOppDokumentMultipart(
+        val url = engine.lasteOppDokumentJson(
             token = idTokenLagre,
-            fileName = "test.pdf",
-            tittel = "PDF"
+            fileContent = json,
+            fileName = "jwkset.json",
+            tittel = "Test JWK set",
+            contentType = "application/json",
+            eier = eier
         )
 
         val path = Url(url).fullPath
@@ -188,12 +196,15 @@ class K9DokumentSluttbrukerTest {
 
         val idTokenLagre = LoginService.V1_0.generateJwt(fnrLagre)
         val accessTokenHente = NaisSts.generateJwt(application = "srvpps-mottak")
-            //NaisSts.generateJwt(application = "srvpps-mottak")
+        //NaisSts.generateJwt(application = "srvpps-mottak")
 
-        val url = engine.lasteOppDokumentMultipart(
+        val url = engine.lasteOppDokumentJson(
             token = idTokenLagre,
-            fileName = "test.pdf",
-            tittel = "PDF"
+            fileContent = json,
+            fileName = "jwkset.json",
+            tittel = "Test JWK set",
+            contentType = "application/json",
+            eier = eier
         )
 
         val path = "${Url(url).fullPath}?eier=$fnrLagre"
@@ -206,6 +217,20 @@ class K9DokumentSluttbrukerTest {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
         }
+    }
+
+    @Test
+    fun `opplasting av fil med multipart er ikke tillatt`() {
+        val fnr = "29099912345"
+
+        val idToken = LoginService.V1_0.generateJwt(fnr)
+
+       engine.lasteOppDokumentMultipart(
+            token = idToken,
+            fileName = "test.pdf",
+            tittel = "PDF",
+            expectedHttpStatusCode = HttpStatusCode.UnsupportedMediaType
+        )
     }
 
     @Test

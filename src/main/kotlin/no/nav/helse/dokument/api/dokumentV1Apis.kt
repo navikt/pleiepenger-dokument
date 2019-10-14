@@ -106,6 +106,7 @@ private fun valider(
 ) : Set<Violation> {
     logger.trace("Validerer dokumentet")
     val violations = dokument.valider()
+
     if (!contentTypeService.isSupported(contentType = dokument.contentType!!, content = dokument.content!!)) {
         violations.add(Violation(parameterName = HttpHeaders.ContentType, reason = "Ikke Supportert dokument med Content-Type ${dokument.contentType}", parameterType = ParameterType.HEADER))
     }
@@ -113,13 +114,9 @@ private fun valider(
 }
 
 private suspend fun ApplicationCall.hentDokumentFraRequest(): DokumentDto {
-    return if (request.isMultipart()) {
-        logger.trace("Behandler multipart request")
-        receiveMultipart().getDokumentDto()
-    } else  {
         logger.trace("Behandler json request")
-        receive()
-    }
+        return receive()
+
 }
 
 private fun ApplicationCall.dokumentId() : DokumentId {
@@ -128,24 +125,6 @@ private fun ApplicationCall.dokumentId() : DokumentId {
 
 private fun ApplicationRequest.etterspurtJson() : Boolean {
     return ContentType.Application.Json.toString() == accept()
-}
-
-private suspend fun MultiPartData.getDokumentDto() : DokumentDto {
-    var content : ByteArray? = null
-    var contentType : String? = null
-    var title : String? = null
-
-    for (partData in readAllParts()) {
-        if (partData is PartData.FileItem && CONTENT_PART_NAME == partData.name) {
-            content = partData.streamProvider().use { it.readBytes() }
-            contentType = partData.contentType.toString()
-        } else if (partData is PartData.FormItem && TITLE_PART_NAME == partData.name) {
-            title = partData.value
-        }
-        partData.dispose()
-    }
-
-    return DokumentDto(content, contentType, title)
 }
 
 private suspend fun ApplicationCall.respondDokumentNotFound(dokumentId : DokumentId) {
@@ -170,6 +149,7 @@ private data class DokumentDto(val content: ByteArray?, val contentType: String?
         if (content == null) violations.add(Violation(parameterName = CONTENT_PART_NAME, reason = "Fant ingen 'part' som er en fil.", parameterType = ParameterType.ENTITY))
         if (content != null && content.size > MAX_DOKUMENT_SIZE) violations.add(Violation(parameterName = CONTENT_PART_NAME, reason = "Dokumentet er større en maks tillat 8MB.", parameterType = ParameterType.ENTITY))
         if (contentType == null) violations.add(Violation(parameterName = HttpHeaders.ContentType, reason = "Ingen Content-Type satt på fil.", parameterType = ParameterType.ENTITY))
+        if (contentType!!.contains("multipart")) violations.add(Violation(parameterName = HttpHeaders.ContentType, reason = "Multipart opplasting er ikke tillat.", parameterType = ParameterType.ENTITY))
         if (title == null) violations.add(Violation(parameterName = TITLE_PART_NAME, reason = "Fant ingen 'part' som er en form item.", parameterType = ParameterType.ENTITY))
         return violations
     }
