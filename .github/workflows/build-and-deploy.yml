@@ -25,7 +25,7 @@ jobs:
 
   build-code-and-push-docker:
     name: Build code and push docker image
-    if: github.ref == 'refs/heads/dev-*' || github.ref == 'refs/heads/master' # Build and push docker if branch is either master or dev-*
+    if: startsWith(github.ref, 'refs/heads/dev-') ||startsWith(github.ref, 'refs/heads/master') # Build and push docker if branch is either master or dev-*
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -67,7 +67,7 @@ jobs:
 
   deploy-dev-fss:
     name: Deploy to dev-fss
-    if: github.ref == 'refs/heads/dev-*' || github.ref == 'refs/heads/master' # Deploy if branch is either master or dev-*
+    if: startsWith(github.ref, 'refs/heads/dev-') || startsWith(github.ref, 'refs/heads/master') # Deploy if branch is either master or dev-*
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -99,7 +99,7 @@ jobs:
 
   deploy-dev-sbs:
     name: Deploy to dev-sbs
-    if: github.ref == 'refs/heads/dev-*' || github.ref == 'refs/heads/master' # Deploy if branch is either master or dev-*
+    if: startsWith(github.ref, 'refs/heads/dev-') || startsWith(github.ref, 'refs/heads/master') # Deploy if branch is either master or dev-*
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -131,7 +131,7 @@ jobs:
 
   deploy-prod-fss:
     name: Deploy to prod-fss
-    if: github.ref == 'refs/heads/master'  # If the branch is master
+    if: startsWith(github.ref, 'refs/heads/master')  # If the branch is master
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
@@ -163,7 +163,7 @@ jobs:
 
   deploy-prod-sbs:
     name: Deploy to prod-sbs
-    if: github.ref == 'refs/heads/master'  # If the branch is master
+    if: startsWith(github.ref, 'refs/heads/master')  # If the branch is master
     needs: build-code-and-push-docker # Depends on build-code-and-push-docker job
     runs-on: ubuntu-latest
     steps:
