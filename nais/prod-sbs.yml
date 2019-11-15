@@ -41,7 +41,7 @@ spec:
     - name: LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/navnob2c.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_idporten
     - name: S3_SERVICE_ENDPOINT
-      value: http://objectstore.rook-ceph.svc.nais.local
+      value: https://objectstore.nais.oera.no
     - name: S3_SIGNING_REGION
       value: us-east-1
     - name: S3_EXPIRATION_IN_DAYS
