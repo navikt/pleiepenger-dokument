@@ -18,6 +18,7 @@ class K9DokumentWithMocks {
                 .withPort(8131)
                 .withLoginServiceSupport()
                 .withAzureSupport()
+                .k9DokumentConfiguration()
                 .build()
                 .stubVirusScan()
 
@@ -25,7 +26,7 @@ class K9DokumentWithMocks {
 
             // Om true startes server kun med loginservice og 1 dag expiry på S3 bucket
             // Om false startes sever med azure & nais sts og uten expiry på S3 bucket
-            val sluttBruker = false
+            val sluttBruker = true
 
             val testArgs = TestConfiguration.asMap(
                 wireMockServer = wireMockServer,
