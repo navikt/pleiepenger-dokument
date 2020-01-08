@@ -12,6 +12,7 @@ import io.prometheus.client.Histogram
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
 import no.nav.helse.dusseldorf.ktor.health.Healthy
 import no.nav.helse.dusseldorf.ktor.health.Result
+import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -181,7 +182,7 @@ class S3StorageHealthCheck(
             Healthy(name = name, result = "Tilkobling mot S3 OK.")
         } catch (cause: Throwable) {
             logger.error("Feil ved tilkobling mot S3.", cause)
-            Healthy(name = name, result = cause.message ?: "Feil ved tilkobling mot S3.")
+            UnHealthy(name = name, result = cause.message ?: "Feil ved tilkobling mot S3.")
         }
     }
 }
