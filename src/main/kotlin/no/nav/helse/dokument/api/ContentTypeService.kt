@@ -25,7 +25,8 @@ class ContentTypeService {
 
     fun isSupported(
         contentType: String,
-        content: ByteArray) : Boolean {
+        content: ByteArray
+    ): Boolean {
         val parsedContentType = ContentType.parseOrNull(contentType) ?: return false
         val supported = supportedContentTypes.contains(parsedContentType)
         if (!supported) return false
@@ -38,11 +39,11 @@ class ContentTypeService {
     private fun isWhatItSeems(
         content: ByteArray,
         seems: ContentType
-    ) : Boolean {
+    ): Boolean {
         val detected = tika.detectOrNull(content) ?: return false
         val parsed = ContentType.parseOrNull(detected) ?: return false
 
-        if (PLAIN_TEXT == parsed && JSON == seems){
+        if (PLAIN_TEXT == parsed && JSON == seems) {
             return try {
                 objectMapper.readTree(content)
                 true
@@ -56,15 +57,19 @@ class ContentTypeService {
     }
 }
 
-private fun Tika.detectOrNull(content: ByteArray) : String? {
-    return try { detect(content) } catch (cause: Throwable) {
+private fun Tika.detectOrNull(content: ByteArray): String? {
+    return try {
+        detect(content)
+    } catch (cause: Throwable) {
         logger.warn("Kunne ikke detektere filfytpe for dokument", cause)
         null
     }
 }
 
-private fun ContentType.Companion.parseOrNull(contentType: String) : ContentType? {
-    return try { parse(contentType) } catch (cause: Throwable) {
+private fun ContentType.Companion.parseOrNull(contentType: String): ContentType? {
+    return try {
+        parse(contentType)
+    } catch (cause: Throwable) {
         logger.warn("Ugyldig content type $contentType")
         null
     }
