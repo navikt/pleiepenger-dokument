@@ -36,6 +36,7 @@ class ContentTypeService {
         )
     }
 
+
     private fun isWhatItSeems(
         content: ByteArray,
         seems: ContentType
