@@ -1,9 +1,9 @@
 package no.nav.helse
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getAzureV1WellKnownUrl
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getAzureV2WellKnownUrl
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.getLoginServiceV1WellKnownUrl
+import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV1WellKnownUrl
+import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
+import no.nav.helse.dusseldorf.testsupport.wiremock.getLoginServiceV1WellKnownUrl
 
 internal object TestConfiguration {
 

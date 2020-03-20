@@ -16,8 +16,8 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
-import no.nav.helse.dusseldorf.ktor.testsupport.jws.Azure
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
+import no.nav.helse.dusseldorf.testsupport.jws.Azure
+import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.slf4j.Logger
