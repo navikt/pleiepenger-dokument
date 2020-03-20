@@ -2,7 +2,7 @@ package no.nav.helse
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
-import no.nav.helse.dusseldorf.ktor.testsupport.wiremock.WireMockBuilder
+import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 
 private const val virusScanPath = "/virus-scan-mock/scan"
 

@@ -9,7 +9,7 @@ import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import kotlinx.io.streams.asInput
+import io.ktor.utils.io.streams.asInput
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import java.util.*
