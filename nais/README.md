@@ -13,6 +13,7 @@
 - omsorgspenger-mottak (8a37534e-7387-43af-8123-cb5facd5dc44)
 - omsorgspengerutbetalingsoknad-mottak (97378ce0-19c5-481c-9478-abfc8193c79c)
 - omsorgspengerutbetalingsoknad-prosessering (964c53ec-5e81-4b30-9cf9-972e7b934403)
+- omsorgsdageroverforingsoknad-mottak (4d15c5b9-e3ad-47e8-bffa-7294a6e2f91e)
 
 ### prod-fss
 #### AZURE_CLIENT_ID
@@ -26,3 +27,4 @@
 - omsorgspenger-mottak (17cf17e5-6f39-47a6-81f8-7e5507b19f6b)
 - omsorgspengerutbetalingsoknad-mottak (05c01005-6ee2-4d9d-9cd6-735c014071b6)
 - omsorgspengerutbetalingsoknad-prosessering (c3ec240c-fee9-4491-b526-092ef288adcd)
+- omsorgsdageroverforingsoknad-mottak (2d33dfd8-a279-470b-b334-e64491da4cb4)
