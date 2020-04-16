@@ -14,6 +14,7 @@
 - omsorgspengerutbetalingsoknad-mottak (97378ce0-19c5-481c-9478-abfc8193c79c)
 - omsorgspengerutbetalingsoknad-prosessering (964c53ec-5e81-4b30-9cf9-972e7b934403)
 - omsorgsdageroverforingsoknad-mottak (4d15c5b9-e3ad-47e8-bffa-7294a6e2f91e)
+- omsorgsdageroverforingsoknad-prosessering (3c90567a-a7e9-4f6f-8f76-fd3a2abd2cad)
 
 ### prod-fss
 #### AZURE_CLIENT_ID
