@@ -14,6 +14,7 @@
 - omsorgspengerutbetalingsoknad-mottak (97378ce0-19c5-481c-9478-abfc8193c79c)
 - omsorgspengerutbetalingsoknad-prosessering (964c53ec-5e81-4b30-9cf9-972e7b934403)
 - omsorgsdageroverforingsoknad-mottak (4d15c5b9-e3ad-47e8-bffa-7294a6e2f91e)
+- omsorgsdageroverforingsoknad-prosessering (3c90567a-a7e9-4f6f-8f76-fd3a2abd2cad)
 - k9-ettersending-mottak (5605d52e-6344-4703-88e8-b98fb6eb69b5)
 - k9-ettersending-prosessering (bb79926c-e11f-45da-99dc-edee7ce5e437)
 
@@ -30,5 +31,6 @@
 - omsorgspengerutbetalingsoknad-mottak (05c01005-6ee2-4d9d-9cd6-735c014071b6)
 - omsorgspengerutbetalingsoknad-prosessering (c3ec240c-fee9-4491-b526-092ef288adcd)
 - omsorgsdageroverforingsoknad-mottak (2d33dfd8-a279-470b-b334-e64491da4cb4)
+- omsorgsdageroverforingsoknad-prosessering (b796ff55-b084-486f-bc5a-d3c3f3227266)
 - k9-ettersending-mottak (ea43448c-d3b4-4fce-8295-02378ab71c75)
 - k9-ettersending-prosessering (6a6fa1ee-57f4-4e3b-ac13-d7afc3148794)
