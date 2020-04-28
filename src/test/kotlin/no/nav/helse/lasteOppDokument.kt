@@ -11,13 +11,12 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.utils.io.streams.asInput
 import no.nav.helse.dusseldorf.ktor.core.fromResources
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
 
 fun TestApplicationEngine.lasteOppDokumentMultipart(
     token: String,

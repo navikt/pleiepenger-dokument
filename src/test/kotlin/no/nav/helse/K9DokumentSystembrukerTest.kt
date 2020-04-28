@@ -15,7 +15,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.testsupport.jws.Azure
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
@@ -46,7 +45,7 @@ class K9DokumentSystembrukerTest {
 
 
         private val authorizedServiceAccountAccessToken = getAccessToken()
-        private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+        private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
         private val s3 = S3()
 
 
