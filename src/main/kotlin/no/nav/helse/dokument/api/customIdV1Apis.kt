@@ -51,7 +51,7 @@ internal fun Route.customIdV1Apis(
                     eier = eierResolver.hentEier(call),
                     expires = expires
                 )
-                call.respond(HttpStatusCode.Accepted)
+                call.respond(HttpStatusCode.NoContent)
             }
             else -> {
                 call.respond(HttpStatusCode.BadRequest)

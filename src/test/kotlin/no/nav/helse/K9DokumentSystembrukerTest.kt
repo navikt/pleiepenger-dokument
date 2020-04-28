@@ -7,10 +7,7 @@ import com.typesafe.config.ConfigFactory
 import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.http.*
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.contentType
-import io.ktor.server.testing.createTestEnvironment
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
@@ -322,5 +319,42 @@ class K9DokumentSystembrukerTest {
             }
         }
     }
-}
 
+    @Test
+    fun `Lagring og overskriving og henting med Custom Dokument ID`() {
+        val path = "/v1/customized/dokument/test1?eier=123"
+
+        CustomDokumentIdUtils.systembrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 1
+                }
+            """.trimIndent(),
+            path = path
+        )
+
+        CustomDokumentIdUtils.systembrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 2,
+                    "ny": {
+                        "overskriv": true
+                    }
+                }
+            """.trimIndent(),
+            path = path
+        )
+    }
+
+    @Test
+    fun `Hente dokment som ikke finnes med Custom Dokument ID`() {
+        val path = "/v1/customized/dokument/test2?eier=1234"
+        CustomDokumentIdUtils.systembrukerHent(
+            engine = engine,
+            path = path,
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
+    }
+}
