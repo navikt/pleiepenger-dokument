@@ -69,23 +69,35 @@ fun Application.k9Dokument() {
 
     install(CallIdRequired)
 
+    val dokumentService = DokumentService(
+        cryptography = Cryptography(
+            encryptionPassphrase = configuration.getEncryptionPassphrase(),
+            decryptionPassphrases = configuration.getDecryptionPassphrases()
+        ),
+        storage = s3Storage,
+        virusScanner = getVirusScanner(configuration)
+    )
+
+    val eierResolver = EierResolver(
+        hentEierFra = configuration.hentEierFra()
+    )
+
+    val contentTypeService = ContentTypeService()
+
     install(Routing) {
         authenticate(*issuers.allIssuers()) {
             requiresCallId {
                 dokumentV1Apis(
-                    dokumentService = DokumentService(
-                        cryptography = Cryptography(
-                            encryptionPassphrase = configuration.getEncryptionPassphrase(),
-                            decryptionPassphrases = configuration.getDecryptionPassphrases()
-                        ),
-                        storage = s3Storage,
-                        virusScanner = getVirusScanner(configuration)
-                    ),
-                    eierResolver = EierResolver(
-                        hentEierFra = configuration.hentEierFra()
-                    ),
-                    contentTypeService = ContentTypeService(),
+                    dokumentService = dokumentService,
+                    eierResolver = eierResolver,
+                    contentTypeService = contentTypeService,
                     baseUrl = configuration.getBaseUrl()
+                )
+                customIdV1Apis(
+                    dokumentService = dokumentService,
+                    eierResolver = eierResolver,
+                    contentTypeService = contentTypeService,
+                    støtterExpirationFraRequest = configuration.støtterExpirationFraRequest()
                 )
             }
         }

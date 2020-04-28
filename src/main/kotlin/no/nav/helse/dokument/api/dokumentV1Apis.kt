@@ -126,7 +126,7 @@ private fun ApplicationCall.dokumentId() : DokumentId {
     return DokumentId(parameters["dokumentId"]!!)
 }
 
-private fun ApplicationRequest.etterspurtJson() : Boolean {
+internal fun ApplicationRequest.etterspurtJson() : Boolean {
     return ContentType.Application.Json.toString() == accept()
 }
 
@@ -164,7 +164,7 @@ private suspend fun ApplicationCall.respondCreatedDokument(baseUrl : String, dok
     respond(HttpStatusCode.Created, mapOf(Pair("id", dokumentId.id)))
 }
 
-private data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
+internal data class DokumentDto(val content: ByteArray?, val contentType: String?, val title : String?) {
     fun valider() : MutableList<Violation> {
         val violations = mutableListOf<Violation>()
         if (content == null) violations.add(Violation(parameterName = CONTENT_PART_NAME, reason = "Fant ingen 'part' som er en fil.", parameterType = ParameterType.ENTITY))

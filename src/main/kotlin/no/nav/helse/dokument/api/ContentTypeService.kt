@@ -23,6 +23,21 @@ class ContentTypeService {
     private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
     private val supportedContentTypes = listOf(JSON, PDF, XML, PNG, JPEG)
 
+    internal fun getContentType(
+        contentType: String,
+        content: ByteArray
+    ) : ContentType {
+        val parsedContentType = ContentType.parseOrNull(contentType) ?: throw IllegalArgumentException("Klarte ikke å parse ContentType=$contentType")
+        val isWhatItSeems = isWhatItSeems(
+            content = content,
+            seems = parsedContentType
+        )
+        return when (isWhatItSeems) {
+            true ->  parsedContentType
+            else -> throw IllegalArgumentException("Mismatch mellom content og contentType")
+        }
+    }
+
     fun isSupported(
         contentType: String,
         content: ByteArray
