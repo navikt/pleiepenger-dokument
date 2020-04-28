@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
 
 private val logger: Logger = LoggerFactory.getLogger("nav.customIdV1Apis")
-private const val BASE_PATH = "v1/customized/dokument/{customDokumentId}"
+private const val BASE_PATH = "v1/dokument/customized/{customDokumentId}"
 private val CUSTOM_DOKUMENT_ID_REGEX = "^[a-zA-Z0-9]{3,50}\$".toRegex()
 
 internal fun Route.customIdV1Apis(

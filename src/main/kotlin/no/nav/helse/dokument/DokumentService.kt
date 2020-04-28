@@ -26,7 +26,7 @@ data class DokumentService(
         customDokumentId: CustomDokumentId,
         eier: Eier
     ) : Dokument? {
-        // TODO: Støtter ikke rullerende secrets
+        // TODO: Støtter ikke rullerende secrets -> https://github.com/navikt/k9-dokument/issues/24
         logger.info("Henter dokument for CustomDokumentId ${customDokumentId.id}")
         val dokumentId = generateDokumentId(customDokumentId)
         val storageKey = generateStorageKey(

@@ -230,7 +230,7 @@ class K9DokumentSluttbrukerTest {
 
     @Test
     fun `Lagring og overskriving og henting med Custom Dokument ID`() {
-        val path = "/v1/customized/dokument/test1"
+        val path = "/v1/dokument/customized/test1"
 
         CustomDokumentIdUtils.sluttbrukerLagreOgHent(
             engine = engine,
@@ -254,11 +254,19 @@ class K9DokumentSluttbrukerTest {
             """.trimIndent(),
             path = path
         )
+
+        // En som ikke er eier får 404
+        CustomDokumentIdUtils.sluttbrukerHent(
+            engine = engine,
+            path = path,
+            token = LoginService.V1_0.generateJwt("29098912345"),
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
     }
 
     @Test
     fun `Hente dokment som ikke finnes med Custom Dokument ID`() {
-        val path = "/v1/customized/dokument/test2"
+        val path = "/v1/dokument/customized/test2"
         CustomDokumentIdUtils.sluttbrukerHent(
             engine = engine,
             path = path,

@@ -322,7 +322,7 @@ class K9DokumentSystembrukerTest {
 
     @Test
     fun `Lagring og overskriving og henting med Custom Dokument ID`() {
-        val path = "/v1/customized/dokument/test1?eier=123"
+        val path = "/v1/dokument/customized/test1?eier=123"
 
         CustomDokumentIdUtils.systembrukerLagreOgHent(
             engine = engine,
@@ -346,11 +346,18 @@ class K9DokumentSystembrukerTest {
             """.trimIndent(),
             path = path
         )
+
+        // En som ikke er eier får 404
+        CustomDokumentIdUtils.systembrukerHent(
+            engine = engine,
+            path = "/v1/dokument/customized/test1?eier=1234",
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
     }
 
     @Test
     fun `Hente dokment som ikke finnes med Custom Dokument ID`() {
-        val path = "/v1/customized/dokument/test2?eier=1234"
+        val path = "/v1/dokument/customized/test2?eier=1234"
         CustomDokumentIdUtils.systembrukerHent(
             engine = engine,
             path = path,

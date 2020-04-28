@@ -115,8 +115,9 @@ internal object CustomDokumentIdUtils {
     internal fun sluttbrukerHent(
         engine: TestApplicationEngine,
         path: String,
+        token: String = LoginService.V1_0.generateJwt("2909901234"),
         expectedHttpStatus: HttpStatusCode) {
-        val authorization = "Bearer ${LoginService.V1_0.generateJwt("2909901234")}"
+        val authorization = "Bearer $token"
 
         with(engine) {
             handleRequest(HttpMethod.Get, path) {
