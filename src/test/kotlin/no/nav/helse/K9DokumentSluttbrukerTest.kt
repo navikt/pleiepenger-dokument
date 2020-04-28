@@ -228,6 +228,43 @@ class K9DokumentSluttbrukerTest {
         }
     }
 
+    @Test
+    fun `Lagring og overskriving og henting med Custom Dokument ID`() {
+        val path = "/v1/customized/dokument/test1"
+
+        CustomDokumentIdUtils.sluttbrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 1
+                }
+            """.trimIndent(),
+            path = path
+        )
+
+        CustomDokumentIdUtils.sluttbrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 2,
+                    "ny": {
+                        "overskriv": true
+                    }
+                }
+            """.trimIndent(),
+            path = path
+        )
+    }
+
+    @Test
+    fun `Hente dokment som ikke finnes med Custom Dokument ID`() {
+        val path = "/v1/customized/dokument/test2"
+        CustomDokumentIdUtils.sluttbrukerHent(
+            engine = engine,
+            path = path,
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
+    }
 
 }
 
