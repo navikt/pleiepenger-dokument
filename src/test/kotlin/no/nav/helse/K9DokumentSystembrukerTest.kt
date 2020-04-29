@@ -7,15 +7,11 @@ import com.typesafe.config.ConfigFactory
 import io.ktor.config.ApplicationConfig
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.http.*
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.contentType
-import io.ktor.server.testing.createTestEnvironment
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dokument.Dokument
 import no.nav.helse.dusseldorf.ktor.core.fromResources
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.testsupport.jws.Azure
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import org.junit.AfterClass
@@ -46,7 +42,7 @@ class K9DokumentSystembrukerTest {
 
 
         private val authorizedServiceAccountAccessToken = getAccessToken()
-        private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+        private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
         private val s3 = S3()
 
 
@@ -323,5 +319,49 @@ class K9DokumentSystembrukerTest {
             }
         }
     }
-}
 
+    @Test
+    fun `Lagring og overskriving og henting med Custom Dokument ID`() {
+        val path = "/v1/dokument/customized/test1?eier=123"
+
+        CustomDokumentIdUtils.systembrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 1
+                }
+            """.trimIndent(),
+            path = path
+        )
+
+        CustomDokumentIdUtils.systembrukerLagreOgHent(
+            engine = engine,
+            json = """
+                {
+                    "json": 2,
+                    "ny": {
+                        "overskriv": true
+                    }
+                }
+            """.trimIndent(),
+            path = path
+        )
+
+        // En som ikke er eier får 404
+        CustomDokumentIdUtils.systembrukerHent(
+            engine = engine,
+            path = "/v1/dokument/customized/test1?eier=1234",
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
+    }
+
+    @Test
+    fun `Hente dokment som ikke finnes med Custom Dokument ID`() {
+        val path = "/v1/dokument/customized/test2?eier=1234"
+        CustomDokumentIdUtils.systembrukerHent(
+            engine = engine,
+            path = path,
+            expectedHttpStatus = HttpStatusCode.NotFound
+        )
+    }
+}

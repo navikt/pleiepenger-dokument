@@ -6,7 +6,10 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.CreateBucketRequest
+import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.lifecycle.LifecycleFilter
+import io.ktor.util.date.toGMTDate
+import io.ktor.util.date.toJvmDate
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
@@ -15,6 +18,9 @@ import no.nav.helse.dusseldorf.ktor.health.Result
 import no.nav.helse.dusseldorf.ktor.health.UnHealthy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.time.ZonedDateTime
 
 class S3Storage(private val s3 : AmazonS3,
                 private val expirationInDays : Int?) : Storage {
@@ -79,6 +85,14 @@ class S3Storage(private val s3 : AmazonS3,
         s3Operation(
             operation = { s3.putObject(BUCKET_NAME, key.value, value.value) },
             operationName = "putObject"
+        )
+    }
+
+    override fun lagre(key: StorageKey, value: StorageValue, expires: ZonedDateTime) {
+        val (metadata, inputStream) = value.initMedExpiry(expires)
+        s3Operation(
+            operation = { s3.putObject(BUCKET_NAME, key.value, inputStream, metadata) },
+            operationName = "putObjectWithExpiry"
         )
     }
 
@@ -165,6 +179,16 @@ class S3Storage(private val s3 : AmazonS3,
             timer.observeDuration()
         }
     }
+}
+
+private fun StorageValue.initMedExpiry(expires: ZonedDateTime) : Pair<ObjectMetadata, InputStream> {
+    val contentBytes = value.toByteArray()
+    val metadata = ObjectMetadata().apply {
+        contentType = "text/plain"
+        contentLength = value.toByteArray().size.toLong()
+        expirationTime = expires.toGMTDate().toJvmDate()
+    }
+    return Pair(metadata, ByteArrayInputStream(contentBytes))
 }
 
 class S3StorageHealthCheck(

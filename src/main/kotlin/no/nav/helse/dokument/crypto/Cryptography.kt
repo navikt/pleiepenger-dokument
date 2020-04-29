@@ -49,10 +49,10 @@ class Cryptography(
         ).decrypt(encrypted)
     }
 
-    fun id() : String {
+    fun id(id: String = UUID.randomUUID().toString()) : String {
         val jwt = JWT.create()
             .withKeyId(encryptionPassphrase.first.toString())
-            .withJWTId(UUID.randomUUID().toString())
+            .withJWTId(id)
             .sign(Algorithm.none())
             .removeSuffix(".")
         logger.trace("Genrerert ID er $jwt")

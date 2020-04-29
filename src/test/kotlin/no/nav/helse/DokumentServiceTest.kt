@@ -11,6 +11,7 @@ import no.nav.helse.dokument.storage.StorageKey
 import no.nav.helse.dokument.storage.StorageValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -150,6 +151,10 @@ class DokumentServiceTest {
 
         override fun lagre(key: StorageKey, value: StorageValue) {
             storage[key] = value
+        }
+
+        override fun lagre(key: StorageKey, value: StorageValue, expires: ZonedDateTime) {
+            lagre(key, value)
         }
 
         override fun hent(key: StorageKey): StorageValue? {

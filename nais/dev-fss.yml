@@ -43,7 +43,7 @@ spec:
     - name: AZURE_CLIENT_ID
       value: 97f0b1bc-6aa9-4d44-a3c7-60b4318fbec4
     - name: AZURE_AUTHORIZED_CLIENTS
-      value: a6aef297-b9c9-4cac-82be-060d4fa68bb8,b32ae17c-0276-4006-9507-4ef49e0e5e20,8caa7c32-1523-43a7-af95-63123938f45c,8a37534e-7387-43af-8123-cb5facd5dc44,74124a64-e145-4d48-afff-0a375794b87f,97378ce0-19c5-481c-9478-abfc8193c79c,964c53ec-5e81-4b30-9cf9-972e7b934403,4d15c5b9-e3ad-47e8-bffa-7294a6e2f91e,3c90567a-a7e9-4f6f-8f76-fd3a2abd2cad,5605d52e-6344-4703-88e8-b98fb6eb69b5,bb79926c-e11f-45da-99dc-edee7ce5e437,7d4734fb-4aa4-4131-b85b-2eedf4cb958b
+      value: a6aef297-b9c9-4cac-82be-060d4fa68bb8,b32ae17c-0276-4006-9507-4ef49e0e5e20,8caa7c32-1523-43a7-af95-63123938f45c,8a37534e-7387-43af-8123-cb5facd5dc44,74124a64-e145-4d48-afff-0a375794b87f,97378ce0-19c5-481c-9478-abfc8193c79c,964c53ec-5e81-4b30-9cf9-972e7b934403,4d15c5b9-e3ad-47e8-bffa-7294a6e2f91e,3c90567a-a7e9-4f6f-8f76-fd3a2abd2cad,5605d52e-6344-4703-88e8-b98fb6eb69b5,bb79926c-e11f-45da-99dc-edee7ce5e437,7d4734fb-4aa4-4131-b85b-2eedf4cb958b,c729ec4c-ee1f-4266-8d17-9e7d3027fe20
     - name: AZURE_V1_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration
     - name: AZURE_V2_DISCOVERY_ENDPOINT

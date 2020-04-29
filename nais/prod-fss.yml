@@ -28,8 +28,8 @@ spec:
   ingresses:
     - https://k9-dokument.nais.adeo.no
   replicas:
-    min: 1
-    max: 1
+    min: 2
+    max: 2
     cpuThresholdPercentage: 90
   prometheus:
     enabled: true
@@ -43,7 +43,7 @@ spec:
     - name: AZURE_CLIENT_ID
       value: 0c5a6709-ba2a-42b7-bbfc-9b9f844e2ee2
     - name: AZURE_AUTHORIZED_CLIENTS
-      value: 84ef0905-64b3-440b-8f6a-0d88ef81a0f0,cb751642-883c-48d3-9f82-06cc72c3e4b9,4dc7783f-ee44-4707-ae5c-1d824d19f59c,17cf17e5-6f39-47a6-81f8-7e5507b19f6b,d2946143-0276-40ab-993e-4f29f3720d63,05c01005-6ee2-4d9d-9cd6-735c014071b6,c3ec240c-fee9-4491-b526-092ef288adcd,2d33dfd8-a279-470b-b334-e64491da4cb4,80aa7d3b-14e5-4aa4-983c-ec8fcd68f80e,b796ff55-b084-486f-bc5a-d3c3f3227266,ea43448c-d3b4-4fce-8295-02378ab71c75,6a6fa1ee-57f4-4e3b-ac13-d7afc3148794
+      value: 84ef0905-64b3-440b-8f6a-0d88ef81a0f0,cb751642-883c-48d3-9f82-06cc72c3e4b9,4dc7783f-ee44-4707-ae5c-1d824d19f59c,17cf17e5-6f39-47a6-81f8-7e5507b19f6b,d2946143-0276-40ab-993e-4f29f3720d63,05c01005-6ee2-4d9d-9cd6-735c014071b6,c3ec240c-fee9-4491-b526-092ef288adcd,2d33dfd8-a279-470b-b334-e64491da4cb4,80aa7d3b-14e5-4aa4-983c-ec8fcd68f80e,b796ff55-b084-486f-bc5a-d3c3f3227266,ea43448c-d3b4-4fce-8295-02378ab71c75,6a6fa1ee-57f4-4e3b-ac13-d7afc3148794,82728350-388c-4867-b712-3ac4654ce267
     - name: AZURE_V1_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/.well-known/openid-configuration
     - name: AZURE_V2_DISCOVERY_ENDPOINT

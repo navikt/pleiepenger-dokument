@@ -50,6 +50,19 @@ POST @ /v1/dokument
 }
 ```
 
+### Customized Dokument ID
+- Velge dokumentID selv om man ikke har noe sted å lagre den genererte
+- For systembruker kan det settes en `Expires` request header som ISO8601 ZonedDateTime for når den expirer.
+
+#### PUT @ /v1/dokument/customized/{customDokumentId}
+- Samme format som ved lagring av vanlig dokument
+- Må være `Content-Type` header `content_type` i request `application/json`
+- Returnerer 204 og overskriver eventuell verdi som var lagret på denne id'fra før.
+
+#### GET @ /v1/dokument/customized/{customDokumentId}
+- Må sette `Accept` header til `application/json`
+- Returnerer 200 om dokumentet  er funnet, 404 ellers.
+
 ## Bygge prosjektet
 Krever et miljø med Docker installert for å kjøre tester.
 

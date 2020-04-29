@@ -13,18 +13,17 @@ class S3 : LocalStackContainer() {
     private val endpointConfiguration : AwsClientBuilder.EndpointConfiguration
 
     init {
-        super.withServices(LocalStackContainer.Service.S3)
+        super.withServices(Service.S3)
         super.start()
-        endpointConfiguration = super.getEndpointConfiguration(LocalStackContainer.Service.S3)
-        logger.info("AccessKey=${getAccessKey()}")
-        logger.info("SecretKey=${getSecretKey()}")
+        endpointConfiguration = super.getEndpointConfiguration(Service.S3)
+        logger.info("AccessKey=${accessKey}")
+        logger.info("SecretKey=${secretKey}")
         logger.info("SigningRegion=${getSigningRegion()}")
         logger.info("ServiceEndpoint=${getServiceEndpoint()}")
 
     }
 
-    fun getAccessKey() : String = super.getDefaultCredentialsProvider().credentials.awsAccessKeyId
-    fun getSecretKey() : String = super.getDefaultCredentialsProvider().credentials.awsSecretKey
+
     fun getSigningRegion() : String = endpointConfiguration.signingRegion
     fun getServiceEndpoint() : String = endpointConfiguration.serviceEndpoint
 }

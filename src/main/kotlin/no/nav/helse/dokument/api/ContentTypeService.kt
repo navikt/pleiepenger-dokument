@@ -2,7 +2,7 @@ package no.nav.helse.dokument.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.ContentType
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
+import no.nav.helse.k9DokumentConfigured
 import org.apache.tika.Tika
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,8 +20,23 @@ class ContentTypeService {
     }
 
     private val tika = Tika()
-    private val objectMapper = jacksonObjectMapper().dusseldorfConfigured()
+    private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
     private val supportedContentTypes = listOf(JSON, PDF, XML, PNG, JPEG)
+
+    internal fun getContentType(
+        contentType: String,
+        content: ByteArray
+    ) : ContentType {
+        val parsedContentType = ContentType.parseOrNull(contentType) ?: throw IllegalArgumentException("Klarte ikke å parse ContentType=$contentType")
+        val isWhatItSeems = isWhatItSeems(
+            content = content,
+            seems = parsedContentType
+        )
+        return when (isWhatItSeems) {
+            true ->  parsedContentType
+            else -> throw IllegalArgumentException("Mismatch mellom content og contentType")
+        }
+    }
 
     fun isSupported(
         contentType: String,
