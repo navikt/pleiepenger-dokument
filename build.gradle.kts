@@ -20,31 +20,31 @@ buildscript {
 
 dependencies {
     // Server
-    compile ( "no.nav.helse:dusseldorf-ktor-core:$dusseldorfKtorVersion")
-    compile ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
-    compile ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
-    compile ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
-    compile ( "no.nav.helse:dusseldorf-ktor-auth:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-core:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-jackson:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-metrics:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-health:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-auth:$dusseldorfKtorVersion")
 
     // Client
-    compile ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
+    implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
 
     // Lagring
-    compile("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")
-    compile("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+    implementation("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")
+    implementation("org.slf4j:jcl-over-slf4j:$slf4jVersion")
 
     // Sjekke dokumenter
-    compile("org.apache.tika:tika-core:$tikaVersion")
+    implementation("org.apache.tika:tika-core:$tikaVersion")
 
     // Test
-    testCompile ( "no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
-    testCompile("io.ktor:ktor-server-test-host:$ktorVersion") {
+    testImplementation ( "no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testCompile("org.testcontainers:localstack:1.14.1")
-    testCompile("io.mockk:mockk:1.10.0")
-    testCompile("org.skyscreamer:jsonassert:1.5.0")
-    testCompile( "com.github.stefanbirkner:system-rules:1.19.0")
+    testImplementation("org.testcontainers:localstack:1.14.1")
+    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("org.skyscreamer:jsonassert:1.5.0")
+    testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
 
 }
 
