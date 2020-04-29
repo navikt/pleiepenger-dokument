@@ -17,6 +17,8 @@
 - omsorgsdageroverforingsoknad-prosessering (3c90567a-a7e9-4f6f-8f76-fd3a2abd2cad)
 - k9-ettersending-mottak (5605d52e-6344-4703-88e8-b98fb6eb69b5)
 - k9-ettersending-prosessering (bb79926c-e11f-45da-99dc-edee7ce5e437)
+- omsorgspengerutbetalingsoknad-arbeidstaker-mottak (8de5e926-fefe-47ed-bfb2-83645314c1d3)
+- omsorgspengerutbetalingsoknad-arbeidstaker-prosessering (90ab5bb2-eb52-4d7c-87eb-107970cc73f2)
 
 ### prod-fss
 #### AZURE_CLIENT_ID
@@ -34,3 +36,5 @@
 - omsorgsdageroverforingsoknad-prosessering (b796ff55-b084-486f-bc5a-d3c3f3227266)
 - k9-ettersending-mottak (ea43448c-d3b4-4fce-8295-02378ab71c75)
 - k9-ettersending-prosessering (6a6fa1ee-57f4-4e3b-ac13-d7afc3148794)
+- omsorgspengerutbetalingsoknad-arbeidstaker-mottak (90b18030-2c75-4fc4-8810-42e0b164503e)
+- omsorgspengerutbetalingsoknad-arbeidstaker-prosessering (07e3a062-451e-41ac-98b7-b0461f378f47)
