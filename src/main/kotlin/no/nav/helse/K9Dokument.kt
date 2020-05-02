@@ -6,7 +6,6 @@ import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.features.*
-import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.routing.Routing
@@ -20,8 +19,6 @@ import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dokument.eier.EierResolver
 import no.nav.helse.dusseldorf.ktor.auth.*
-import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
-import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HealthService
@@ -31,7 +28,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URI
 
 private val logger: Logger = LoggerFactory.getLogger("nav.K9Dokument")
 
@@ -109,8 +105,7 @@ fun Application.k9Dokument() {
                 setOf(
                     S3StorageHealthCheck(
                         s3Storage = s3Storage
-                    ),
-                    HttpRequestHealthCheck(issuers.healthCheckMap())
+                    )
                 )
             )
         )
@@ -138,15 +133,6 @@ fun Application.k9Dokument() {
 private fun getVirusScanner(config: Configuration) : VirusScanner? {
     if (!config.enableVirusScan()) return null
     return VirusScanner(url = config.getVirusScanUrl())
-}
-
-private fun Map<Issuer, Set<ClaimRule>>.healthCheckMap(
-    initial : MutableMap<URI, HttpRequestHealthConfig> = mutableMapOf()
-) : Map<URI, HttpRequestHealthConfig> {
-    forEach { issuer, _ ->
-        initial[issuer.jwksUri()] = HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false)
-    }
-    return initial.toMap()
 }
 
 internal fun ObjectMapper.k9DokumentConfigured() = dusseldorfConfigured()
