@@ -1,5 +1,6 @@
 package no.nav.helse.dokument
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import no.nav.helse.dokument.api.CustomDokumentId
 import no.nav.helse.dokument.eier.Eier
 import no.nav.helse.dokument.crypto.Cryptography
@@ -175,7 +176,7 @@ data class DokumentId(val id: String)
 data class Dokument(
     val title: String,
     val content: ByteArray,
-    val contentType: String
+    @JsonAlias("contentType") val contentType: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
