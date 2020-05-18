@@ -1,6 +1,7 @@
 # k9-dokument
 
 ![](https://github.com/navikt/k9-dokument/workflows/CI%20/%20CD/badge.svg)
+![NAIS Alerts](https://github.com/navikt/k9-dokument/workflows/Alerts/badge.svg)
 
 Mellomlagrer vedlegg før innsending av søknad, og dokumenter før journalføring.
 
@@ -78,6 +79,9 @@ Instansene som mellomlagrer dokumenter før søknaden er journalført bruker use
 ## Correlation ID vs Request ID
 Correlation ID blir propagert videre, og har ikke nødvendigvis sitt opphav hos konsumenten.
 Request ID blir ikke propagert videre, og skal ha sitt opphav hos konsumenten.
+
+## Alarmer
+Vi bruker [nais-alerts](https://doc.nais.io/observability/alerts) for å sette opp alarmer. Disse finner man konfigurert i [nais/alerterator.yml](nais/alerterator.yml).
 
 ## Henvendelser
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
