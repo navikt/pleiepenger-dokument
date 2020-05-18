@@ -20,6 +20,6 @@
     "BASE_URL": "https://k9-dokument.nais.adeo.no"
   },
   "slack-channel": "sif-alerts",
-  "slack-notify-type": "<!channel> |k9-dokument | ",
+  "slack-notify-type": "<!channel> | k9-dokument | ",
   "app-alert-ingress": "https://k9-dokument.nais.adeo.no"
 }
