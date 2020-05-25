@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.3.2.9c88b78"
+val dusseldorfKtorVersion = "1.3.2.6840711"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val amazonawsVersion = "1.11.774"
+val amazonawsVersion = "1.11.789"
 val tikaVersion = "1.24.1"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
@@ -15,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/9c88b788e57939fb6e3d18650393a7e9fb65960f/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/684071162815a8c33befcd0e2fab40a5b987ba2e/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -41,7 +41,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("org.testcontainers:localstack:1.14.1")
+    testImplementation("org.testcontainers:localstack:1.14.2")
     testImplementation("io.mockk:mockk:1.10.0")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
@@ -95,5 +95,5 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.3"
+    gradleVersion = "6.4.1"
 }
