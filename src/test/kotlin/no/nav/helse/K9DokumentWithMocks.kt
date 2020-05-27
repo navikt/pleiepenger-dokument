@@ -34,8 +34,7 @@ class K9DokumentWithMocks {
                 port = 8132,
                 konfigurerLoginService = sluttBruker,
                 konfigurerAzure = !sluttBruker,
-                s3ExpiryInDays = if (sluttBruker) 1 else null,
-                azureAuthorizedClients = setOf("en-azure-client")
+                s3ExpiryInDays = if (sluttBruker) 1 else null
             ).asArguments()
 
             Runtime.getRuntime().addShutdownHook(object : Thread() {
