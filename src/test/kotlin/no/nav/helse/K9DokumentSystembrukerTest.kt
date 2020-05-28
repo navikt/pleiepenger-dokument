@@ -38,7 +38,7 @@ class K9DokumentSystembrukerTest {
             .build()
             .stubVirusScan()
 
-        private fun getAccessToken() = Azure.V1_0.generateJwt(clientId = "azure-client-1", audience = "k9-dokument")
+        private fun getAccessToken() = Azure.V1_0.generateJwt(clientId = "hva-som-helst", audience = "k9-dokument")
 
 
         private val authorizedServiceAccountAccessToken = getAccessToken()
@@ -52,8 +52,6 @@ class K9DokumentSystembrukerTest {
                 wireMockServer = wireMockServer,
                 s3 = s3,
                 konfigurerAzure = true,
-                azureAuthorizedClients = setOf("azure-client-1"),
-                k9DokumentAzureClientId = "k9-dokument",
                 s3ExpiryInDays = null
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
@@ -292,10 +290,19 @@ class K9DokumentSystembrukerTest {
     }
 
     @Test
-    fun `En unauthorized subject kan ikke lagre dokument`() {
+    fun `En unauthorized app kan ikke lagre dokument`() {
+        val feilAudience = Azure.V2_0.generateJwt(clientId = "hva-som-helst", audience = "feil-audience")
+        val ikkeAutorisertApplikasjon = Azure.V2_0.generateJwt(clientId = "hva-som-helst", audience = "k9-dokument", accessAsApplication = false)
+
         engine.lasteOppDokumentMultipart(
             eier = eier,
-            token = Azure.V2_0.generateJwt(clientId = "azure-client-2", audience = "k9-dokument"),
+            token = feilAudience,
+            expectedHttpStatusCode = HttpStatusCode.Forbidden
+        )
+
+        engine.lasteOppDokumentMultipart(
+            eier = eier,
+            token = ikkeAutorisertApplikasjon,
             expectedHttpStatusCode = HttpStatusCode.Forbidden
         )
     }
