@@ -87,4 +87,3 @@ Vi bruker [nais-alerts](https://doc.nais.io/observability/alerts) for å sette o
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
 
 Interne henvendelser kan sendes via Slack i kanalen #team-düsseldorf.
-
