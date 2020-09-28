@@ -1,7 +1,7 @@
 {
   "app": "k9-dokument",
   "cluster": "dev-fss",
-  "namespace": "default",
+  "namespace": "dusseldorf",
   "team": "dusseldorf",
   "minReplicas": "1",
   "maxReplicas": "2",
