@@ -22,29 +22,34 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.time.ZonedDateTime
 
-class S3Storage(private val s3 : AmazonS3,
-                private val expirationInDays : Int?) : Storage {
+class S3Storage(
+    private val s3: AmazonS3,
+    private val expirationInDays: Int?
+) : Storage {
 
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger("nav.S3Storage")
         private const val BUCKET_NAME = "pleiepengerdokument"
 
         private val s3Histogram = Histogram
-            .build("s3_operation_histogram",
-                "Histogram for operasjoner gjort mot S3.")
+            .build(
+                "s3_operation_histogram",
+                "Histogram for operasjoner gjort mot S3."
+            )
             .labelNames("operation")
             .register()
 
         private val s3Counter = Counter
             .build(
                 "s3_operation_counter",
-                "Counter for utfall a operasjoner gjort mot S3.")
+                "Counter for utfall a operasjoner gjort mot S3."
+            )
             .labelNames("operation", "status")
             .register()
     }
 
     override fun ready() {
-        s3Operation (
+        s3Operation(
             operation = { s3.getBucketLocation(BUCKET_NAME) },
             operationName = "getBucketLocation"
         )
@@ -105,7 +110,7 @@ class S3Storage(private val s3 : AmazonS3,
 
 
     private fun ensureBucketExists() {
-        if (!s3Operation( operation = { s3.doesBucketExistV2(BUCKET_NAME) } , operationName = "doesBucketExistV2" )!!) {
+        if (!s3Operation(operation = { s3.doesBucketExistV2(BUCKET_NAME) }, operationName = "doesBucketExistV2")!!) {
             logger.info("Bucket $BUCKET_NAME finnes ikke fra før, oppretter.")
             createBucket()
             logger.info("Bucket opprettet.")
@@ -123,7 +128,12 @@ class S3Storage(private val s3 : AmazonS3,
             logger.trace("Konfigurerer lifecycle for bucket.")
             logger.info("Expiry på bucket objects settes til $expirationInDays dager.")
             s3Operation(
-                operation = { s3.setBucketLifecycleConfiguration(BUCKET_NAME, bucketLifecycleConfiguration(expirationInDays!!)) },
+                operation = {
+                    s3.setBucketLifecycleConfiguration(
+                        BUCKET_NAME,
+                        bucketLifecycleConfiguration(expirationInDays!!)
+                    )
+                },
                 operationName = "setBucketLifecycleConfiguration"
             )
             logger.trace("Liceyclye konfigurasjon lagret.")
@@ -146,7 +156,7 @@ class S3Storage(private val s3 : AmazonS3,
     }
 
     private fun bucketLifecycleConfiguration(days: Int): BucketLifecycleConfiguration {
-        val rules= BucketLifecycleConfiguration.Rule()
+        val rules = BucketLifecycleConfiguration.Rule()
             .withId("$BUCKET_NAME-$days")
             .withFilter(LifecycleFilter())
             .withStatus(BucketLifecycleConfiguration.ENABLED)
@@ -154,20 +164,24 @@ class S3Storage(private val s3 : AmazonS3,
         return BucketLifecycleConfiguration().withRules(rules)
     }
 
-    private fun<T> s3Operation(
-        operation : () -> T,
-        operationName : String,
-        allowNotFound : Boolean = false) : T? {
+    private fun <T> s3Operation(
+        operation: () -> T,
+        operationName: String,
+        allowNotFound: Boolean = false
+    ): T? {
         val timer = s3Histogram.labels(operationName).startTimer()
         return try {
             val result = operation.invoke()
             s3Counter.labels(operationName, "success").inc()
             result
-        } catch (cause : AmazonServiceException) {
+        } catch (cause: AmazonServiceException) {
             if (404 == cause.statusCode && allowNotFound) return null
             else {
                 s3Counter.labels(operationName, "s3Failure").inc()
-                throw IllegalStateException("Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}", cause)
+                throw IllegalStateException(
+                    "Fikk response fra S3, men en feil forekom på tjenestesiden. ${cause.message}",
+                    cause
+                )
             }
         } catch (cause: SdkClientException) {
             s3Counter.labels(operationName, "connectionFailure").inc()
@@ -181,7 +195,7 @@ class S3Storage(private val s3 : AmazonS3,
     }
 }
 
-private fun StorageValue.initMedExpiry(expires: ZonedDateTime) : Pair<ObjectMetadata, InputStream> {
+private fun StorageValue.initMedExpiry(expires: ZonedDateTime): Pair<ObjectMetadata, InputStream> {
     val contentBytes = value.toByteArray()
     val metadata = ObjectMetadata().apply {
         contentType = "text/plain"
