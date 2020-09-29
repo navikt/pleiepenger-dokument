@@ -45,3 +45,6 @@ spec:
   envFrom:
     - secret: k9-dokument.s3-credentials
     - secret: k9-dokument.crypto
+  gcp:
+    buckets:
+      - name: pleiepengerdokument
