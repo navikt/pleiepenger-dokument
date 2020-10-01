@@ -23,7 +23,6 @@ class S3 : LocalStackContainer() {
 
     }
 
-
     fun getSigningRegion() : String = endpointConfiguration.signingRegion
     fun getServiceEndpoint() : String = endpointConfiguration.serviceEndpoint
 }

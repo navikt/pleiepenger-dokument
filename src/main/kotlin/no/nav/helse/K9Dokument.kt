@@ -14,14 +14,12 @@ import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dokument.crypto.Cryptography
 import no.nav.helse.dokument.DokumentService
 import no.nav.helse.dokument.VirusScanner
-import no.nav.helse.dokument.storage.S3Storage
-import no.nav.helse.dokument.storage.S3StorageHealthCheck
 import no.nav.helse.dokument.api.*
 import no.nav.helse.dokument.eier.EierResolver
+import no.nav.helse.dokument.storage.*
 import no.nav.helse.dusseldorf.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.core.*
-import no.nav.helse.dusseldorf.ktor.health.HealthRoute
-import no.nav.helse.dusseldorf.ktor.health.HealthService
+import no.nav.helse.dusseldorf.ktor.health.*
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
@@ -58,10 +56,17 @@ fun Application.k9Dokument() {
         AuthStatusPages()
     }
 
-    val s3Storage = S3Storage(
-        s3 = configuration.getS3Configured(),
-        expirationInDays = configuration.getS3ExpirationInDays()
-    )
+    val storage: Storage = when(configuration.getCluster()) {
+        "dev-gcp", "prod-gcp" -> GcpStorageBucket(
+            gcpStorage = configuration.getGcpStorageConfigured(),
+            expirationInDays = configuration.getGcpStorageBucketExpiration(),
+            bucketName = configuration.getGcpStorageBucketName()
+        )
+        else -> S3Storage(
+            s3 = configuration.getS3Configured(),
+            expirationInDays = configuration.getS3ExpirationInDays()
+        )
+    }
 
     install(CallIdRequired)
 
@@ -70,7 +75,7 @@ fun Application.k9Dokument() {
             encryptionPassphrase = configuration.getEncryptionPassphrase(),
             decryptionPassphrases = configuration.getDecryptionPassphrases()
         ),
-        storage = s3Storage,
+        storage = storage,
         virusScanner = getVirusScanner(configuration)
     )
 
@@ -103,8 +108,8 @@ fun Application.k9Dokument() {
         HealthRoute(
             healthService = HealthService(
                 setOf(
-                    S3StorageHealthCheck(
-                        s3Storage = s3Storage
+                    StorageHealthCheck(
+                        storage = storage
                     )
                 )
             )
@@ -137,3 +142,23 @@ private fun getVirusScanner(config: Configuration) : VirusScanner? {
 
 internal fun ObjectMapper.k9DokumentConfigured() = dusseldorfConfigured()
     .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+
+class StorageHealthCheck(
+    private val storage: Storage
+) : HealthCheck {
+
+    private companion object {
+        private val logger: Logger = LoggerFactory.getLogger("nav.K9Dokument")
+        private val name = "StorageHealthCheck"
+    }
+
+    override suspend fun check(): Result {
+        return try {
+            storage.ready()
+            Healthy(name = name, result = "Tilkobling mot storage OK.")
+        } catch (cause: Throwable) {
+            logger.error("Feil ved tilkobling mot storage.", cause)
+            UnHealthy(name = name, result = cause.message ?: "Feil ved tilkobling mot S3.")
+        }
+    }
+}

@@ -2,14 +2,10 @@ package no.nav.helse
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.typesafe.config.ConfigFactory
-import io.ktor.config.ApplicationConfig
-import io.ktor.config.HoconApplicationConfig
+import io.ktor.config.*
 import io.ktor.http.*
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.contentType
-import io.ktor.server.testing.createTestEnvironment
-import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.server.testing.*
+import io.ktor.util.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.jws.LoginService
@@ -36,7 +32,6 @@ class K9DokumentSluttbrukerTest {
             .stubVirusScan()
 
         private val s3 = S3()
-
 
         fun getConfig(): ApplicationConfig {
             val fileConfig = ConfigFactory.load()

@@ -9,9 +9,8 @@
     "https://k9-dokument.dev.nav.no"
   ],
   "env": {
+    "CLUSTER": "dev-gcp",
     "LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/NAVtestB2C.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_idporten_ver1",
-    "S3_SERVICE_ENDPOINT": "https://objectstore.nais.oera-q.local",
-    "S3_SIGNING_REGION": "us-east-1",
     "S3_EXPIRATION_IN_DAYS": "1",
     "VIRUS_SCAN_URL": "http://clamav.nais.svc.nais.local/scan",
     "BASE_URL": "https://k9-dokument.dev.nav.no"

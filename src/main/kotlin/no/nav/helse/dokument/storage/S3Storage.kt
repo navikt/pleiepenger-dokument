@@ -204,23 +204,3 @@ private fun StorageValue.initMedExpiry(expires: ZonedDateTime): Pair<ObjectMetad
     }
     return Pair(metadata, ByteArrayInputStream(contentBytes))
 }
-
-class S3StorageHealthCheck(
-    private val s3Storage: S3Storage
-) : HealthCheck {
-
-    private companion object {
-        private val logger: Logger = LoggerFactory.getLogger("nav.S3StorageHealthCheck")
-        private val name = "S3StorageHealthCheck"
-    }
-
-    override suspend fun check(): Result {
-        return try {
-            s3Storage.ready()
-            Healthy(name = name, result = "Tilkobling mot S3 OK.")
-        } catch (cause: Throwable) {
-            logger.error("Feil ved tilkobling mot S3.", cause)
-            UnHealthy(name = name, result = cause.message ?: "Feil ved tilkobling mot S3.")
-        }
-    }
-}

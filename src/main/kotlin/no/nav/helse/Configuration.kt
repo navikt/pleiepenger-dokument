@@ -6,6 +6,7 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.google.cloud.storage.StorageOptions
 import io.ktor.config.ApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.helse.dokument.eier.HentEierFra
@@ -14,6 +15,7 @@ import no.nav.helse.dusseldorf.ktor.core.getOptionalList
 import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import java.net.URI
+import com.google.cloud.storage.Storage as GcpStorage
 
 @KtorExperimentalAPI
 internal data class Configuration(private val config : ApplicationConfig) {
@@ -31,6 +33,14 @@ internal data class Configuration(private val config : ApplicationConfig) {
             LOGIN_SERVICE_V1_ALIAS to setOf(EnforceEqualsOrContains("acr", "Level4"))
         )
     )
+
+    internal fun getCluster(): String {
+        return when(val cluster = config.getRequiredString(key = "nav.cluster", secret = false)) {
+            "dev-sbs", "prod-sbs", "dev-fss", "prod-fss", "dev-gcp", "prod-gcp" -> cluster
+            "test" -> "test"
+            else -> throw IllegalStateException("'$cluster' is not a valid cluster name.")
+        }
+    }
 
     // Crypto
     private fun getCryptoPasshrase(key: String) : String {
@@ -85,6 +95,13 @@ internal data class Configuration(private val config : ApplicationConfig) {
             )
             .build()
     }
+
+    internal fun getGcpStorageBucketExpiration(): Int = config.getRequiredString(key = "nav.storage.gcp_bucket.expiration_in_days", secret = false).toInt()
+    internal fun getGcpStorageBucketName(): String = config.getRequiredString(key = "nav.storage.gcp_bucket.bucket", secret = false)
+    internal fun getGcpStorageConfigured(): GcpStorage {
+        return  StorageOptions.getDefaultInstance().service
+    }
+
     internal fun getS3ExpirationInDays() : Int? = config.getOptionalString("nav.storage.s3.expiration_in_days", secret = false)?.toInt()
     internal fun støtterExpirationFraRequest() = getS3ExpirationInDays() == null
 

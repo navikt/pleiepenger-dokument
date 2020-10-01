@@ -10,15 +10,15 @@ internal object TestConfiguration {
     internal fun asMap(
         wireMockServer: WireMockServer? = null,
         s3: S3? = null,
-        port : Int = 8080,
-        virusScanUrl : String? = wireMockServer?.getVirusScanUrl(),
-        passphrase1 : String = "password",
-        passphrase2 : String = "oldpassword",
+        port: Int = 8080,
+        virusScanUrl: String? = wireMockServer?.getVirusScanUrl(),
+        passphrase1: String = "password",
+        passphrase2: String = "oldpassword",
         passphrase3: String = "reallyoldpassword",
 
-        s3ServiceEndpoint : String? = s3?.getServiceEndpoint(),
-        s3SigningRegion : String? = s3?.getSigningRegion(),
-        s3ExpiryInDays : Int?,
+        s3ServiceEndpoint: String? = s3?.getServiceEndpoint(),
+        s3SigningRegion: String? = s3?.getSigningRegion(),
+        s3ExpiryInDays: Int?,
 
         konfigurerAzure: Boolean = false,
         konfigurerLoginService: Boolean = false,
@@ -26,6 +26,7 @@ internal object TestConfiguration {
     ) : Map<String, String> {
         val map =  mutableMapOf(
             Pair("ktor.deployment.port","$port"),
+            Pair("nav.cluster", "test"),
             Pair("nav.crypto.passphrase.encryption_identifier", "1"),
             Pair("nav.crypto.passphrase.decryption_identifiers", "2,3"),
             Pair("CRYPTO_PASSPHRASE_1",passphrase1),
@@ -33,6 +34,8 @@ internal object TestConfiguration {
             Pair("CRYPTO_PASSPHRASE_3",passphrase3),
             Pair("nav.storage.s3.service_endpoint", "$s3ServiceEndpoint"),
             Pair("nav.storage.s3.signing_region", "$s3SigningRegion"),
+            Pair("nav.storage.gcp_bucket.bucket", "pleiepengerdokument"),
+            Pair("nav.storage.gcp_bucket.expiration_in_days", "1"),
             Pair("nav.virus_scan.url", "$virusScanUrl"),
             Pair("nav.base_url", "http://localhost:$port")
         )

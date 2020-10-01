@@ -45,14 +45,13 @@ class K9DokumentSystembrukerTest {
         private val objectMapper = jacksonObjectMapper().k9DokumentConfigured()
         private val s3 = S3()
 
-
         fun getConfig() : ApplicationConfig {
             val fileConfig = ConfigFactory.load()
             val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
                 wireMockServer = wireMockServer,
                 s3 = s3,
-                konfigurerAzure = true,
-                s3ExpiryInDays = null
+                s3ExpiryInDays = null,
+                konfigurerAzure = true
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
             return HoconApplicationConfig(mergedConfig)

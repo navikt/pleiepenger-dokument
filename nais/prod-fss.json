@@ -9,6 +9,7 @@
     "https://k9-dokument.nais.adeo.no"
   ],
   "env": {
+    "CLUSTER": "prod-fss",
     "NAIS_STS_DISCOVERY_ENDPOINT": "https://security-token-service.nais.adeo.no/rest/v1/sts/.well-known/openid-configuration",
     "AZURE_CLIENT_ID": "0c5a6709-ba2a-42b7-bbfc-9b9f844e2ee2",
     "AZURE_V1_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/.well-known/openid-configuration",

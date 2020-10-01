@@ -5,6 +5,7 @@ val dusseldorfKtorVersion = "1.3.2.315ec09"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val amazonawsVersion = "1.11.790"
+val gcpStorageVersion = "1.113.1"
 val tikaVersion = "1.24.1"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
@@ -32,6 +33,7 @@ dependencies {
     // Lagring
     implementation("com.amazonaws:aws-java-sdk-s3:$amazonawsVersion")
     implementation("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+    implementation("com.google.cloud:google-cloud-storage:$gcpStorageVersion")
 
     // Sjekke dokumenter
     implementation("org.apache.tika:tika-core:$tikaVersion")
@@ -45,7 +47,6 @@ dependencies {
     testImplementation("io.mockk:mockk:1.10.0")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
-
 }
 
 repositories {

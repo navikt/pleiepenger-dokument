@@ -32,9 +32,10 @@ class K9DokumentWithMocks {
                 wireMockServer = wireMockServer,
                 s3 = s3,
                 port = 8132,
-                konfigurerLoginService = sluttBruker,
+                s3ExpiryInDays = if (sluttBruker) 1 else null,
                 konfigurerAzure = !sluttBruker,
-                s3ExpiryInDays = if (sluttBruker) 1 else null
+                konfigurerLoginService = sluttBruker
+
             ).asArguments()
 
             Runtime.getRuntime().addShutdownHook(object : Thread() {
