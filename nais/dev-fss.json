@@ -8,6 +8,7 @@
   "ingresses": [
     "https://k9-dokument.nais.preprod.local"
   ],
+  "bucketName": "pleiepengerdokument",
   "env": {
     "CLUSTER": "dev-fss",
     "NAIS_STS_DISCOVERY_ENDPOINT": "https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration",
