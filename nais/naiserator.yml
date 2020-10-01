@@ -45,6 +45,7 @@ spec:
   envFrom:
     - secret: k9-dokument.s3-credentials
     - secret: k9-dokument.crypto
+    - secret: dusseldorf.gcp-project-id
   gcp:
     buckets:
-      - name: pleiepengerdokument
+      - name: {{bucketName}}
