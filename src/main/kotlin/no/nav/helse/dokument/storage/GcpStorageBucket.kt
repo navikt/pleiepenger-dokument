@@ -119,7 +119,7 @@ class GcpStorageBucket(
                     )
                 ).build()
                 .update()
-            logger.trace("Liceyclye konfigurasjon lagret.")
+            logger.trace("Lifecycle konfigurasjon lagret.")
 
         } else {
             logger.info("Sletter eventuelle aktive lifecycle konfigurasjoner.")
