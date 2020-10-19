@@ -8,13 +8,10 @@ Mellomlagrer vedlegg før innsending av søknad, og dokumenter før journalføri
 ## API
 ### Tilgang
 - Om Login Service er konfigurert som issuer må ID-token utstedt fra Login Service på Level4 sendes som "Authorization" header (Bearer schema). Da hentes eier av dokumentet fra tokenets `sub` claim. Det er da kun denne personen som kan operere på sine dokumenter.
-- Om Nais STS og/eller Azure er konfigurert som issuere må Access Token sendes i "Authorization" header (Bearer schema). Da hentes eier av dokumentet fra query parameter `eier`. En Systembruker kan operere på alles dokumenter.
+- Om Azure er konfigurert som issuere må Access Token sendes i "Authorization" header (Bearer schema). Da hentes eier av dokumentet fra query parameter `eier`. En Systembruker kan operere på alles dokumenter.
 
 ### Login Service
 ID-Tokenet må være på Level4
-
-### Nais STS
-Access Tokenet må tilhøre en av `NAIS_STS_AUTHORIZED_CLIENTS`
 
 ### Azure
 Access Tokenet må tilhøre en av `AZURE_AUTHORIZED_CLIENTS`, audience må være `AZURE_CLIENT_ID` og det må være brukt et sertifikat ved utstedelse av Access Tokenet (Ikke client_id/client_secret)
