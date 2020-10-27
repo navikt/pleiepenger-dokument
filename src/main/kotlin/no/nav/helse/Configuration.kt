@@ -65,7 +65,7 @@ internal data class Configuration(private val config : ApplicationConfig) {
     private fun isAzureConfigured() = issuers.filterKeys { AZURE_V1 == it.alias() || AZURE_V2 == it.alias() }.isNotEmpty()
     internal fun issuers() : Map<Issuer, Set<ClaimRule>> {
         if (isLoginServiceConfigured() && isAzureConfigured()) {
-            throw IllegalStateException("Enten Azure eller loginService kan være konfigurert samtidig.")
+            throw IllegalStateException("Både azure og loginService kan ikke være konfigurert samtidig.")
         }
         if (issuers.isEmpty()) throw IllegalStateException("Må konfigureres minst en issuer.")
         return issuers
