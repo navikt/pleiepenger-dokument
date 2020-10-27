@@ -45,4 +45,6 @@ spec:
   envFrom:
     - secret: k9-dokument.s3-credentials
     - secret: k9-dokument.crypto
+  {{#if selvbetjeningsonen}}
     - configmap: loginservice-idporten
+  {{/if}}
