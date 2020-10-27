@@ -25,6 +25,8 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
         private const val LOGIN_SERVICE_V1_ALIAS = "login-service-v1"
         private const val LOGIN_SERVICE_V2_ALIAS = "login-service-v2"
+        private const val AZURE_V1 = "azure-v1"
+        private const val AZURE_V2 = "azure-v2"
     }
 
     private val issuers = config.issuers().withAdditionalClaimRules(
@@ -60,11 +62,19 @@ internal data class Configuration(private val config : ApplicationConfig) {
 
     // Auth
     private fun isLoginServiceConfigured() = issuers.filterKeys { LOGIN_SERVICE_V1_ALIAS == it.alias() || LOGIN_SERVICE_V2_ALIAS == it.alias() }.isNotEmpty()
+    private fun isAzureConfigured() = issuers.filterKeys { AZURE_V1 == it.alias() || AZURE_V2 == it.alias() }.isNotEmpty()
     internal fun issuers() : Map<Issuer, Set<ClaimRule>> {
+        if (isLoginServiceConfigured() && isAzureConfigured()) {
+            throw IllegalStateException("Enten Azure eller loginService kan være konfigurert samtidig.")
+        }
         if (issuers.isEmpty()) throw IllegalStateException("Må konfigureres minst en issuer.")
         return issuers
     }
-    internal fun hentEierFra() = if (isLoginServiceConfigured()) HentEierFra.ACCESS_TOKEN_SUB_CLAIM else HentEierFra.QUERY_PARAMETER_EIER
+    internal fun hentEierFra(): HentEierFra {
+        if (isLoginServiceConfigured()) return HentEierFra.ACCESS_TOKEN_SUB_CLAIM
+        if (isAzureConfigured()) return HentEierFra.QUERY_PARAMETER_EIER
+        else throw IllegalStateException("Kunne ikke hvor eier kunne hentes fra. Sjekk konfigurerte isuers.")
+    }
 
     // S3
     private fun getS3AccessKey() : String = config.getRequiredString("nav.storage.s3.access_key", secret = true)
