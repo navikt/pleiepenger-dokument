@@ -8,6 +8,7 @@
   "ingresses": [
     "https://k9-dokument.nais.oera-q.local"
   ],
+  "selvbetjeningsonen": "true",
   "env": {
     "LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/NAVtestB2C.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_idporten_ver1",
     "S3_SERVICE_ENDPOINT": "https://objectstore.nais.oera-q.local",
