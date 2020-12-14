@@ -12,7 +12,7 @@ dependencies {
     testCompile 'no.nav.helse:dusseldorf-test-support:1.4.3.2ff5308'
     testCompile 'io.ktor:ktor-server-test-host:1.4.3'
     testCompile 'org.testcontainers:localstack:1.15.1'
-    testCompile 'io.mockk:mockk:1.10.0'
+    testCompile 'io.mockk:mockk:1.10.3-jdk8'
     testCompile 'org.skyscreamer:jsonassert:1.5.0'
     testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
     testCompile 'no.nav.helse:dusseldorf-ktor-core:1.4.3.2ff5308'
