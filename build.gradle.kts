@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.3.2.315ec09"
+val dusseldorfKtorVersion = "1.4.3.2ff5308"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val amazonawsVersion = "1.11.790"
@@ -10,12 +10,12 @@ val tikaVersion = "1.24.1"
 val mainClass = "no.nav.helse.K9DokumentKt"
 
 plugins {
-    kotlin("jvm") version "1.3.72"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    kotlin("jvm") version "1.4.21"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/315ec09dad3639f43b6d4b6c267e01037254873e/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/2ff5308c07ac7c0ef8a127ea47fec8707d9f6944/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -51,7 +51,7 @@ dependencies {
 repositories {
     maven("https://dl.bintray.com/kotlin/ktor")
     maven("https://kotlin.bintray.com/kotlinx")
-    maven("http://packages.confluent.io/maven/")
+    maven("https://packages.confluent.io/maven/")
 
     maven {
         name = "GitHubPackages"
@@ -95,7 +95,7 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.4.1"
+    gradleVersion = "6.7.1"
 }
 
 tasks.register("createDependabotFile") {
