@@ -5,7 +5,7 @@ val dusseldorfKtorVersion = "1.4.3.2ff5308"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val amazonawsVersion = "1.11.918"
-val tikaVersion = "1.24.1"
+val tikaVersion = "1.25"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
 
