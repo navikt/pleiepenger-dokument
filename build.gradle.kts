@@ -1,21 +1,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.3.2.315ec09"
+val dusseldorfKtorVersion = "1.4.1.15e3c67"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val amazonawsVersion = "1.11.790"
-val tikaVersion = "1.24.1"
+val amazonawsVersion = "1.11.918"
+val tikaVersion = "1.25"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
 
 plugins {
-    kotlin("jvm") version "1.3.72"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    kotlin("jvm") version "1.4.10"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/315ec09dad3639f43b6d4b6c267e01037254873e/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/15e3c67346dcf8d8c5d81c010f1fe648baf603e9/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -41,8 +41,8 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("org.testcontainers:localstack:1.14.2")
-    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("org.testcontainers:localstack:1.15.1")
+    testImplementation("io.mockk:mockk:1.10.3-jdk8")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
 
@@ -51,7 +51,7 @@ dependencies {
 repositories {
     maven("https://dl.bintray.com/kotlin/ktor")
     maven("https://kotlin.bintray.com/kotlinx")
-    maven("http://packages.confluent.io/maven/")
+    maven("https://packages.confluent.io/maven/")
 
     maven {
         name = "GitHubPackages"
@@ -95,7 +95,7 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.4.1"
+    gradleVersion = "6.7.1"
 }
 
 tasks.register("createDependabotFile") {

@@ -150,7 +150,7 @@ class K9DokumentSluttbrukerTest {
         with(engine) {
             handleRequest(HttpMethod.Get, "/v1/dokument/1234567") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader(HttpHeaders.XCorrelationId, "cc32e953-746e-4fb0-84f7-9e5a7e10bbe1")
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
@@ -161,7 +161,7 @@ class K9DokumentSluttbrukerTest {
     fun `request uten token feiler`() {
         with(engine) {
             handleRequest(HttpMethod.Get, "/v1/dokument/123456789") {
-                addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader(HttpHeaders.XCorrelationId, "cc32e953-746e-4fb0-84f7-9e5a7e10bbe1")
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
@@ -175,7 +175,7 @@ class K9DokumentSluttbrukerTest {
         with(engine) {
             handleRequest(HttpMethod.Get, "/v1/dokument/1234567") {
                 addHeader(HttpHeaders.Authorization, "Bearer $idToken")
-                addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader(HttpHeaders.XCorrelationId, "cc32e953-746e-4fb0-84f7-9e5a7e10bbe1")
             }.apply {
                 assertEquals(HttpStatusCode.Forbidden, response.status())
             }
@@ -201,7 +201,7 @@ class K9DokumentSluttbrukerTest {
         with(engine) {
             handleRequest(HttpMethod.Get, path) {
                 addHeader(HttpHeaders.Authorization, "Bearer $accessTokenHente")
-                addHeader(HttpHeaders.XCorrelationId, "123")
+                addHeader(HttpHeaders.XCorrelationId, "cc32e953-746e-4fb0-84f7-9e5a7e10bbe1")
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, response.status())
             }
