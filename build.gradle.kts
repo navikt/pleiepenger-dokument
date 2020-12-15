@@ -4,7 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 val dusseldorfKtorVersion = "1.4.1.15e3c67"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val amazonawsVersion = "1.11.918"
+val amazonawsVersion = "1.11.919"
 val tikaVersion = "1.25"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
