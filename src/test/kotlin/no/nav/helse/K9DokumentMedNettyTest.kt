@@ -12,6 +12,7 @@ import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.jws.Azure
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.client.methods.HttpDelete
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
@@ -70,6 +71,7 @@ class K9DokumentMedNettyTest {
     @Test
     fun `lagring, henting og sletting fungerer`() = withNettyEngine() {
         val token = getTokenV1()
+
         httpClient.lasteOppDokumentJson(
             url = baseUrl,
             token =token,
@@ -86,6 +88,17 @@ class K9DokumentMedNettyTest {
 
             httpClient.hentDokument("$url?eier=$eier", token).apply {
                 assertEquals(200, statusLine.statusCode)
+                close()
+            }
+
+            httpClient.slettDokument("$url?eier=$eier", token).apply {
+                assertEquals(204, statusLine.statusCode)
+                close()
+            }
+
+            httpClient.hentDokument("$url?eier=$eier", token).apply {
+                assertEquals(404, statusLine.statusCode)
+                close()
             }
         }
     }
@@ -180,5 +193,14 @@ class K9DokumentMedNettyTest {
         }
 
         return execute(httpGetFile)
+    }
+
+
+    private fun CloseableHttpClient.slettDokument(path: String, token: String): CloseableHttpResponse {
+        val httpDelete = HttpDelete(path).apply {
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
+            addHeader(HttpHeaders.XCorrelationId, "sletter-dokument-ok")
+        }
+        return execute(httpDelete)
     }
 }
