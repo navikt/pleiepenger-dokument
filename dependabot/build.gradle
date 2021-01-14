@@ -6,7 +6,7 @@ dependencies {
     compile 'no.nav.helse:dusseldorf-ktor-health:1.4.1.15e3c67'
     compile 'no.nav.helse:dusseldorf-ktor-auth:1.4.1.15e3c67'
     compile 'no.nav.helse:dusseldorf-ktor-client:1.4.1.15e3c67'
-    compile 'com.amazonaws:aws-java-sdk-s3:1.11.921'
+    compile 'com.amazonaws:aws-java-sdk-s3:1.11.937'
     compile 'org.slf4j:jcl-over-slf4j:1.7.30'
     compile 'org.apache.tika:tika-core:1.25'
     testCompile 'no.nav.helse:dusseldorf-test-support:1.4.1.15e3c67'
