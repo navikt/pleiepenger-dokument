@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-val dusseldorfKtorVersion = "1.5.2.25a9f8d"
+val dusseldorfKtorVersion = "1.5.2.fa18872"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
 val amazonawsVersion = "1.11.921"
@@ -15,7 +15,7 @@ plugins {
 }
 
 buildscript {
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/25a9f8dcf0ef9382d4b56661adf622b2868e916e/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/fa1887241239fdd1877f0f258a94872281db8783/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {

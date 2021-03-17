@@ -1,6 +1,7 @@
 package no.nav.helse
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import io.ktor.application.*
 import io.ktor.auth.Authentication
@@ -120,12 +121,12 @@ fun Application.k9Dokument() {
     }
 
     intercept(ApplicationCallPipeline.Monitoring) {
-        call.request.log(urlTemplate = true)
+        call.request.log(templateQueryParameters = true)
     }
 
     install(CallLogging) {
         correlationIdAndRequestIdInMdc()
-        logRequests(urlTemplate = true)
+        logRequests(templateQueryParameters = true)
     }
 }
 
@@ -136,4 +137,4 @@ private fun getVirusScanner(config: Configuration) : VirusScanner? {
 }
 
 internal fun ObjectMapper.k9DokumentConfigured() = dusseldorfConfigured()
-    .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+    .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
