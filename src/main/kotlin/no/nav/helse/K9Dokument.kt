@@ -120,12 +120,12 @@ fun Application.k9Dokument() {
     }
 
     intercept(ApplicationCallPipeline.Monitoring) {
-        call.request.log()
+        call.request.log(urlTemplate = true)
     }
 
     install(CallLogging) {
         correlationIdAndRequestIdInMdc()
-        logRequests()
+        logRequests(urlTemplate = true)
     }
 }
 
