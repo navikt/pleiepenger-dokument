@@ -4,7 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 val dusseldorfKtorVersion = "1.5.2.fa18872"
 val ktorVersion = ext.get("ktorVersion").toString()
 val slf4jVersion = ext.get("slf4jVersion").toString()
-val amazonawsVersion = "1.11.921"
+val amazonawsVersion = "1.11.1001"
 val tikaVersion = "1.26"
 
 val mainClass = "no.nav.helse.K9DokumentKt"
@@ -41,7 +41,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("org.testcontainers:localstack:1.15.2")
+    testImplementation("org.testcontainers:localstack:1.15.3")
     testImplementation("io.mockk:mockk:1.11.0")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
