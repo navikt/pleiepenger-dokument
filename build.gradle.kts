@@ -42,7 +42,7 @@ dependencies {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.testcontainers:localstack:1.15.3")
-    testImplementation("io.mockk:mockk:1.11.0")
+    testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation( "com.github.stefanbirkner:system-rules:1.19.0")
 
